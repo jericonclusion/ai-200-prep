@@ -703,10 +703,48 @@ Bronnen:
 - `allowVolumeExpansion: true` maakt vergroten via de PVC mogelijk als de driver dit ondersteunt; volumes verkleinen wordt niet ondersteund.
 - Examenkeuze: één node, lage latency of databasevolume → vaak Azure Disk/RWO. Meerdere replicas op verschillende nodes moeten dezelfde bestanden schrijven → Azure Files/RWX.
 - StatefulSets gebruiken vaak `volumeClaimTemplates`, zodat iedere replica een eigen stabiele PVC krijgt.
+
+#### `storageClassName: managed-csi` in AKS
+
+`managed-csi` is een ingebouwde AKS StorageClass voor dynamisch aangemaakte **Azure Managed Disks**. `managed` verwijst naar Azure Managed Disk; `csi` staat voor **Container Storage Interface**, de standaard waarmee Kubernetes een opslagdriver aanroept.
+
+```text
+Pod -> PVC -> StorageClass managed-csi -> Azure Disk CSI-driver -> Azure Managed Disk/PV
+```
+
+Voorbeeld van een opslagaanvraag:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: api-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: managed-csi
+  resources:
+    requests:
+      storage: 10Gi
+```
+
+AKS maakt hierdoor automatisch een passende Azure Managed Disk en een PV, en bindt die aan de PVC. Een pod verwijst vervolgens naar `claimName: api-data` en mount het volume bijvoorbeeld op `/data`. De gegevens blijven bestaan wanneer alleen de pod opnieuw wordt gestart of vervangen.
+
+- `managed-csi`: Standard SSD Azure Disk; in veel configuraties LRS. Op AKS 1.29 en hoger gebruikt de ingebouwde klasse bij clusters over meerdere availability zones Standard SSD ZRS.
+- `managed-csi-premium`: Premium SSD Azure Disk voor hogere prestaties en lagere latency.
+- `managed-csi-premium-v2`: Premium SSD v2 op ondersteunde recente AKS-versies.
+- `azurefile-csi`: Azure Files; meestal de betere keuze wanneer pods op meerdere nodes dezelfde bestanden via RWX moeten delen.
+- De ingebouwde `managed-csi` ondersteunt volume-uitbreiding en gebruikt standaard een `Delete` reclaim policy: wanneer het bijbehorende PV wordt verwijderd, wordt de dynamisch gemaakte Azure Disk ook verwijderd.
+- Azure Disk wordt meestal met `ReadWriteOnce` gebruikt: beschrijfbaar gekoppeld aan één node tegelijk. Voor gedeelde opslag over meerdere nodes is Azure Files/RWX gebruikelijker.
+- Zonder expliciete `storageClassName` gebruikt AKS de default StorageClass; in AKS verwijst `default` naar dezelfde opslagklasse als `managed-csi`.
+
+Ezelsbrug: **de PVC zegt hoeveel opslag nodig is; de StorageClass zegt welk soort opslag AKS moet maken.**
+
 - Bronnen:
   - https://kubernetes.io/docs/concepts/storage/persistent-volumes/
   - https://kubernetes.io/docs/concepts/storage/storage-classes/
   - https://learn.microsoft.com/en-us/azure/aks/concepts-storage
+  - https://learn.microsoft.com/en-us/azure/aks/azure-disk-volume
 
 ### Azure Storage-redundantie
 
