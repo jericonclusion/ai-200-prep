@@ -424,6 +424,48 @@ Delta Lake/Parquet → nieuwe of gewijzigde rijen → chunks/embeddings
 
 Ezelsbrug: **Parquet = efficiënt bestand; Delta Lake = betrouwbare tabellaag; RediSearch = snelle zoekindex.**
 
+#### Delta Lake-architectuur
+
+Delta Lake is een open **table format** boven objectopslag zoals ADLS Gen2. Het is geen afzonderlijke databaseserver. Een Delta-tabel bestaat hoofdzakelijk uit:
+
+```text
+sales/
+├── part-00001.parquet       # kolomgebaseerde tabeldata
+├── part-00002.parquet
+└── _delta_log/
+    ├── 00000000000000000000.json
+    ├── 00000000000000000001.json
+    └── ...checkpoint.parquet
+```
+
+- De **Parquet-bestanden** bevatten de werkelijke tabeldata.
+- `_delta_log` bevat geordende commits met onder meer toegevoegde/verwijderde databestanden, schema en tabelmetadata.
+- Een **checkpoint** vat een reeks logcommits samen, zodat een engine niet bij iedere query de volledige historie hoeft af te spelen.
+- Een reader reconstrueert uit de log welke Parquet-bestanden bij de gevraagde tabelversie horen en leest alleen die actieve bestanden.
+- Updates en deletes wijzigen Parquet-bestanden normaal niet ter plaatse. Delta schrijft nieuwe bestanden en markeert oude bestanden in een nieuwe logversie als verwijderd.
+- Een writer maakt eerst de nieuwe data en commit daarna atomisch een nieuwe logversie. Optimistic concurrency control detecteert conflicterende gelijktijdige writes.
+- Hierdoor ontstaan **ACID-transacties**, schema enforcement/evolution, `MERGE`/upserts, consistente batch- en streamingverwerking en **time travel**.
+- Oude bestanden maken time travel mogelijk totdat onderhoud zoals `VACUUM` ze definitief verwijdert. Verwijder of wijzig Delta-Parquetbestanden niet handmatig buiten Delta om, want dan klopt de transactielog niet meer.
+
+De vaak genoemde **medallion architecture** is een aanbevolen datapatroon boven Delta Lake en geen verplicht onderdeel van het Delta-bestandsformaat:
+
+```text
+Bronnen → Bronze → Silver → Gold → BI / ML / AI
+```
+
+- **Bronze:** ruwe, zo volledig mogelijk bewaarde brondata voor audit en opnieuw verwerken.
+- **Silver:** opgeschoonde, gevalideerde en gededupliceerde detaildata.
+- **Gold:** businessklare, vaak samengevoegde of vooraf geaggregeerde data voor rapportages en modellen.
+- **Unity Catalog** kan governance, toegangsbeheer, discovery en lineage over deze tabellen verzorgen.
+
+Examenkeuze: alleen efficiënt analytisch bestandsformaat nodig → **Parquet**; daarnaast transacties, schemahandhaving, `MERGE`, versiehistorie of time travel nodig → **Delta Lake**.
+
+Bronnen:
+
+- https://learn.microsoft.com/en-us/fabric/fundamentals/delta-lake-overview
+- https://learn.microsoft.com/en-us/azure/databricks/lakehouse/medallion
+- https://learn.microsoft.com/en-us/azure/databricks/delta/best-practices
+
 **HASH-opslag versus JSON-opslag versus vector querying:**
 
 Dit zijn geen drie alternatieve zoekmethodes. **HASH en JSON bepalen hoe een record wordt opgeslagen; vector querying bepaalt hoe RediSearch de geïndexeerde vectors doorzoekt.** Een RediSearch-index wordt daarom aangemaakt als `ON HASH` of `ON JSON`.
