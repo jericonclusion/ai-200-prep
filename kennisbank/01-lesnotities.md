@@ -1355,6 +1355,41 @@ Queuebericht → trigger → function-code → output binding → Cosmos DB
 
 **AI-200-toepassingen:** een MCP-tool aanbieden, documenten verwerken, een queue consumer bouwen, AI- of databaseacties orkestreren en op events reageren.
 
+#### HTTP-trigger: authorization level en access keys
+
+Het `auth_level` van een **HTTP-trigger** bepaalt welke Functions-key de caller moet meesturen. Dit geldt niet voor bijvoorbeeld een Timer-, Queue- of Service Bus-trigger; die gebruiken hun eigen verbinding en identiteit.
+
+| Authorization level | Vereiste |
+|---|---|
+| `anonymous` | Geen Functions-key nodig. |
+| `function` | Een key met toegang tot de function: een function key of host key. |
+| `admin` | De speciale master key `_master`; alleen voor beheerdoeleinden. |
+
+Key scopes:
+
+- **Function key:** werkt voor één specifieke function.
+- **Host key:** werkt voor alle functions in dezelfde Function App.
+- **Master key (`_master`):** werkt voor alle functions en geeft toegang tot administratieve runtime-API's; niet delen met gewone clients.
+- **System key:** door bepaalde extensions beheerde key voor hun interne webhook-endpoints.
+
+Een key gaat mee als queryparameter `?code=<key>` of als HTTP-header `x-functions-key: <key>`. Gebruik voor API-calls bij voorkeur de header, zodat de key minder snel in URL-logs en browserhistorie verschijnt.
+
+```http
+GET /api/Analyze HTTP/1.1
+Host: example.azurewebsites.net
+x-functions-key: <function-key>
+```
+
+Een Functions-key is een **gedeeld geheim**, geen gebruikersidentiteit. Voor echte gebruikersauthenticatie en autorisatie gebruik je bijvoorbeeld Microsoft Entra ID/App Service Authentication, eventueel samen met API Management. Pas in Azure wordt `auth_level` normaal afgedwongen; lokaal is key-authenticatie standaard uitgeschakeld, behalve bij lokale containerhosting.
+
+**Examenregel:** publiek endpoint → `anonymous`; één endpoint met eenvoudige gedeelde key → `function` + function key; alle functions benaderen → host key; beheerruntime → `admin` + `_master`. Geef altijd de kleinst mogelijke key-scope.
+
+Bronnen:
+
+- https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger
+- https://learn.microsoft.com/en-us/azure/azure-functions/function-keys-how-to
+- https://learn.microsoft.com/en-us/azure/azure-functions/security-concepts
+
 #### Waar draait Azure Functions onder water op?
 
 De meeste Azure Functions-hosting gebruikt onderliggend de **Azure App Service-infrastructuur** op door Microsoft beheerde Windows- of Linux-VM's.
