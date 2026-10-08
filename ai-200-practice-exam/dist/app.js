@@ -90,7 +90,7 @@
     }else if(selectedMode==="sample"){
       sections=[{id:"sample",title:"Instructor sample exam",questions:groupInstructorQuestions(INSTRUCTOR_SAMPLE),reviewable:true}];seconds=0;
     }else{
-      const all=[...QUESTION_BANK,...CASES.flatMap(c=>c.questions),...LOCKED_SET.questions.map(x=>({...x,locked:false}))];
+      const all=[...QUESTION_BANK,...CASES.flatMap(c=>c.questions.map(q=>({...q,caseTitle:c.title,caseData:c.tabs}))),...LOCKED_SET.questions.map(x=>({...x,locked:false}))];
       sections=[{id:"study",title:"Study mode",questions:shuffle(all),reviewable:true}];seconds=0;
     }
     sections=sections.map(section=>({...section,questions:section.questions.map(question=>window.AI200_DATA.prepareQuestion(question,shuffle))}));
@@ -131,9 +131,11 @@
     const visual=qn.type==="sample"?`<div class="sample-pages">${qn.questionPages.map((src,i)=>`<img src="${esc(src)}" alt="Original visual for instructor sample question ${qn.number}, page ${i+1}">`).join("")}</div>`:promptMarkup(qn.prompt);
     const code=qn.code?`<pre class="native-code"><code>${esc(qn.code)}</code></pre>`:"";
     const body=`<div class="question-title">Question ${state.current+1}</div>${section.scenario?`<div class="notice"><strong>Scenario</strong><br>${esc(section.scenario)}</div>`:""}${context}${visual}${code}<div class="instruction">${instruction(qn)}</div>${optionMarkup(qn)}${(state.mode==="study"||state.mode==="sample")&&state.checked[qn.id]?feedbackMarkup(qn):""}`;
-    if(!section.caseData)return meta+body;
-    const tabs=Object.keys(section.caseData);const active=section.activeTab||tabs[0];
-    return `${meta}<div class="case-layout"><section class="case-panel"><div class="tabs">${tabs.map(t=>`<button class="tab ${t===active?"active":""}" data-tab="${esc(t)}">${esc(t)}</button>`).join("")}</div><div class="case-content"><h3>${esc(active)}</h3><p>${esc(section.caseData[active])}</p></div></section><section>${body}</section></div>`;
+    const caseData=section.caseData||qn.caseData;
+    if(!caseData)return meta+body;
+    const tabs=Object.keys(caseData);const active=(qn.caseData?qn.activeCaseTab:section.activeTab)||tabs[0];
+    const identity=qn.caseTitle?`<div class="case-identity"><span>Current case study</span><strong>${esc(qn.caseTitle)}</strong></div>`:"";
+    return `${meta}${identity}<div class="case-layout"><section class="case-panel"><div class="tabs">${tabs.map(t=>`<button class="tab ${t===active?"active":""}" data-tab="${esc(t)}">${esc(t)}</button>`).join("")}</div><div class="case-content"><h3>${esc(active)}</h3><p>${esc(caseData[active])}</p></div></section><section>${body}</section></div>`;
   }
   function labelType(qn){if(qn.type==="multi")return `Choose ${qn.choose||qn.answer.length}`;if(qn.type==="order"||qn.type==="drag")return "Drag and drop";if(qn.type==="matching"||qn.type==="matrix")return "Answer area";if(qn.type==="sample")return "Visual answer area";if(qn.type==="manualText")return "Manual response";if(qn.type==="manual")return qn.choose?`Choose ${qn.choose}`:"Single choice";return qn.type==="yesno"?"Yes / No":"Single choice"}
   function instruction(qn){if(qn.type==="multi"||(qn.type==="manual"&&qn.choose))return `Select ${qn.choose||qn.answer.length} answers.`;if(qn.type==="order")return "Drag the choices into the required order. You can also use the arrow buttons.";if(qn.type==="drag")return `Drag ${qn.answer.length} choices into the answer area in the correct order.`;if(qn.type==="matching"||qn.type==="matrix")return "Select the best answer for every row.";if(qn.type==="sample"||qn.type==="manualText")return "Enter your answer, then compare it with the supplied answer screen during review.";if(qn.type==="manual")return "Select the best answer, then compare it with the supplied answer screen.";if(qn.locked)return "You cannot return after selecting Next.";return "Select the best answer."}
@@ -186,7 +188,7 @@
     document.querySelectorAll("[data-match-index]").forEach(select=>select.onchange=e=>{const a=[...(state.answers[qn.id]||Array(qn.rows.length).fill(""))];a[+select.dataset.matchIndex]=e.target.value;state.answers[qn.id]=a;renderQuestion()});
     document.querySelectorAll("[data-matrix-index]").forEach(select=>select.onchange=e=>{const a=[...(state.answers[qn.id]||Array(qn.rows.length).fill(""))];a[+select.dataset.matrixIndex]=e.target.value;state.answers[qn.id]=a;renderQuestion()});
     const sampleResponse=document.getElementById("sampleResponse");if(sampleResponse)sampleResponse.oninput=e=>state.answers[qn.id]=e.target.value;
-    document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{sectionFor(qn).activeTab=b.dataset.tab;renderQuestion()});
+    document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{if(qn.caseData)qn.activeCaseTab=b.dataset.tab;else sectionFor(qn).activeTab=b.dataset.tab;renderQuestion()});
     document.querySelectorAll("[data-index]").forEach(b=>b.onclick=()=>{state.current=+b.dataset.index;renderQuestion()});
     document.getElementById("flag").onchange=e=>{state.flags[qn.id]=e.target.checked;renderQuestion()};
     document.getElementById("prev").onclick=()=>{if(canGo(state.current-1)){state.current--;renderQuestion()}};

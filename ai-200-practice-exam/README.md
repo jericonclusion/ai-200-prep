@@ -11,6 +11,7 @@ English-language practice application for AI-200. Open `dist/index.html` in a br
 - Quick assessment: 20 questions in 40 minutes
 - Case study drill with scenario tabs and section review
 - Study mode with immediate explanations
+- Case-study questions retain their named scenario and readable context when randomized in Study mode
 - Persistent green/red question-number status in Study mode after an answer is checked or left with Next
 - Built-in full-screen supplied-scenario viewer with a persistent case-study name, readable structured text, and a cropped original-image view
 - Source-verified case membership: only the 19 instructor questions that show the VCE Overview control are attached to Fabrikam or Proseware

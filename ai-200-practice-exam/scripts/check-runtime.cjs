@@ -29,7 +29,7 @@ for (const engine of ['dist', 'inline']) {
       math.random = () => randomValue;
       const context = {
         window:{}, Math:math,
-        document:{getElementById:element, querySelectorAll:()=>[]},
+        document:{getElementById:element, querySelectorAll:()=>[], addEventListener:()=>{}, visibilityState:'visible'},
         localStorage:{getItem:key=>storage.get(key)||null, setItem:(key,value)=>storage.set(key,value)},
         setInterval:()=>1, clearInterval:()=>{}
       };
@@ -137,6 +137,17 @@ for (const engine of ['dist', 'inline']) {
         }
       }
       if (mode === 'study') {
+        if (engine === 'dist') {
+          const caseIndex = questions.findIndex(q=>q.id==='F05');
+          assert.ok(caseIndex>=0,'Study mode contains the Fabrikam telemetry question');
+          assert.equal(questions[caseIndex].caseTitle,'Fabrikam Claims','Study mode preserves the case-study identity');
+          assert.ok(questions[caseIndex].caseData?.Overview?.includes('insurance claim documents'),'Study mode preserves the case-study text');
+          state.current=caseIndex;api.render();
+          const caseMarkup=element('app').innerHTML;
+          assert.ok(caseMarkup.includes('Current case study')&&caseMarkup.includes('Fabrikam Claims'),'Study mode displays the case-study name');
+          assert.ok(caseMarkup.includes('Fabrikam processes insurance claim documents'),'Study mode displays the case-study context');
+          state.current=0;api.render();
+        }
         const first = questions[0];
         if (first.type === 'order') {
           state.answers[first.id] = [...first.answer].reverse();
