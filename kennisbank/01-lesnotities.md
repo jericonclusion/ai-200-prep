@@ -1292,7 +1292,7 @@ CREATE TABLE products (
 
 Het getal `330` wordt bepaald door het gebruikte embeddingmodel of door de ingestelde outputdimensie; het is geen algemene PostgreSQL-standaard. Controleer de lengte bijvoorbeeld in Python met `len(embedding)` of in PostgreSQL met `vector_dims(embedding)`. De opgeslagen productvectoren en de queryvector moeten hetzelfde model en dezelfde dimensie gebruiken. **ELI5:** `vector(330)` is een kast met precies 330 vakjes; iedere embedding moet alle 330 vakjes vullen.
 
-Een HNSW-index voor cosine distance kan er zo uitzien:
+**HNSW** staat voor **Hierarchical Navigable Small World**. Het is een approximate-nearest-neighbor-index die vectors in meerdere lagen als een graaf met verbindingen organiseert. De bovenste, grove lagen brengen de zoekactie snel naar het juiste gebied; de onderste laag zoekt daar nauwkeuriger naar nabije vectors. Een HNSW-index voor cosine distance kan er zo uitzien:
 
 ```sql
 CREATE INDEX products_embedding_idx
