@@ -99,6 +99,16 @@
   - Een on-premises applicatie kan Azure Key Vault wel benaderen, eventueel privé via VPN/ExpressRoute, een VNet en Private Endpoint.
   - **HashiCorp Vault** is een bekend alternatief dat je zelf on-premises, in Kubernetes of in de cloud kunt hosten.
   - Andere alternatieven zijn onder meer CyberArk Secrets Manager/Conjur en Delinea Secret Server; de juiste keuze hangt af van integraties, beheer en compliance.
+- Key Vault heeft drie belangrijke objecttypen:
+  - **Secret:** een waarde die een applicatie later terugleest, zoals een wachtwoord, API-key, token of connection string.
+  - **Key:** cryptografisch sleutelmateriaal voor encrypt/decrypt, wrap/unwrap of sign/verify. De bewerking kan in Key Vault of een HSM plaatsvinden zonder dat de private key de kluis verlaat.
+  - **Certificate:** een beheerd X.509-certificaat voor TLS, authenticatie of code signing, inclusief lifecycle en eventuele automatische vernieuwing. Een Key Vault-certificate is opgebouwd bovenop een bijbehorende key en secret.
+- Ezelsbrug: **secret bewaar en lees je; key laat je rekenen; certificate bewijst identiteit.**
+- Geef een managed identity via Azure RBAC alleen toegang tot het benodigde object en de benodigde bewerking. Een applicatie die alleen een secret leest, heeft geen beheer- of cryptografische sleutelrechten nodig.
+- Objecten zijn geversioneerd. Een URI zonder versie verwijst normaal naar de huidige versie; met een versie kun je een specifieke versie opvragen.
+- Bronnen:
+  - https://learn.microsoft.com/en-us/azure/key-vault/general/about-keys-secrets-certificates
+  - https://learn.microsoft.com/en-us/azure/key-vault/general/overview
 - Monitoring:
   - **Azure Monitor** is het overkoepelende platform voor metrics, logs, alerts en observability.
   - **Application Insights** is de monitoringtool/APM binnen Azure Monitor voor applicaties: requests, prestaties, fouten, traces en afhankelijkheden.
