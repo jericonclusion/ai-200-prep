@@ -901,6 +901,11 @@ Ezelsbrug: **de PVC zegt hoeveel opslag nodig is; de StorageClass zegt welk soor
 - **ADLS Gen2** is geen afzonderlijk opslagsysteem: het zijn data-lakefuncties boven Azure Blob Storage, geactiveerd met **Hierarchical Namespace (HNS)**.
 - HNS geeft echte directory- en bestandshiërarchie. Een map hernoemen of verwijderen wordt een efficiënte, atomische metadataoperatie in plaats van alle blobs met hetzelfde padprefix één voor één te verwerken.
 - **HDFS – Hadoop Distributed File System:** gedistribueerd bestandssysteem voor big-data-clusters. De NameNode beheert metadata en paden; DataNodes bewaren gerepliceerde datablokken en leveren de werkelijke I/O.
+- **HDFS en Parquet zijn verschillende lagen:** HDFS bepaalt waar de bytes van een bestand verdeeld en gerepliceerd worden opgeslagen; Parquet bepaalt hoe rijen en kolommen binnen dat bestand zijn gecodeerd.
+- Een groot `verkopen.parquet`-bestand kan door HDFS in blokken over meerdere DataNodes worden verdeeld. Binnen het bestand organiseert Parquet de data in row groups en column chunks. Spark kan daardoor alleen relevante Parquet-kolommen/-groepen opvragen, terwijl HDFS de benodigde bestandsblokken levert.
+- Ezelsbrug: **HDFS = magazijn; Parquet = manier waarop de dozen zijn ingepakt; Spark = medewerker die de data verwerkt.**
+- Traditioneel: `Spark → HDFS → Parquet-bestanden`. In Azure vaak: `Databricks/Spark → ADLS Gen2 → Parquet-bestanden`.
+- Voorbeeldpad in HDFS: `hdfs:///data/verkopen.parquet`. Voorbeeldpad in ADLS Gen2: `abfss://data@mijnaccount.dfs.core.windows.net/verkopen.parquet`.
 - ADLS is **Hadoop-compatible**, maar is geen HDFS-cluster. Hadoop/Spark gebruikt de **ABFS-driver** om ADLS via de `dfs.core.windows.net` REST-interface te benaderen.
 - Veilige URI-vorm: `abfss://<container>@<account>.dfs.core.windows.net/<pad>/<bestand>`; `abfss` gebruikt TLS.
 - **NTFS – New Technology File System:** lokaal Windows-bestandssysteem voor disks/volumes, met Windows-eigenschappen en ACL's. NTFS is niet ontworpen als cloudobjectopslag of Hadoop-distributed filesystem.
@@ -914,6 +919,8 @@ Ezelsbrug: **de PVC zegt hoeveel opslag nodig is; de StorageClass zegt welk soor
   - https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction
   - https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-abfs-driver
   - https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-access-control
+  - https://hadoop.apache.org/docs/r3.3.4/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html
+  - https://parquet.apache.org/docs/overview/
 
 ### Cosmos DB: wereldwijde regio's
 
