@@ -900,7 +900,10 @@ Ezelsbrug: **de PVC zegt hoeveel opslag nodig is; de StorageClass zegt welk soor
 - **Block Blob:** opgebouwd uit afzonderlijke blokken die parallel kunnen worden geüpload en daarna als één blob worden vastgelegd. Beste algemene keuze voor documenten, afbeeldingen, video, backups, JSON/CSV/Parquet en data-lakebestanden.
 - Block blobs zijn geoptimaliseerd voor grote uploads, downloads en streaming, niet voor veel kleine wijzigingen midden in hetzelfde bestand. Maximumgrootte is momenteel ongeveer 190,7 TiB, afhankelijk van serviceversie en uploadmethode.
 - **Append Blob:** gebruikt ook blokken, maar nieuwe blokken kunnen alleen aan het **einde** worden toegevoegd. Geschikt voor append-only logging, auditregels en telemetry die chronologisch groeit.
-- Append Blob is geen message queue en geen goede keuze als bestaande inhoud willekeurig moet worden gewijzigd. Voor gelijktijdige writers zijn append-position conditions of andere coördinatie nodig om volgorde/conflicten te beheersen.
+- Conceptueel groeit een log bijvoorbeeld van `08:00 gestart` naar `08:00 gestart → 08:01 ingelogd → 08:03 bestand geüpload`; eerder geschreven inhoud blijft staan en iedere nieuwe entry komt achteraan.
+- Ezelsbrug: **een Append Blob is een schrift waarin je alleen op de volgende lege regel mag schrijven.**
+- Append Blob is geen message queue: entries worden niet afzonderlijk bevestigd of verwijderd en er zijn geen ingebouwde retries of dead-letter queue. Gebruik Service Bus of Queue Storage wanneer afzonderlijke work items betrouwbaar moeten worden verwerkt.
+- Append Blob is geen goede keuze als bestaande inhoud willekeurig moet worden gewijzigd. Voor gelijktijdige writers zijn append-position conditions of andere coördinatie nodig om volgorde en conflicten te beheersen.
 - **Page Blob:** bestaat uit pagina's van 512 bytes en ondersteunt snelle random read/write van byte-ranges. Geschikt voor sparse bestanden, VHD's en disk-/databaseachtige workloads.
 - **VHD = Virtual Hard Disk:** bestand dat zich voor een virtuele machine gedraagt als een fysieke harde schijf. Het kan een besturingssysteem, partities, bestandssysteem en gewone bestanden bevatten.
 - Een VM leest en schrijft verspreid over de virtuele disk. Daarom past een VHD bij Page Blob met random read/write en niet bij Append Blob.
