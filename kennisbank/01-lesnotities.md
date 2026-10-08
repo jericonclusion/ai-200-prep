@@ -153,10 +153,14 @@
 
   - De sentinel pusht de configuratie niet vanzelf naar de app. Refresh moet in de provider zijn geconfigureerd en daadwerkelijk worden aangeroepen. Afhankelijk van framework en implementatie gebeurt dat bijvoorbeeld via request-middleware of een expliciete `refresh()`-call, met een minimum refresh-interval.
   - De inhoud van de sentinel is meestal alleen een veranderend versienummer, timestamp of release-id; de wijziging zelf is het signaal.
+  - Bij toegang via Entra ID/managed identity heeft de applicatie **App Configuration Data Reader** nodig om key-values, feature flags en de sentinel te lezen. De gewone rollen **Reader** en **App Configuration Reader** geven alleen control-plane-informatie over de Azure-resource en geen toegang tot de configuratiedata.
+  - Moet een identiteit configuratiewaarden schrijven of verwijderen, gebruik dan **App Configuration Data Owner**. Pas least privilege toe: een runtime-app heeft meestal alleen Data Reader nodig.
+  - Verwijst een App Configuration-waarde naar een Key Vault-secret, dan zijn twee losse rechten nodig: **App Configuration Data Reader** op de configuration store én bijvoorbeeld **Key Vault Secrets User** op de vault.
   - Dit staat los van **Redis Sentinel**, dat over beschikbaarheid en failover van Redis gaat.
   - **Examenregel:** meerdere instellingen atomair-achtig samen vernieuwen → verander alle instellingen en de sentinel als laatste; sentinel gewijzigd → refresh alle configuratie.
   - https://learn.microsoft.com/en-us/azure/azure-app-configuration/reference-dotnet-provider#refresh-on-sentinel-key
   - https://learn.microsoft.com/en-us/azure/azure-app-configuration/howto-best-practices
+  - https://learn.microsoft.com/en-us/azure/azure-app-configuration/concept-enable-rbac
 - Monitoring:
   - **Azure Monitor** is het overkoepelende platform voor metrics, logs, alerts en observability.
   - **Application Insights** is de monitoringtool/APM binnen Azure Monitor voor applicaties: requests, prestaties, fouten, traces en afhankelijkheden.
