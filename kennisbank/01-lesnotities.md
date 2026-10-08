@@ -1322,6 +1322,21 @@ LIMIT 10;
 | `ef_construction` | Indexbouw en inserts | Betere graaf; langzamere bouw en inserts |
 | `ef_search` | Zoekquery | Meestal betere recall; hogere querylatency |
 
+**Afstandsmaat kiezen:** volg eerst de documentatie van het embeddingmodel. De operator in de query en de operator class van de index moeten bij dezelfde afstandsmaat horen.
+
+| Methode | Queryoperator | Index operator class | Wanneer gebruiken? |
+|---|---|---|---|
+| **Cosine distance** | `<=>` | `vector_cosine_ops` | Meestal voor semantische tekstsearch en RAG; vergelijkt vooral de richting/betekenis |
+| **L2 / Euclidean distance** | `<->` | `vector_l2_ops` | Wanneer het model voor Euclidische afstand is ontworpen; meet de rechte afstand tussen vectorpunten |
+| **Negative inner product** | `<#>` | `vector_ip_ops` | Vaak bij recommendationmodellen; richting en vectorgrootte tellen mee |
+| **L1 / Manhattan distance** | `<+>` | `vector_l1_ops` | Specialistische numerieke toepassingen; telt de absolute verschillen per dimensie op |
+| **Hamming distance** | `<~>` | `bit_hamming_ops` | Binaire vectors of hashes; telt hoeveel bits verschillen |
+| **Jaccard distance** | `<%>` | `bit_jaccard_ops` | Binaire vectors; vergelijkt de overlap tussen verzamelingen actieve bits |
+
+Bij afstandsoperators geldt **lager = dichterbij/betere match**. pgvector geeft bij `<#>` expres de negatieve inner product terug, zodat PostgreSQL de index oplopend kan doorzoeken. Cosine similarity kan worden berekend als `1 - cosine distance`.
+
+Wanneer vectors allemaal naar dezelfde lengte zijn genormaliseerd, geven cosine, inner product en L2 vaak dezelfde rangorde, maar andere scorewaarden. Wissel de methoden daarom niet willekeurig om en bouw de index voor de methode die de applicatie werkelijk gebruikt.
+
 **Examenregel:** dimensies moeten overeenkomen. `m` bepaalt de verbindingen, `ef_construction` de grondigheid tijdens de bouw en `ef_search` de grondigheid tijdens de zoekopdracht.
 
 Bron:
