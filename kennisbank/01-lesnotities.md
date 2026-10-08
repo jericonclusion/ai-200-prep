@@ -1275,6 +1275,59 @@ De API bepaalt welk datamodel, welke drivers en welke querytaal je gebruikt:
 
 **Let op de context:** `SU` kan **Streaming Unit** in Stream Analytics of **Search Unit** in Azure AI Search betekenen.
 
+### PostgreSQL pgvector: dimensies en HNSW-instellingen
+
+De extensie **pgvector** voegt een vectortype en vector search toe aan PostgreSQL. In deze tabel betekent `vector(330)` dat iedere opgeslagen embedding exact **330 getallen/dimensies** moet bevatten:
+
+```sql
+CREATE TABLE products (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT,
+    description TEXT,
+    price NUMERIC(10, 2),
+    embedding vector(330)
+);
+```
+
+Het getal `330` wordt bepaald door het gebruikte embeddingmodel of door de ingestelde outputdimensie; het is geen algemene PostgreSQL-standaard. Controleer de lengte bijvoorbeeld in Python met `len(embedding)` of in PostgreSQL met `vector_dims(embedding)`. De opgeslagen productvectoren en de queryvector moeten hetzelfde model en dezelfde dimensie gebruiken. **ELI5:** `vector(330)` is een kast met precies 330 vakjes; iedere embedding moet alle 330 vakjes vullen.
+
+Een HNSW-index voor cosine distance kan er zo uitzien:
+
+```sql
+CREATE INDEX products_embedding_idx
+ON products USING hnsw (embedding vector_cosine_ops)
+WITH (m = 16, ef_construction = 64);
+```
+
+- `vector_cosine_ops`: bouw de index voor cosine distance; zoek ermee via de operator `<=>`.
+- `m`: ongeveer hoeveel verbindingen iedere vector in de HNSW-graaf krijgt. Hoger geeft doorgaans betere recall, maar gebruikt meer geheugen, maakt de index groter en maakt bouwen/inserts duurder.
+- `ef_construction`: hoeveel kandidaatburen HNSW tijdens het bouwen onderzoekt om goede verbindingen te kiezen. Hoger geeft doorgaans een betere graaf, maar een tragere indexbouw en duurdere inserts.
+- `ef_search`: aparte query-instelling voor hoeveel kandidaten tijdens het zoeken worden onderzocht. Hoger geeft doorgaans betere recall, maar tragere queries.
+
+```sql
+SET hnsw.ef_search = 100;
+
+SELECT *
+FROM products
+ORDER BY embedding <=> :query_embedding
+LIMIT 10;
+```
+
+**ELI5:** `m` is hoeveel **maatjes** een product in het netwerk mag hebben. `ef_construction` is uit hoeveel kandidaten die maatjes bij het **construeren** worden gekozen. `ef_search` is hoe uitgebreid je later **zoekt**.
+
+| Instelling | Moment | Gevolg van hoger instellen |
+|---|---|---|
+| `m` | Structuur van de index | Meer verbindingen en meestal betere recall; meer geheugen en opslag |
+| `ef_construction` | Indexbouw en inserts | Betere graaf; langzamere bouw en inserts |
+| `ef_search` | Zoekquery | Meestal betere recall; hogere querylatency |
+
+**Examenregel:** dimensies moeten overeenkomen. `m` bepaalt de verbindingen, `ef_construction` de grondigheid tijdens de bouw en `ef_search` de grondigheid tijdens de zoekopdracht.
+
+Bron:
+
+- https://github.com/pgvector/pgvector/blob/master/README.md
+
 ### Cosmos DB-scripts en bestandsextensie
 
 Bij **Cosmos DB for NoSQL** zijn er drie soorten server-side scripts:
