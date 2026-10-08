@@ -137,6 +137,26 @@
   - https://learn.microsoft.com/en-us/security/zero-trust/sfi/safe-secrets-standard
   - https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation-dual
   - https://learn.microsoft.com/en-us/azure/key-vault/general/autorotation
+- Azure App Configuration: **sentinel key pattern**:
+  - Een sentinel key is een controlewaarde die aangeeft: **de volledige configuratiewijziging is klaar**.
+  - Werk eerst alle bij elkaar horende configuratiewaarden bij en wijzig de sentinel pas als laatste, bijvoorbeeld van buildnummer `41` naar `42`.
+  - De applicatie controleert alleen de sentinel. Zodra die gewijzigd is, laadt zij alle geselecteerde configuratie opnieuw. Dit voorkomt dat de app tijdelijk een half oude en half nieuwe configuratie gebruikt en beperkt het aantal controles.
+
+    ```text
+    Update Database:Host
+    Update Database:Name
+    Update FeatureX:Enabled
+    Update Config:Sentinel als laatste
+                         ↓
+              applicatie herlaadt alles
+    ```
+
+  - De sentinel pusht de configuratie niet vanzelf naar de app. Refresh moet in de provider zijn geconfigureerd en daadwerkelijk worden aangeroepen. Afhankelijk van framework en implementatie gebeurt dat bijvoorbeeld via request-middleware of een expliciete `refresh()`-call, met een minimum refresh-interval.
+  - De inhoud van de sentinel is meestal alleen een veranderend versienummer, timestamp of release-id; de wijziging zelf is het signaal.
+  - Dit staat los van **Redis Sentinel**, dat over beschikbaarheid en failover van Redis gaat.
+  - **Examenregel:** meerdere instellingen atomair-achtig samen vernieuwen → verander alle instellingen en de sentinel als laatste; sentinel gewijzigd → refresh alle configuratie.
+  - https://learn.microsoft.com/en-us/azure/azure-app-configuration/reference-dotnet-provider#refresh-on-sentinel-key
+  - https://learn.microsoft.com/en-us/azure/azure-app-configuration/howto-best-practices
 - Monitoring:
   - **Azure Monitor** is het overkoepelende platform voor metrics, logs, alerts en observability.
   - **Application Insights** is de monitoringtool/APM binnen Azure Monitor voor applicaties: requests, prestaties, fouten, traces en afhankelijkheden.
