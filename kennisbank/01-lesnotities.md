@@ -160,6 +160,42 @@ Examensignalen:
 - *Opdracht, transactie, FIFO/session, retry of dead-letter queue* → **Service Bus**.
 - *Goedkope eenvoudige achtergrondtaak* → **Queue Storage**.
 
+#### CNCF CloudEvents
+
+**CloudEvents** is een open CNCF-standaard voor de vorm en metadata van een event. In de stedenanalogie is het het **standaard meldingsformulier**: Event Grid is de alarmcentrale die meldingen routeert, terwijl CloudEvents vastlegt hoe zo'n melding wordt beschreven. CloudEvents is dus geen broker, queue of Azure-dienst.
+
+Een CloudEvent bevat altijd:
+
+- `specversion`: gebruikte CloudEvents-versie, meestal `1.0`;
+- `id`: unieke identificatie van de gebeurtenis binnen de bron;
+- `source`: waar de gebeurtenis vandaan komt;
+- `type`: wat voor gebeurtenis het is.
+
+Veelgebruikte optionele velden zijn `subject`, `time`, `datacontenttype` en `data`.
+
+```json
+{
+  "specversion": "1.0",
+  "id": "evt-123",
+  "source": "/city/traffic-camera/42",
+  "type": "com.city.vehicle.detected",
+  "subject": "truck-789",
+  "time": "2026-10-08T10:15:00Z",
+  "datacontenttype": "application/json",
+  "data": {
+    "speed": 82
+  }
+}
+```
+
+Azure Event Grid ondersteunt CloudEvents 1.0 en Microsoft raadt dit schema aan voor interoperabiliteit. Hetzelfde eventformaat kan daardoor ook buiten Azure worden verwerkt. Examenezelbrug: **CloudEvents = formaat van de melding; Event Grid = routering en bezorging van de melding.**
+
+Bronnen:
+
+- https://cloudevents.io/
+- https://github.com/cloudevents/spec/blob/main/cloudevents/spec.md
+- https://learn.microsoft.com/en-us/azure/event-grid/event-schema
+
 #### Azure Event Grid: mogelijkheden
 
 Event Grid is een volledig beheerde, schaalbare publish/subscribe-dienst voor event-driven systemen. Een publisher meldt een gebeurtenis en Event Grid routeert die naar één of meer geïnteresseerde subscribers.
