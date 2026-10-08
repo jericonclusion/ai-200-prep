@@ -1459,6 +1459,33 @@ Queuebericht → trigger → function-code → output binding → Cosmos DB
 
 **AI-200-toepassingen:** een MCP-tool aanbieden, documenten verwerken, een queue consumer bouwen, AI- of databaseacties orkestreren en op events reageren.
 
+#### Durable activities: at-least-once en idempotency
+
+Een Durable Functions-**activity** heeft een **at-least-once** uitvoeringsgarantie. De activity kan haar externe actie al hebben voltooid, terwijl de host crasht voordat Durable Functions het resultaat in de orchestration history vastlegt. De runtime ziet dan geen bevestigde voltooiing en kan dezelfde activity opnieuw uitvoeren.
+
+```text
+Activity schrijft resultaten/claim-123.json
+→ host crasht vóór registratie van "klaar"
+→ Durable Functions probeert opnieuw
+→ activity probeert dezelfde blob opnieuw te schrijven
+```
+
+Maak zulke activities **idempotent**: één of meerdere identieke uitvoeringen leveren hetzelfde zakelijke eindresultaat op.
+
+- Geef de operatie een **stabiele operation ID**, bijvoorbeeld `claim-123`.
+- Gebruik die ID als unieke blobnaam of databasesleutel.
+- Maak het object met een conditionele write: alleen als het nog niet bestaat, bijvoorbeeld Blob Storage `If-None-Match: *` of zonder overwrite.
+- Bestaat het resultaat al, lees dat resultaat en retourneer het alsof deze poging het zelf heeft gemaakt.
+
+Een nieuwe UUID per retry is juist fout: iedere poging krijgt dan een andere naam en maakt een extra resultaat. **Orchestrator replay** voorkomt evenmin dubbele externe writes; replay reconstrueert de workflowstatus, maar kan een niet-geregistreerde activity-uitvoering niet bewijzen of terugdraaien.
+
+**Examenregel:** zie je *activity succeeded, host crashed before completion was recorded*? Denk **at-least-once → stable operation ID → conditional write/deduplication → idempotent activity**.
+
+Bronnen:
+
+- https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-types-features-overview
+- https://learn.microsoft.com/en-us/azure/azure-functions/functions-idempotent
+
 #### HTTP-trigger: authorization level en access keys
 
 Het `auth_level` van een **HTTP-trigger** bepaalt welke Functions-key de caller moet meesturen. Dit geldt niet voor bijvoorbeeld een Timer-, Queue- of Service Bus-trigger; die gebruiken hun eigen verbinding en identiteit.
