@@ -447,6 +447,15 @@ sales/
 - Hierdoor ontstaan **ACID-transacties**, schema enforcement/evolution, `MERGE`/upserts, consistente batch- en streamingverwerking en **time travel**.
 - Oude bestanden maken time travel mogelijk totdat onderhoud zoals `VACUUM` ze definitief verwijdert. Verwijder of wijzig Delta-Parquetbestanden niet handmatig buiten Delta om, want dan klopt de transactielog niet meer.
 
+**ACID** beschrijft vier garanties voor betrouwbare transacties:
+
+- **Atomicity:** alle stappen slagen samen of worden allemaal teruggedraaid. Bij €100 overboeken moeten zowel *€100 van rekening A af* als *€100 bij rekening B erbij* slagen.
+- **Consistency:** de transactie brengt de data van één geldige toestand naar een andere geldige toestand en respecteert ingestelde regels en constraints.
+- **Isolation:** gelijktijdige transacties zien of veroorzaken geen half uitgevoerde tussenstand; het resultaat gedraagt zich alsof transacties voldoende van elkaar gescheiden zijn uitgevoerd.
+- **Durability:** na een succesvolle commit blijft het resultaat bewaard, ook na een proces- of systeemstoring.
+
+Ezelsbrug: **Alles, Correct, Individueel, Duurzaam.** Bij Delta Lake zorgt de transactielog ervoor dat readers een complete oude of complete nieuwe tabelversie zien en geen gedeeltelijk gecommitteerde wijziging.
+
 De vaak genoemde **medallion architecture** is een aanbevolen datapatroon boven Delta Lake en geen verplicht onderdeel van het Delta-bestandsformaat:
 
 ```text
