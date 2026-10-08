@@ -143,6 +143,54 @@
 
 Ezelsbrug: **Service Bus = doe deze taak; Event Grid = dit is gebeurd; Event Hubs = hier komt een datastroom.**
 
+#### Azure Event Grid: mogelijkheden
+
+Event Grid is een volledig beheerde, schaalbare publish/subscribe-dienst voor event-driven systemen. Een publisher meldt een gebeurtenis en Event Grid routeert die naar één of meer geïnteresseerde subscribers.
+
+```text
+Event source → topic → event subscription + filter → handler
+```
+
+- **Event source/publisher:** Azure-dienst, eigen applicatie, partner-SaaS of MQTT-client die een event publiceert.
+- **Topic:** ingang en logisch kanaal voor events. Een system topic vertegenwoordigt events uit een Azure-resource; een custom topic ontvangt eigen applicatie-events; partner topics ontvangen partner-SaaS-events. Namespace topics ondersteunen flexibele push/pull-consumptie.
+- **Event subscription:** bepaalt welke events worden geselecteerd, naar welke bestemming ze gaan en hoe delivery/retry werkt.
+- **Handler/subscriber:** bijvoorbeeld Azure Functions, Logic Apps, webhook, Event Hubs of een ondersteunde messagingbestemming, afhankelijk van topic- en deliverytype.
+
+Praktische toepassingen:
+
+- Reageren op `BlobCreated` en een Azure Function starten voor document-, beeld- of AI-verwerking.
+- Meerdere systemen tegelijk informeren over één gebeurtenis (**fan-out**), bijvoorbeeld voorraad, facturatie en notificaties na een bestelling.
+- Azure-resourcewijzigingen of lifecycle-events verwerken voor automation, auditing en governance.
+- Eigen domeinevents publiceren, zoals `CustomerRegistered` of `ModelTrainingCompleted`.
+- Partner-events uit SaaS-systemen ontvangen.
+- IoT- en apparaatcommunicatie via de MQTT-broker in Event Grid namespaces en MQTT-data doorsturen naar Azure-diensten of webhooks.
+
+Belangrijke mogelijkheden:
+
+- **Filtering:** selecteer op event type, subject en event-data-attributen zodat handlers alleen relevante events ontvangen.
+- **Push delivery:** Event Grid stuurt het event direct naar het geconfigureerde endpoint; geschikt voor snel reageren zonder polling.
+- **Pull delivery:** een consumer haalt events op zijn eigen tempo op; beschikbaar voor namespace topics en nuttig als de consumer niet altijd actief of stabiel is.
+- **CloudEvents 1.0:** gestandaardiseerd eventformaat voor interoperabiliteit.
+- **Retries en dead-lettering:** bij tijdelijke deliveryfouten gebruikt push delivery retries met backoff. Configureer een dead-letterbestemming als niet-afgeleverde events bewaard moeten blijven; dit staat niet automatisch aan.
+- **Beveiliging:** Entra ID/RBAC, managed identity en netwerkopties zoals private endpoints zijn beschikbaar waar het gebruikte Event Grid-model dit ondersteunt.
+
+Betrouwbaarheidsregels:
+
+- Delivery is in het algemeen **at least once**; een handler moet idempotent zijn omdat hetzelfde event meer dan één keer kan aankomen.
+- Eventvolgorde is niet gegarandeerd.
+- Stop grote bestanden niet in het event. Stuur compacte metadata en een verwijzing, bijvoorbeeld de URI van een blob; laat de handler de echte data ophalen.
+- Event Grid voert de bedrijfsactie niet zelf uit. Het routeert de melding naar code of een andere dienst die de actie uitvoert.
+
+Gebruik Event Grid niet als vervanging voor alles: betrouwbare opdrachten en transactieworkflows passen bij **Service Bus**; grote replayable telemetriestromen bij **Event Hubs**; langdurige dataopslag bij Storage of een database.
+
+Bronnen:
+
+- https://learn.microsoft.com/en-us/azure/event-grid/overview
+- https://learn.microsoft.com/en-us/azure/event-grid/concepts
+- https://learn.microsoft.com/en-us/azure/event-grid/namespace-push-delivery-overview
+- https://learn.microsoft.com/en-us/azure/event-grid/pull-delivery-overview
+- https://learn.microsoft.com/en-us/azure/event-grid/namespace-delivery-retry
+
 ### AMQP 1.0
 
 **AMQP = Advanced Message Queuing Protocol.** Het is een open, gestandaardiseerd en binair netwerkprotocol voor asynchrone, veilige en betrouwbare berichtenoverdracht. AMQP is geen queue of Azure-dienst: het beschrijft hoe een client en een messagingdienst berichten en bevestigingen over de netwerkverbinding uitwisselen.
