@@ -116,12 +116,27 @@
 - Verwijderingsbescherming:
   - **Soft delete** staat voor nieuwe vaults standaard aan en kan daarna niet worden uitgezet. Verwijderde vaults en objecten blijven gedurende een ingestelde bewaartermijn van 7–90 dagen herstelbaar; standaard is dit 90 dagen.
   - **Purge protection** is een aparte instelling en staat niet standaard aan. Na inschakeling kan niemand, ook een administrator of Microsoft niet, een soft-deleted object vóór het einde van de bewaartermijn permanent purgen. Gebruik dit voor productie en zeker bij customer-managed encryption keys.
+- Rotatie en dual credentials:
+  - **Rotatie** vervangt periodiek een credential door een nieuwe waarde, zodat een gelekte credential maar beperkt bruikbaar blijft.
+  - Bij **dual credentials** ondersteunt de achterliggende dienst twee geldige credentials, bijvoorbeeld `key1` en `key2`. De applicatie gebruikt `key1` terwijl `key2` veilig wordt vernieuwd. Daarna haalt de applicatie `key2` op en kan `key1` worden vernieuwd. Daardoor blijft steeds minstens één credential geldig en is rotatie zonder of met minimale downtime mogelijk.
+
+    ```text
+    App gebruikt key1 → vernieuw inactieve key2 → sla key2 op als nieuwe secretversie
+                    → app schakelt over op key2 → vernieuw daarna key1
+    ```
+
+  - Bij Azure Storage kan een `SecretNearExpiry`-event uit Key Vault via Event Grid een Azure Function starten. Die Function regenereert de inactieve Storage-accountkey en schrijft deze als nieuwe versie van het secret naar Key Vault.
+  - Key Vault roteert een willekeurig wachtwoord of API-secret niet vanzelf: automatisering moet zowel de credential in het bronsysteem als de secretversie in Key Vault aanpassen. Key Vault-cryptografische keys ondersteunen wel eigen rotation policies.
+  - Gebruik waar mogelijk een managed identity. Dan is er geen gedeelde key of wachtwoord dat de applicatie zelf moet ophalen en roteren.
+  - **Examenregel:** twee gelijktijdig geldige credentials → wissel de inactieve credential om voor zero/minimal-downtime rotation; slechts één credential → houd rekening met een kort omschakelvenster.
 - Bronnen:
   - https://learn.microsoft.com/en-us/azure/key-vault/general/about-keys-secrets-certificates
   - https://learn.microsoft.com/en-us/azure/key-vault/general/overview
   - https://learn.microsoft.com/en-us/azure/key-vault/general/rbac-guide
   - https://learn.microsoft.com/en-us/azure/key-vault/general/key-vault-recovery
   - https://learn.microsoft.com/en-us/security/zero-trust/sfi/safe-secrets-standard
+  - https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation-dual
+  - https://learn.microsoft.com/en-us/azure/key-vault/general/autorotation
 - Monitoring:
   - **Azure Monitor** is het overkoepelende platform voor metrics, logs, alerts en observability.
   - **Application Insights** is de monitoringtool/APM binnen Azure Monitor voor applicaties: requests, prestaties, fouten, traces en afhankelijkheden.
