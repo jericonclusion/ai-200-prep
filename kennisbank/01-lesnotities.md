@@ -140,8 +140,25 @@
 | **Service Bus** | Betrouwbare opdracht: *voer dit werk uit*. | Orders, betalingen en workflows met queues, retries, dead-lettering, transactions, duplicate detection of geordende sessions. |
 | **Event Grid** | Discrete melding: *dit is gebeurd*. | Reageren op `BlobCreated`, resourcewijzigingen en events naar meerdere handlers routeren en filteren. |
 | **Event Hubs** | Grote, geordende en tijdelijk bewaarde eventstream. | Telemetrie, logs, clickstreams en IoT-data die consumers vanaf een offset kunnen lezen en opnieuw afspelen. |
+| **Queue Storage** | Eenvoudige en goedkope takenwachtrij. | Veel eenvoudige achtergrondtaken waarvoor de geavanceerde functies van Service Bus niet nodig zijn. |
 
 Ezelsbrug: **Service Bus = doe deze taak; Event Grid = dit is gebeurd; Event Hubs = hier komt een datastroom.**
+
+#### Stedenanalogie
+
+- **Event Grid = de alarmcentrale.** Er gebeurt iets in de stad, zoals brand of een geopende deur. De centrale filtert de melding en stuurt haar direct naar de juiste diensten. Kies dit voor snelle reacties, routering en fan-out.
+- **Event Hubs = de opslag van alle verkeerscamera's.** Een continue stroom verkeersbewegingen wordt tijdelijk in een gepartitioneerd logboek vastgelegd. Politie, gemeente en een AI-model kunnen ieder via een eigen consumer group in hun eigen tempo lezen en later opnieuw beginnen vanaf een offset. Kies dit voor veel telemetrie, historie en replay.
+- **Service Bus = gemeentelijke werkbonnen.** Een concrete opdracht, zoals een betaling verwerken of een lantaarnpaal repareren, blijft wachten totdat een worker haar afhandelt. Kies dit voor betrouwbare bedrijfsopdrachten, acknowledgements, retries, dead-lettering, transactions of geordende sessions.
+- **Queue Storage = het eenvoudige nummertjesapparaat.** Taken wachten goedkoop in een rij totdat een worker ze oppakt. Kies dit als een eenvoudige work queue voldoende is.
+
+**Nuance Event Grid versus Event Hubs:** beide verwerken events en kunnen daarom aan de invoerkant op elkaar lijken. Ze zijn niet volledig uitwisselbaar. Event Grid optimaliseert voor het selecteren en bezorgen van afzonderlijke gebeurtenissen aan handlers. Event Hubs bewaart een geordende eventstream per partition, waarna consumers hun eigen positie bijhouden en events opnieuw kunnen lezen. Event Grid kan bovendien Event Hubs als bestemming gebruiken.
+
+Examensignalen:
+
+- *Filter, route, fan-out, resource event of direct reageren* → **Event Grid**.
+- *Partitions, offsets, consumer groups, replay of veel telemetrie* → **Event Hubs**.
+- *Opdracht, transactie, FIFO/session, retry of dead-letter queue* → **Service Bus**.
+- *Goedkope eenvoudige achtergrondtaak* → **Queue Storage**.
 
 #### Azure Event Grid: mogelijkheden
 
@@ -185,6 +202,7 @@ Gebruik Event Grid niet als vervanging voor alles: betrouwbare opdrachten en tra
 
 Bronnen:
 
+- https://learn.microsoft.com/en-us/azure/event-grid/compare-messaging-services
 - https://learn.microsoft.com/en-us/azure/event-grid/overview
 - https://learn.microsoft.com/en-us/azure/event-grid/concepts
 - https://learn.microsoft.com/en-us/azure/event-grid/namespace-push-delivery-overview
