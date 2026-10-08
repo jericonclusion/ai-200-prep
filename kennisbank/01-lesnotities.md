@@ -182,11 +182,31 @@ Waarom AMQP geschikt is voor messaging:
 
 AMQP verandert het servicemodel niet: Service Bus blijft een broker met queues/topics en Event Hubs blijft een partitioned eventlog waarvan consumers vanaf offsets lezen. Kies eerst de juiste Azure-dienst en bepaal daarna zo nodig de transportmodus.
 
+#### `ServiceBusMessageBatch`
+
+Een `ServiceBusMessageBatch` verzamelt meerdere afzonderlijke Service Bus-berichten en verstuurt ze via één SDK-aanroep. Dit vermindert de netwerkoverhead en verhoogt doorgaans de verzenddoorvoer. De receiver ontvangt daarna nog steeds losse berichten; de batch maakt er geen enkel groot bedrijfsbericht van.
+
+```python
+from azure.servicebus import ServiceBusMessage
+
+batch = sender.create_message_batch()
+batch.add_message(ServiceBusMessage("Order 1"))
+batch.add_message(ServiceBusMessage("Order 2"))
+sender.send_messages(batch)
+```
+
+- Maak een batch via `sender.create_message_batch()` zodat de SDK de toegestane maximale grootte kent.
+- `add_message()` telt body, headers, properties en protocoloverhead mee.
+- Als het volgende bericht niet meer past, verstuur je de volle batch en maak je een nieuwe.
+- Een individueel bericht dat zelf al te groot is, kan ook niet in een lege batch en moet worden verkleind of extern worden opgeslagen.
+- Batchen optimaliseert verzenden; verwerking, locks, retries en settlement blijven per afzonderlijk bericht relevant.
+
 - Bronnen:
   - https://learn.microsoft.com/en-us/azure/event-grid/compare-messaging-services
   - https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide
   - https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-overview
   - https://learn.microsoft.com/en-us/azure/event-hubs/troubleshooting-guide
+  - https://learn.microsoft.com/en-us/python/api/azure-servicebus/azure.servicebus.servicebusmessagebatch?view=azure-python
   - https://docs.oasis-open.org/amqp/core/v1.0/amqp-core-overview-v1.0.html
 
 - **ADLS = Azure Data Lake Storage.** Tegenwoordig bedoelt men meestal ADLS Gen2: Blob Storage met *hierarchical namespace*.
