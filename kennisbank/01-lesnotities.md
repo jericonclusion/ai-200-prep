@@ -106,9 +106,22 @@
 - Ezelsbrug: **secret bewaar en lees je; key laat je rekenen; certificate bewijst identiteit.**
 - Geef een managed identity via Azure RBAC alleen toegang tot het benodigde object en de benodigde bewerking. Een applicatie die alleen een secret leest, heeft geen beheer- of cryptografische sleutelrechten nodig.
 - Objecten zijn geversioneerd. Een URI zonder versie verwijst normaal naar de huidige versie; met een versie kun je een specifieke versie opvragen.
+- Organisatie en toegangsbeheer:
+  - Gebruik bij voorkeur een **aparte vault per applicatie, omgeving en waar nodig regio**, bijvoorbeeld `orders-dev`, `orders-test` en `orders-prod`. Zo geeft een foutieve roltoewijzing of gecompromitteerde identiteit niet direct toegang tot geheimen van andere apps en omgevingen: de **blast radius** blijft kleiner.
+  - Ken rollen normaal toe op vaultniveau. Rollen per individueel object zijn mogelijk, maar Microsoft raadt die alleen aan voor uitzonderingen waarin één object apart gedeeld moet worden.
+  - Geef de managed identity van een applicatie die alleen secrets hoeft op te halen de rol **Key Vault Secrets User**. Deze kan secretinhoud lezen, maar niet wijzigen.
+  - Geef beheerders of operators die secrets moeten maken, wijzigen, herstellen of verwijderen **Key Vault Secrets Officer**. Deze rol mag vrijwel alle secretbewerkingen uitvoeren, maar geen RBAC-permissions beheren.
+  - **Key Vault Contributor** beheert de vault als Azure-resource via het control plane, maar geeft op zichzelf geen toegang tot de inhoud van secrets, keys en certificates.
+  - Pas least privilege toe: scheid runtime-leestoegang van operationeel beheer en van het beheren van roltoewijzingen.
+- Verwijderingsbescherming:
+  - **Soft delete** staat voor nieuwe vaults standaard aan en kan daarna niet worden uitgezet. Verwijderde vaults en objecten blijven gedurende een ingestelde bewaartermijn van 7–90 dagen herstelbaar; standaard is dit 90 dagen.
+  - **Purge protection** is een aparte instelling en staat niet standaard aan. Na inschakeling kan niemand, ook een administrator of Microsoft niet, een soft-deleted object vóór het einde van de bewaartermijn permanent purgen. Gebruik dit voor productie en zeker bij customer-managed encryption keys.
 - Bronnen:
   - https://learn.microsoft.com/en-us/azure/key-vault/general/about-keys-secrets-certificates
   - https://learn.microsoft.com/en-us/azure/key-vault/general/overview
+  - https://learn.microsoft.com/en-us/azure/key-vault/general/rbac-guide
+  - https://learn.microsoft.com/en-us/azure/key-vault/general/key-vault-recovery
+  - https://learn.microsoft.com/en-us/security/zero-trust/sfi/safe-secrets-standard
 - Monitoring:
   - **Azure Monitor** is het overkoepelende platform voor metrics, logs, alerts en observability.
   - **Application Insights** is de monitoringtool/APM binnen Azure Monitor voor applicaties: requests, prestaties, fouten, traces en afhankelijkheden.
