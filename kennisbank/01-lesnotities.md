@@ -880,7 +880,9 @@ Ezelsbrug: **de PVC zegt hoeveel opslag nodig is; de StorageClass zegt welk soor
 - **LRS – Locally Redundant Storage:** drie synchrone kopieën binnen één fysiek datacenter in de primaire regio. Goedkoopst; beschermt tegen disk-, server- en rackuitval, maar niet tegen verlies van het hele datacenter.
 - **ZRS – Zone-Redundant Storage:** synchrone kopieën verdeeld over drie of meer availability zones binnen dezelfde regio. Beschermt tegen uitval van een volledig datacenter/zone; lage latency en geen tweede regio.
 - **GRS – Geo-Redundant Storage:** LRS in de primaire regio plus asynchrone replicatie naar een tweede, gekoppelde regio, waar opnieuw LRS wordt gebruikt. Beschermt de data tegen regionale uitval, maar vereist failover voordat de secundaire kopie normaal toegankelijk wordt.
-- **RA-GRS – Read-Access GRS:** GRS met daarnaast permanente read-only toegang tot het secundaire endpoint.
+- **RA-GRS – Read-Access GRS:** GRS met daarnaast permanente read-only toegang tot het secundaire endpoint. Het primaire endpoint blijft read/write; naar de secundaire regio kan niet worden geschreven.
+- Voor Blob Storage heeft het secundaire endpoint bijvoorbeeld de vorm `https://<account>-secondary.blob.core.windows.net`. De applicatie of SDK moet dit endpoint bewust gebruiken of voor secundaire reads configureren; RA stuurt requests niet automatisch naar de tweede regio.
+- Omdat geo-replicatie asynchroon is, kan een read uit het secundaire endpoint iets oudere data teruggeven. Read access verhoogt de leesbeschikbaarheid, maar garandeert geen actuele kopie of automatische failover.
 - **GZRS – Geo-Zone-Redundant Storage:** ZRS in de primaire regio plus asynchrone geo-replicatie naar LRS in een tweede regio. Beschermt zowel tegen zone- als regio-uitval.
 - **RA-GZRS:** GZRS met read-only toegang tot de secundaire regio; hoogste beschikbaarheids-/duurzaamheidsoptie, maar doorgaans ook het duurst.
 - Geo-replicatie is asynchroon. Bij een plotselinge regionale ramp kan de laatste nog niet gerepliceerde data verloren gaan; redundantie betekent dus niet automatisch RPO = 0.
