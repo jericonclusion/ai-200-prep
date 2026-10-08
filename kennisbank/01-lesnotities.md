@@ -252,11 +252,53 @@ Veelgebruikte optionele velden zijn `subject`, `time`, `datacontenttype` en `dat
 
 Azure Event Grid ondersteunt CloudEvents 1.0 en Microsoft raadt dit schema aan voor interoperabiliteit. Hetzelfde eventformaat kan daardoor ook buiten Azure worden verwerkt. Examenezelbrug: **CloudEvents = formaat van de melding; Event Grid = routering en bezorging van de melding.**
 
+##### `source`, `type` en `subject`
+
+| Attribuut | Vraag die het beantwoordt | Voorbeeld |
+|---|---|---|
+| `source` | **Waar kwam het event vandaan?** | `/ai/claims-pipeline` |
+| `type` | **Wat voor gebeurtenis was het?** | `com.fabrikam.stage.completed` |
+| `subject` | **Over welk specifiek onderdeel of object ging het?** | `/stages/embeddings/jobs/batch-42.json` |
+
+`source` en `type` zijn verplicht; `subject` is optioneel. Het subject is juist bedoeld om de interne structuur binnen een source filterbaar te maken zonder dat Event Grid de inhoud van `data` hoeft te begrijpen.
+
+```json
+{
+  "specversion": "1.0",
+  "id": "evt-456",
+  "source": "/ai/claims-pipeline",
+  "type": "com.fabrikam.stage.completed",
+  "subject": "/stages/embeddings/jobs/batch-42.json",
+  "data": {
+    "durationMs": 840
+  }
+}
+```
+
+Een Event Grid-subscription kan dan bijvoorbeeld gebruiken:
+
+```json
+{
+  "includedEventTypes": ["com.fabrikam.stage.completed"],
+  "subjectBeginsWith": "/stages/embeddings/",
+  "subjectEndsWith": ".json"
+}
+```
+
+- `includedEventTypes` kiest de **soort gebeurtenis** via `type`.
+- `subjectBeginsWith` kiest een hiërarchische tak of padprefix.
+- `subjectEndsWith` kiest bijvoorbeeld een bestandsextensie of vaste padsuffix.
+- Advanced filters kunnen aanvullende metadata of velden onder `data` beoordelen.
+
+Nuance: een producer kan een pipelinefase in de praktijk ook verwerken in `source` of `type`, afhankelijk van het domeinmodel. In een examenvraag wijzen de woorden **path-based**, **prefix** en **suffix** echter op `subject`, omdat Event Grid daarvoor speciale subjectfilters heeft.
+
 Bronnen:
 
 - https://cloudevents.io/
 - https://github.com/cloudevents/spec/blob/main/cloudevents/spec.md
 - https://learn.microsoft.com/en-us/azure/event-grid/event-schema
+- https://learn.microsoft.com/en-us/azure/event-grid/event-filtering
+- https://learn.microsoft.com/en-us/azure/event-grid/how-to-filter-events
 
 #### Azure Event Grid: mogelijkheden
 
