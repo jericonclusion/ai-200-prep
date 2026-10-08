@@ -132,6 +132,63 @@
 - Voorbeeld: bij kritieke bank- of betalingstransacties kan Service Bus gerechtvaardigd zijn voor betrouwbare overdracht naar een back-end of mainframe, vanwege sessions/FIFO, transactions, duplicate detection, retries en dead-lettering.
 - Nuance: Service Bus verwerkt de geldtransactie niet zelf; het banksysteem doet dat. De applicatie moet daarnaast idempotent zijn en dubbele boekingen voorkomen.
 - Keuzeregel: gebruik de eenvoudigste queue die aan de eisen voldoet. Niet ieder bericht vereist de extra functies en kosten van Service Bus.
+
+### Azure messaging kiezen
+
+| Dienst | Betekenis | Typische toepassing |
+|---|---|---|
+| **Service Bus** | Betrouwbare opdracht: *voer dit werk uit*. | Orders, betalingen en workflows met queues, retries, dead-lettering, transactions, duplicate detection of geordende sessions. |
+| **Event Grid** | Discrete melding: *dit is gebeurd*. | Reageren op `BlobCreated`, resourcewijzigingen en events naar meerdere handlers routeren en filteren. |
+| **Event Hubs** | Grote, geordende en tijdelijk bewaarde eventstream. | Telemetrie, logs, clickstreams en IoT-data die consumers vanaf een offset kunnen lezen en opnieuw afspelen. |
+
+Ezelsbrug: **Service Bus = doe deze taak; Event Grid = dit is gebeurd; Event Hubs = hier komt een datastroom.**
+
+### AMQP 1.0
+
+**AMQP = Advanced Message Queuing Protocol.** Het is een open, gestandaardiseerd en binair netwerkprotocol voor asynchrone, veilige en betrouwbare berichtenoverdracht. AMQP is geen queue of Azure-dienst: het beschrijft hoe een client en een messagingdienst berichten en bevestigingen over de netwerkverbinding uitwisselen.
+
+Azure Service Bus en Event Hubs gebruiken AMQP 1.0 als primair protocol. De officiële Azure SDK's verbergen normaal de AMQP-details achter functies zoals `send`, `receive` en `complete`.
+
+```text
+Applicatie / Azure SDK
+        ↓ AMQP 1.0
+Service Bus queue/topic   of   Event Hubs-stream
+```
+
+Belangrijkste AMQP-begrippen:
+
+- **Connection:** de beveiligde netwerkverbinding tussen client en Azure.
+- **Session:** logisch communicatiekanaal binnen een connection; meerdere paden kunnen een netwerkverbinding delen.
+- **Link:** een eenrichtingspad voor een sender of receiver naar een node.
+- **Node:** het messagingdoel. In Service Bus kan dit een queue, topic, subscription of dead-letter-subqueue zijn.
+- **Frame:** binair protocolblok dat over de verbinding wordt verstuurd.
+- **Settlement/disposition:** sender en receiver leggen vast wat er met een transfer is gebeurd, bijvoorbeeld geaccepteerd of geweigerd. De SDK vertaalt dit naar bewerkingen zoals complete, abandon of dead-letter.
+- **Link credit:** de receiver geeft aan hoeveel berichten hij kan aannemen. Als het credit op is, stopt de sender tijdelijk; dit levert flow control/backpressure.
+
+Netwerkpoorten bij Azure Service Bus en Event Hubs:
+
+- **TCP 5671:** AMQP waarbij eerst TLS wordt opgezet.
+- **TCP 5672:** AMQP met een verplichte upgrade naar TLS; Azure vereist altijd TLS.
+- **TCP 443:** AMQP over WebSockets. Handig wanneer een firewall 5671/5672 blokkeert maar HTTPS-verkeer toestaat; dit geeft iets meer handshake- en protocoloverhead.
+- Bij Entra-authenticatie en bepaalde SDK-managementbewerkingen kan HTTPS/443 ook naast native AMQP nodig zijn.
+
+Waarom AMQP geschikt is voor messaging:
+
+- De verbinding kan langdurig openblijven, waardoor niet voor ieder bericht een nieuwe HTTP-request nodig is.
+- Het binaire protocol is efficiënt voor veel berichten.
+- Flow control voorkomt dat een snelle producer een consumer onbeperkt overspoelt.
+- Settlement geeft betrouwbare terugkoppeling over de aflevering.
+- Het protocol is platform- en taalneutraal.
+
+AMQP verandert het servicemodel niet: Service Bus blijft een broker met queues/topics en Event Hubs blijft een partitioned eventlog waarvan consumers vanaf offsets lezen. Kies eerst de juiste Azure-dienst en bepaal daarna zo nodig de transportmodus.
+
+- Bronnen:
+  - https://learn.microsoft.com/en-us/azure/event-grid/compare-messaging-services
+  - https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide
+  - https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-overview
+  - https://learn.microsoft.com/en-us/azure/event-hubs/troubleshooting-guide
+  - https://docs.oasis-open.org/amqp/core/v1.0/amqp-core-overview-v1.0.html
+
 - **ADLS = Azure Data Lake Storage.** Tegenwoordig bedoelt men meestal ADLS Gen2: Blob Storage met *hierarchical namespace*.
 - Hiermee organiseer je grote hoeveelheden ruwe en verwerkte data in echte mappen/bestanden en gebruik je fijnmazige ACL-rechten.
 - Typische toepassing: data lake voor analytics, machine learning en AI met bijvoorbeeld JSON-, CSV-, Parquet-, log-, beeld- en audiobestanden.
