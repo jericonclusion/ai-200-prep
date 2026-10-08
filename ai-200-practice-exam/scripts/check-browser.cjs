@@ -107,7 +107,28 @@ async function main() {
   await evaluate(`document.querySelector('#ack').click(); document.querySelector('#launch').click(); true`);
   await waitFor('document.querySelector(".top-count")?.textContent.includes("Question 1 of 20")', 'Quick assessment did not start');
 
-  for (let index = 0; index < 20; index++) {
+  await evaluate(`(() => {
+    const choice = document.querySelector('input[name="answer"]');
+    if (choice) choice.click();
+    else {
+      const selects = [...document.querySelectorAll('[data-match-index], [data-matrix-index]')];
+      if (selects.length) selects.forEach(select => { select.selectedIndex = 1; select.dispatchEvent(new Event('change', { bubbles: true })); });
+      else document.querySelector('[data-drag-choice]')?.click();
+    }
+    document.querySelector('#next').click();
+    return true;
+  })()`);
+  await waitFor('document.querySelector(".top-count")?.textContent.includes("Question 2 of 20")', 'Second question did not render before reload');
+  const savedSession = await evaluate(`(() => { const value=JSON.parse(localStorage.getItem('ai200-active-session-v1')||'null'); return value&&{current:value.state.current,answers:Object.keys(value.state.answers).length}; })()`);
+  assert.equal(savedSession.current,1);
+  assert.ok(savedSession.answers>=1);
+
+  await send('Page.reload');
+  await waitFor('!!document.querySelector("#resumeSession")', 'Resume-session prompt did not appear after reload');
+  await evaluate(`document.querySelector('#resumeSession').click(); true`);
+  await waitFor('document.querySelector(".top-count")?.textContent.includes("Question 2 of 20")', 'Saved session did not resume at question 2');
+
+  for (let index = 1; index < 20; index++) {
     await evaluate(`(() => {
       const choice = document.querySelector('input[name="answer"]');
       if (choice) { choice.click(); return true; }
@@ -137,7 +158,8 @@ async function main() {
       domains: document.querySelectorAll('.domain-table tbody tr').length,
       canRestart: !!document.querySelector('#again'),
       canPrint: !!document.querySelector('#print'),
-      history: JSON.parse(localStorage.getItem('ai200-history') || '[]').length
+      history: JSON.parse(localStorage.getItem('ai200-history') || '[]').length,
+      activeSession: localStorage.getItem('ai200-active-session-v1')
     };
   })()`, 'Results screen did not render');
   assert.match(summary.score, /^\d+$/);
@@ -146,6 +168,7 @@ async function main() {
   assert.ok(summary.domains >= 1);
   assert.ok(summary.canRestart && summary.canPrint);
   assert.equal(summary.history, 1);
+  assert.equal(summary.activeSession, null);
 
   const screenshot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, fromSurface: true });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));

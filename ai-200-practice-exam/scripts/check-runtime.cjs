@@ -30,7 +30,7 @@ for (const engine of ['dist', 'inline']) {
       const context = {
         window:{}, Math:math,
         document:{getElementById:element, querySelectorAll:()=>[], addEventListener:()=>{}, visibilityState:'visible'},
-        localStorage:{getItem:key=>storage.get(key)||null, setItem:(key,value)=>storage.set(key,value)},
+        localStorage:{getItem:key=>storage.get(key)||null, setItem:(key,value)=>storage.set(key,value), removeItem:key=>storage.delete(key)},
         setInterval:()=>1, clearInterval:()=>{}
       };
       vm.runInNewContext(read('dist/questions.js'), context);
@@ -51,6 +51,7 @@ for (const engine of ['dist', 'inline']) {
       const state = api.state();
       const questions = state.flat || state.qs;
       assert.equal(questions.length, total, `${engine}/${mode}`);
+      if (engine === 'dist') assert.ok(storage.has('ai200-active-session-v1'),`${mode}: active session is persisted`);
       if (engine === 'dist') assert.equal(element('app').innerHTML.includes('Take a break'),['exam','quick'].includes(mode),`${mode}: break control matches timed-session behavior`);
       if (engine === 'dist' && mode === 'exam') {
         assert.equal(questions.filter(q=>q.id.startsWith('INS')).length, 15, 'mixed official flow contains 15 instructor questions');
@@ -185,6 +186,7 @@ for (const engine of ['dist', 'inline']) {
       }
       api.finish();
       const markup = element(engine === 'dist' ? 'app' : 'ai200-screen').innerHTML;
+      if (engine === 'dist') assert.ok(!storage.has('ai200-active-session-v1'),`${mode}: submitted session is cleared`);
       assert.ok(markup.includes('1000'));
       assert.ok(markup.includes('Answer review'));
       assert.ok(!markup.includes('{state.comments'));

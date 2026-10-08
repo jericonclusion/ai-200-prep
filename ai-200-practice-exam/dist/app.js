@@ -4,6 +4,7 @@
   DOMAINS.sample="Instructor sample";
   const app=document.getElementById("app");
   const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const ACTIVE_SESSION_KEY="ai200-active-session-v1",SESSION_VERSION=1;
   let state=null,timerId=null,selectedMode="exam",selectedSource="mixed";
 
   const shuffle=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
@@ -15,6 +16,27 @@
   }
   const same=(a,b)=>Array.isArray(a)&&Array.isArray(b)?a.length===b.length&&a.every((v,i)=>v===b[i]):a===b;
   const fmt=t=>`${String(Math.floor(t/60)).padStart(2,"0")}:${String(t%60).padStart(2,"0")}`;
+  function clearSavedSession(){localStorage.removeItem(ACTIVE_SESSION_KEY)}
+  function loadSavedSession(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(ACTIVE_SESSION_KEY)||"null"),s=saved?.state;
+      if(saved?.version!==SESSION_VERSION||!s||!Array.isArray(s.sections)||!Array.isArray(s.flat)||!s.flat.length||!Number.isInteger(s.current)||s.current<0||s.current>=s.flat.length)throw new Error("Invalid saved session");
+      return saved;
+    }catch(error){clearSavedSession();return null}
+  }
+  function saveSession(){
+    if(!state||state.mode==="audio"||!Array.isArray(state.flat)||!state.flat.length)return;
+    try{localStorage.setItem(ACTIVE_SESSION_KEY,JSON.stringify({version:SESSION_VERSION,savedAt:Date.now(),selectedMode:state.mode,selectedSource,state}))}catch(error){console.warn("Unable to save the active session",error)}
+  }
+  function startTimer(){
+    clearInterval(timerId);if(!state?.seconds)return;
+    timerId=setInterval(()=>{if(!state)return;state.seconds=Math.max(0,state.seconds-1);const el=document.getElementById("timer");if(el)el.textContent=fmt(state.seconds);saveSession();if(state.seconds<=0){clearInterval(timerId);finish(true)}},1000);
+  }
+  function resumeSession(saved){
+    selectedMode=saved.selectedMode||saved.state.mode||"study";selectedSource=saved.selectedSource||"mixed";state=saved.state;
+    state.answers=state.answers||{};state.flags=state.flags||{};state.comments=state.comments||{};state.checked=state.checked||{};state.lockedBefore=Number.isInteger(state.lockedBefore)?state.lockedBefore:-1;
+    startTimer();renderQuestion();
+  }
   function pick(domain,n){return shuffle(QUESTION_BANK.filter(x=>x.domain===domain)).slice(0,n)}
   function groupInstructorQuestions(input){
     const selected=[...input].sort((a,b)=>(a.number||0)-(b.number||0));
@@ -23,11 +45,13 @@
   }
 
   function welcome(){
-    clearInterval(timerId);state=null;
+    clearInterval(timerId);const savedSession=loadSavedSession();state=null;
     const history=JSON.parse(localStorage.getItem("ai200-history")||"[]");
+    const savedState=savedSession?.state,savedAnswered=savedState?savedState.flat.filter(q=>{const value=savedState.answers?.[q.id];return Array.isArray(value)?value.length>0:value!==undefined&&value!==null&&value!==""}).length:0;
     app.innerHTML=`<main class="welcome"><section class="welcome-card">
       <header class="welcome-head"><div class="eyebrow">Microsoft-style practice environment</div><h1>AI-200 Exam Simulator</h1><p>Practice the decisions, timing, navigation, and question patterns used in role-based Microsoft certification exams.</p></header>
       <div class="welcome-body">
+        ${savedSession?`<div class="notice"><h2>Continue your previous session?</h2><p><strong>${esc(savedState.mode)}</strong> · question ${savedState.current+1} of ${savedState.flat.length} · ${savedAnswered} answered${savedState.seconds?` · ${fmt(savedState.seconds)} remaining`:""}</p><p class="muted">Saved ${esc(new Date(savedSession.savedAt).toLocaleString())}</p><div class="actions"><button class="secondary" id="discardSession">Start a new session</button><button class="primary" id="resumeSession">Continue previous session</button></div></div>`:""}
         <h2>Choose a session</h2>
         <div class="notice"><strong>Exam-like, not an official Microsoft exam.</strong> The full simulation uses Microsoft's 100-minute no-lab profile and 50 questions within the usual 40–60 range. The real introduction screen confirms the actual sections and whether a lab is present.</div>
         <div class="mode-grid">
@@ -47,6 +71,8 @@
     document.querySelectorAll(".mode-card").forEach(b=>b.onclick=()=>{document.querySelectorAll(".mode-card").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");selectedMode=b.dataset.mode;if(selectedMode==="audio")startAudio()});
     document.getElementById("examSource").onchange=e=>selectedSource=e.target.value;
     document.getElementById("start").onclick=()=>selectedMode==="audio"?startAudio():showInstructions();
+    const resume=document.getElementById("resumeSession");if(resume)resume.onclick=()=>resumeSession(savedSession);
+    const discard=document.getElementById("discardSession");if(discard)discard.onclick=()=>{clearSavedSession();welcome()};
   }
 
   function showInstructions(){
@@ -71,6 +97,7 @@
   }
 
   function startSession(){
+    clearSavedSession();
     let sections=[];let seconds=0;
     if(selectedMode==="exam"){
       const caseStudy=CASES[Math.floor(Math.random()*CASES.length)];
@@ -96,7 +123,7 @@
     sections=sections.map(section=>({...section,questions:section.questions.map(question=>window.AI200_DATA.prepareQuestion(question,shuffle))}));
     const flat=sections.flatMap((s,si)=>s.questions.map((x,qi)=>({...x,sectionIndex:si,indexInSection:qi,sectionTitle:s.title})));
     state={mode:selectedMode,sections,flat,current:0,answers:{},flags:{},comments:{},lockedBefore:-1,seconds,started:Date.now(),checked:{}};
-    if(seconds){timerId=setInterval(()=>{state.seconds--;const el=document.getElementById("timer");if(el)el.textContent=fmt(state.seconds);if(state.seconds<=0){clearInterval(timerId);finish(true)}},1000)}
+    startTimer();
     renderQuestion();
   }
 
@@ -113,7 +140,7 @@
       <div class="side-tools"><button id="learn">▤ Microsoft Learn</button>${state.mode==="exam"||state.mode==="quick"?'<button id="break">Ⅱ Take a break</button>':""}<button id="overview">☰ Exam overview</button></div></aside>
       <main class="workspace">${questionMarkup(qn,section)}</main></div>
       <footer class="bottombar"><label class="flag"><input id="flag" type="checkbox" ${state.flags[qn.id]?"checked":""} ${qn.locked?"disabled":""}> Mark for review</label><button class="quiet" id="comment">Comment</button><div class="bottom-spacer"></div><button class="secondary" id="prev" ${!canGo(state.current-1)?"disabled":""}>Previous</button>${state.mode==="study"||state.mode==="sample"?'<button class="secondary" id="check">Check answer</button>':""}<button class="primary" id="next">${state.current===state.flat.length-1?"Finish":"Next"}</button></footer></div>`;
-    bindQuestion(qn);
+    bindQuestion(qn);saveSession();
   }
 
   function navDot(qn,i){
@@ -187,7 +214,7 @@
     document.querySelectorAll("[data-placed-index]").forEach(choice=>{choice.ondragstart=()=>dragChoice=(state.answers[qn.id]||[])[+choice.dataset.placedIndex];choice.onclick=()=>{const a=[...(state.answers[qn.id]||[])];a.splice(+choice.dataset.placedIndex,1);state.answers[qn.id]=a;renderQuestion()}});
     document.querySelectorAll("[data-match-index]").forEach(select=>select.onchange=e=>{const a=[...(state.answers[qn.id]||Array(qn.rows.length).fill(""))];a[+select.dataset.matchIndex]=e.target.value;state.answers[qn.id]=a;renderQuestion()});
     document.querySelectorAll("[data-matrix-index]").forEach(select=>select.onchange=e=>{const a=[...(state.answers[qn.id]||Array(qn.rows.length).fill(""))];a[+select.dataset.matrixIndex]=e.target.value;state.answers[qn.id]=a;renderQuestion()});
-    const sampleResponse=document.getElementById("sampleResponse");if(sampleResponse)sampleResponse.oninput=e=>state.answers[qn.id]=e.target.value;
+    const sampleResponse=document.getElementById("sampleResponse");if(sampleResponse)sampleResponse.oninput=e=>{state.answers[qn.id]=e.target.value;saveSession()};
     document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{if(qn.caseData)qn.activeCaseTab=b.dataset.tab;else sectionFor(qn).activeTab=b.dataset.tab;renderQuestion()});
     document.querySelectorAll("[data-index]").forEach(b=>b.onclick=()=>{state.current=+b.dataset.index;renderQuestion()});
     document.getElementById("flag").onchange=e=>{state.flags[qn.id]=e.target.checked;renderQuestion()};
@@ -223,11 +250,11 @@
 
   function commentModal(qn){
     app.insertAdjacentHTML("beforeend",`<div class="modal-backdrop" id="modal"><section class="modal"><h2>Comment on question</h2><p>Your comment is stored only in this browser.</p><textarea id="commentText" rows="6" style="width:100%;padding:10px">${esc(state.comments[qn.id]||"")}</textarea><div class="actions"><button class="secondary" id="cancel">Cancel</button><button class="primary" id="saveComment">Save comment</button></div></section></div>`);
-    document.getElementById("cancel").onclick=()=>document.getElementById("modal").remove();document.getElementById("saveComment").onclick=()=>{state.comments[qn.id]=document.getElementById("commentText").value;document.getElementById("modal").remove()};
+    document.getElementById("cancel").onclick=()=>document.getElementById("modal").remove();document.getElementById("saveComment").onclick=()=>{state.comments[qn.id]=document.getElementById("commentText").value;saveSession();document.getElementById("modal").remove()};
   }
   function breakModal(){
     app.insertAdjacentHTML("beforeend",`<div class="modal-backdrop" id="modal"><section class="modal"><h2>Take a break</h2><p>The exam clock continues. You will not be able to return to any question you have already viewed, including unanswered or flagged questions.</p><div class="actions"><button class="secondary" id="cancel">Return to exam</button><button class="primary" id="startBreak">Start break</button></div></section></div>`);
-    document.getElementById("cancel").onclick=()=>document.getElementById("modal").remove();document.getElementById("startBreak").onclick=()=>{state.lockedBefore=Math.max(state.lockedBefore,state.current);document.getElementById("modal").innerHTML=`<section class="modal"><h2>Break in progress</h2><p>The clock is still running.</p><div class="timer">${fmt(state.seconds)}</div><div class="actions"><button class="primary" id="resume">Resume exam</button></div></section>`;document.getElementById("resume").onclick=()=>{if(state.current<state.flat.length-1)state.current++;renderQuestion()}};
+    document.getElementById("cancel").onclick=()=>document.getElementById("modal").remove();document.getElementById("startBreak").onclick=()=>{state.lockedBefore=Math.max(state.lockedBefore,state.current);saveSession();document.getElementById("modal").innerHTML=`<section class="modal"><h2>Break in progress</h2><p>The clock is still running.</p><div class="timer">${fmt(state.seconds)}</div><div class="actions"><button class="primary" id="resume">Resume exam</button></div></section>`;document.getElementById("resume").onclick=()=>{if(state.current<state.flat.length-1)state.current++;renderQuestion()}};
   }
   function learnDrawer(){
     const source=current().source;const sourceLink=/^https?:\/\//.test(source||"")?`<a target="_blank" rel="noopener" href="${esc(source)}">${esc(source)}</a>`:`<p>${esc(source||"No technical reference supplied.")}</p>`;
@@ -242,7 +269,7 @@ function referenceMarkup(x){const link=(label,url)=>/^https?:\/\//.test(url||"")
   function answerText(qn,a){if(a===undefined||a===null||a===""||(Array.isArray(a)&&!a.length))return "No answer";if(qn.type==="sample"||qn.type==="manualText")return String(a);if(["order","drag"].includes(qn.type))return (a||[]).join(" → ");if(qn.type==="matching")return qn.rows.map((row,i)=>`${row}: ${(a||[])[i]||"No answer"}`).join("; ");if(qn.type==="matrix")return qn.rows.map((row,i)=>`${row[0]}: ${(a||[])[i]||"No answer"}`).join("; ");if(Array.isArray(a))return a.map(i=>`${letters[i]}. ${qn.options[i]}`).join("; ");return `${letters[a]}. ${qn.options[a]}`}
 
   function finish(auto){
-    clearInterval(timerId);const gradable=state.flat.filter(isGradable),manual=state.flat.length-gradable.length,correct=gradable.filter(isCorrect).length,total=gradable.length,score=total?Math.round(correct/total*1000):0,passed=total&&score>=700;
+    clearInterval(timerId);clearSavedSession();const gradable=state.flat.filter(isGradable),manual=state.flat.length-gradable.length,correct=gradable.filter(isCorrect).length,total=gradable.length,score=total?Math.round(correct/total*1000):0,passed=total&&score>=700;
     const domains=Object.keys(DOMAINS).map(d=>{const qs=gradable.filter(x=>x.domain===d),c=qs.filter(isCorrect).length;return {d,total:qs.length,correct:c,pct:qs.length?Math.round(c/qs.length*100):0}}).filter(x=>x.total);
     const history=JSON.parse(localStorage.getItem("ai200-history")||"[]");history.unshift({date:new Date().toLocaleString(),score,passed,mode:state.mode});localStorage.setItem("ai200-history",JSON.stringify(history.slice(0,10)));
     app.innerHTML=`<main class="results"><section class="score-card"><div class="score-hero"><div class="score-circle" style="--pct:${total?correct/total*360:0}deg"><strong>${total?score:"—"}</strong></div><div><div class="eyebrow">Practice score</div><h1 class="${passed?"pass":"fail"}">${total?(passed?"Pass":"Not passed"):"Manual review"}</h1><p>${correct} of ${total} automatically gradable questions correct. ${manual?`${manual} questions require comparison with the supplied answer screen. `:""}${auto?"Time expired and the session was submitted automatically.":""}</p><p>This scaled score is an estimate for practice. Microsoft does not publish a simple question-to-score conversion.</p></div></div>
