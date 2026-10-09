@@ -1934,3 +1934,53 @@ Bronnen:
 ## Donderdag 8 oktober 2026
 
 ## Vrijdag 9 oktober 2026
+
+### Monitoring: OpenTelemetry
+
+**OpenTelemetry (OTel)** is een open standaard voor het instrumenteren, verzamelen en exporteren van telemetry. De belangrijkste signalen zijn **traces**, **metrics** en **logs**.
+
+- Een **trace** volgt één request door meerdere componenten.
+- Een **span** is één stap binnen die trace, bijvoorbeeld een API-call, databasequery of modelaanroep.
+- Trace context, waaronder trace ID en span ID, laat een observability-backend de stappen aan elkaar koppelen.
+- **Metrics** zijn numerieke tijdreeksen, zoals latency, request count, CPU en error rate.
+- **Logs** zijn afzonderlijke tekstuele of gestructureerde gebeurtenissen.
+
+Een **distro** is een door een leverancier samengestelde OpenTelemetry-distributie. De **Azure Monitor OpenTelemetry Distro** bundelt de OpenTelemetry SDK, gangbare automatische instrumentation, Azure resource detectors, processors, sampling, configuratie en de Azure Monitor-exporter. Voor nieuwe Application Insights-projecten is dit doorgaans de eenvoudigste aanbevolen route.
+
+```text
+Applicatie → instrumentation/SDK of Azure Monitor OTel Distro
+           → exporter of optionele OTel Collector
+           → Application Insights / Azure Monitor / Log Analytics
+```
+
+OpenTelemetry maakt en transporteert telemetry. De gekozen backend, zoals Azure Monitor, bepaalt opslag, querymogelijkheden en retentie.
+
+#### Granularity en retention
+
+- **Granularity** of **time grain** is de grootte van ieder tijdvak waarin meetwaarden worden samengevat. Bij één minuut krijg je één datapunt per minuut; bij één uur één datapunt per uur.
+- Binnen ieder tijdvak gebruikt Azure een aggregatie zoals **Average**, **Minimum**, **Maximum**, **Sum** of **Count**.
+- Kleine time grain geeft meer detail en maakt korte pieken zichtbaar, maar levert meer datapunten en ruis op. Grote time grain geeft een rustiger langetermijnbeeld, maar kan een korte storing verbergen.
+- **Retention** is hoe lang telemetry wordt bewaard voordat die wordt verwijderd of naar goedkopere langetermijnopslag overgaat.
+- Fijn meten en lang bewaren zijn afzonderlijke keuzes. Een metric kan bijvoorbeeld per minuut worden verzameld en 93 dagen worden bewaard.
+
+Voorbeeld: CPU is gedurende één minuut 100% en de overige 59 minuten 10%. Met een uurgranularity en alleen `Average` lijkt dat ongeveer 11,5%; met `Maximum` zie je 100%. Kies dus ook de juiste aggregatie.
+
+Actuele Azure-hoofdlijnen:
+
+- Azure Monitor platform- en custom metrics worden normaal **93 dagen** bewaard. In Metrics Explorer kan één grafiek maximaal een tijdvenster van 30 dagen tegelijk opvragen; je kunt binnen de retentieperiode verder schuiven.
+- Log Analytics-tabellen hebben standaard meestal **30 dagen analytics retention**; sommige tabellen hebben standaard 90 dagen.
+- Voor Analytics-tabellen kan interactieve/analytics-retentie tot **twee jaar** worden ingesteld.
+- Totale retentie inclusief goedkopere long-term retention kan tot **12 jaar** worden ingesteld; oudere data vraagt afhankelijk van het table plan bijvoorbeeld een search job.
+- Langere retentie en grotere hoeveelheden ingested telemetry kunnen extra kosten veroorzaken. Beperk daarom onnodige attributes/logs, gebruik passende sampling en stel retentie per tabel af op troubleshooting-, audit- en compliance-eisen.
+
+**ELI5:** granularity bepaalt hoeveel vakjes je op de tijdlijn tekent; retention bepaalt hoe lang je de tijdlijn bewaart.
+
+**Examenregel:** korte piek onderzoeken → kleine granularity en controleer `Maximum`; langetermijntrend → grotere granularity. Historische logs langer beschikbaar houden → retention van de Log Analytics-workspace of tabel aanpassen. OpenTelemetry zelf is niet de opslaglocatie.
+
+Bronnen:
+
+- https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-enable
+- https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-configuration
+- https://learn.microsoft.com/en-us/azure/azure-monitor/metrics/metrics-aggregation-explained
+- https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/data-platform-metrics
+- https://learn.microsoft.com/en-us/azure/azure-monitor/logs/data-retention-configure
