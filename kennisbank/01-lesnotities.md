@@ -1984,3 +1984,52 @@ Bronnen:
 - https://learn.microsoft.com/en-us/azure/azure-monitor/metrics/metrics-aggregation-explained
 - https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/data-platform-metrics
 - https://learn.microsoft.com/en-us/azure/azure-monitor/logs/data-retention-configure
+
+### KQL: Microsofts querytaal voor telemetry
+
+**KQL = Kusto Query Language**. Azure Monitor Logs en Log Analytics zijn gebaseerd op Azure Data Explorer en gebruiken KQL om logs en telemetry te filteren, analyseren en aggregeren. KQL wordt ook gebruikt in onder andere Application Insights, Microsoft Sentinel en Microsoft Fabric.
+
+Een query begint meestal met een tabel. Iedere pipe `|` geeft het tussenresultaat door aan de volgende bewerking:
+
+```kusto
+AppRequests
+| where TimeGenerated > ago(1h)
+| where Success == false
+| summarize Failures = count() by bin(TimeGenerated, 5m)
+| order by TimeGenerated desc
+```
+
+Dit betekent: neem requests van het afgelopen uur, houd mislukte requests over, tel ze per vijf minuten en toon de nieuwste tijdvakken eerst.
+
+| Operator | Functie |
+|---|---|
+| `where` | Filter rijen |
+| `project` | Kies of hernoem kolommen |
+| `extend` | Voeg een berekende kolom toe |
+| `summarize` | Groepeer en bereken bijvoorbeeld `count()`, `avg()` of `max()` |
+| `bin(TimeGenerated, 5m)` | Deel tijd op in intervallen van vijf minuten |
+| `order by` / `sort by` | Sorteer resultaten |
+| `take 20` | Geef een willekeurige beperkte set rijen terug |
+| `top 20 by DurationMs desc` | Geef de twintig hoogste geordende waarden terug |
+| `join` | Combineer rijen uit verschillende tabellen |
+
+Voorbeeld uit Container Apps:
+
+```kusto
+ContainerAppConsoleLogs_CL
+| where ContainerAppName_s == "ai-api"
+| where Log_s contains "error"
+| project TimeGenerated, RevisionName_s, Log_s
+| order by TimeGenerated desc
+| take 20
+```
+
+**ELI5:** de tabel is een bak LEGO. Met iedere `|` geef je de overgebleven steentjes door aan de volgende zeef of sorteeractie.
+
+**Examenregel:** historische logs doorzoeken, tellen of groeperen → **KQL in Log Analytics**. `take` beperkt zonder gegarandeerde volgorde; gebruik `top ... by` of `order by` wanneer de volgorde telt.
+
+Bronnen:
+
+- https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-query-overview
+- https://learn.microsoft.com/en-us/azure/azure-monitor/logs/get-started-queries
+- https://learn.microsoft.com/kusto/query
