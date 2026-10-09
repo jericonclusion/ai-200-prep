@@ -2100,6 +2100,60 @@ Applicaties en Azure-resources
 - Melding of automatisering uitvoeren na een alert → **action group**.
 - Prometheus-metrics van AKS → **Azure Monitor workspace / Managed Prometheus**, vaak visualiseren in Grafana.
 
+#### Alert severity of urgency
+
+Azure Monitor-alerts hebben een **severity** die hun relatieve belang of urgentie aangeeft. Een lager nummer betekent een hogere urgentie:
+
+| Niveau | Portalnaam | Praktische betekenis |
+|---|---|---|
+| **Sev0** | Critical | Direct ingrijpen; bijvoorbeeld volledige productie-uitval of acuut risico op dataverlies |
+| **Sev1** | Error | Ernstige fout of grote degradatie die snel actie vraagt |
+| **Sev2** | Warning | Waarschuwing; onderzoek en handel voordat het kritiek wordt |
+| **Sev3** | Informational | Informatieve gebeurtenis met beperkte directe impact |
+| **Sev4** | Verbose | Laagste prioriteit; vooral detail of diagnostiek |
+
+Severity is classificatie en filtering; het verandert niet vanzelf de conditie waarmee een alert afgaat en stuurt niet automatisch een ander notificatietype. De **alert rule** bepaalt wanneer de alert afgaat, de **severity** hoe belangrijk hij wordt gelabeld en de **action group** wie of wat wordt gewaarschuwd. Alert processing rules kunnen action groups toevoegen of notificaties bijvoorbeeld tijdens onderhoud onderdrukken.
+
+```text
+Conditie bereikt → alert rule vuurt → severity label → action group voert acties uit
+```
+
+**Examenregel:** `Sev0` is hoogste urgentie en `Sev4` de laagste. E-mail, sms, webhook, Function of Logic App koppelen → action group.
+
+#### Action groups voor notificaties en automatisering
+
+Een **action group** is een herbruikbare verzameling ontvangers en acties die wordt uitgevoerd wanneer een gekoppelde alert afgaat. De action group bevat niet de meetconditie; die staat in de alert rule.
+
+- Notificaties: e-mail, sms, pushmelding of gesproken oproep.
+- Integraties/automatisering: webhook, Azure Function, Logic App, Automation Runbook, Event Hub of ITSM-koppeling.
+- Dezelfde action group kan aan meerdere alert rules worden gekoppeld, bijvoorbeeld `Production-OnCall`.
+- Het **common alert schema** geeft verschillende alerttypen een gestandaardiseerde payload met onder andere alertregel, resource, severity, signal type en status.
+
+```text
+Alert rule: fouten > dynamische grens
+Severity: Sev1
+Action group: Production-OnCall
+  ├─ mail/SMS naar dienstdoende medewerker
+  ├─ webhook naar incidentmanagement
+  └─ Function of Logic App voor herstelactie
+```
+
+#### Smart Detection en machine learning
+
+**Application Insights Smart Detection** gebruikt machine learning om het normale gedrag van een applicatie te leren en afwijkingen te herkennen. Het kan onder andere een onverwachte stijging van failed requests, dependency failures, exceptionvolume of responstijd signaleren. De verwachte waarde kan rekening houden met historisch gedrag, belasting en terugkerende patronen.
+
+Een statische alert gebruikt een vaste grens, bijvoorbeeld `failure rate > 5%`. Smart Detection vergelijkt met een aangeleerde baseline: 3% kan op een rustig moment uitzonderlijk zijn, terwijl 6% tijdens een bekende piek mogelijk binnen het historische patroon valt. Het systeem heeft eerst voldoende telemetry en leertijd nodig en kan false positives of gemiste afwijkingen hebben; ML vervangt dus geen goede instrumentation en controle.
+
+**Dynamic thresholds** is de bredere Azure Monitor-functie voor metric- en bepaalde log/query-alerts. Deze gebruikt machine learning om historische trends en dagelijkse of wekelijkse seizoenspatronen te leren en boven- en ondergrenzen automatisch aan te passen. Stel een sensitivity en het vereiste aantal overtredingen binnen het evaluatievenster in om ruis te beperken.
+
+| Functie | Focus |
+|---|---|
+| **Smart Detection** | Automatische Application Insights-analyse van applicatieafwijkingen, vooral failures en performance |
+| **Dynamic thresholds** | Automatisch aangeleerde grenswaarden voor een gekozen metric of queryresultaat |
+| **Static threshold** | Zelf ingestelde vaste grens, geschikt wanneer een harde technische of zakelijke limiet bestaat |
+
+**Examenregel:** onbekende normale grens of cyclisch patroon → dynamic threshold/anomaly detection. Harde SLA of capaciteitsgrens → static threshold. Wie wordt geïnformeerd of welke automatisering start → action group.
+
 Bronnen:
 
 - https://learn.microsoft.com/en-us/azure/azure-monitor/overview
@@ -2107,3 +2161,8 @@ Bronnen:
 - https://learn.microsoft.com/en-us/azure/azure-monitor/logs/data-platform-logs
 - https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-workspace-overview
 - https://learn.microsoft.com/en-us/azure/azure-monitor/metrics/azure-monitor-workspace-overview
+- https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-common-schema
+- https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/action-groups
+- https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-types
+- https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/proactive-diagnostics
+- https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-dynamic-thresholds
