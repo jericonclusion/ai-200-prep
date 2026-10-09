@@ -286,11 +286,15 @@ function referenceMarkup(x){const link=(label,url)=>/^https?:\/\//.test(url||"")
     "Kubernetes":"koo-ber-net-eez","kubectl":"cube control","kubelet":"cube-let","kubeconfig":"cube config",
     "AKS":"A K S","ACR":"A C R","ACA":"A C A","AAD":"A A D","RBAC":"are-back","ABAC":"ay-back",
     "PostgreSQL":"Postgres Q L","psql":"P S Q L","pgvector":"P G vector","PgBouncer":"P G Bouncer",
-    "nginx":"engine X","YAML":"yam-ul","JSON":"jason","SKU":"skew","SKUs":"skews","Redis":"reddiss",
-    "gRPC":"G R P C","RRF":"R R F","Qdrant":"Q-drant","Cosmos DB":"Cosmos D B","NoSQL":"no-sequel","KEDA":"kee dah",
+    "nginx":"engine X","YAML":"yam-ul","JSONB":"jason bee","JSON":"jason","SKU":"skew","SKUs":"skews","Redis":"reddiss",
+    "gRPC":"G R P C","RRF":"R R F","Qdrant":"Q-drant","cosmosdb":"cosmos DB","servicebus":"service bus","NoSQL":"no-sequel","KEDA":"kee dah",
     "OIDC":"O I D C","JWT":"J W T","PaaS":"pass","SaaS":"sass","IaaS":"i-a-a-s","TTL":"T T L",
     "az":"A Z","CLI":"C L I","SDK":"S D K","API":"A P I","PVC":"P V C","CORS":"cores",
-    "dataset":"data set","datasets":"data sets","containerapp":"container app","containerapps":"container apps"
+    "dataset":"data set","datasets":"data sets","containerapp":"container app","containerapps":"container apps",
+    "HNSW":"H N S W","KQL":"K Q L","DLQ":"D L Q","RUs":"R Us","RU":"R U","TLS":"T L S","DNS":"D N S","TCP":"T C P","URI":"U R I","AMQP":"A M Q P","SAS":"S A S","LLM":"L L M","UUID":"U U I D","CNCF":"C N C F",
+    "DiskANN":"disk A N N","ANN":"A N N","PromQL":"prom Q L","L2":"L two","W3C":"W three C","B3":"B three","P95":"P ninety five",
+    "XACK":"X ack","XADD":"X add","XREAD":"X read","XCLAIM":"X claim","LPUSH":"L push","RPOP":"R pop",
+    "correlation_id":"correlation ID","operation_id":"operation ID","tenant_id":"tenant ID","category_id":"category ID","in_progress":"in progress"
   };
   const PRONUNCIATION_MAP={};Object.keys(PRONUNCIATIONS).forEach(k=>PRONUNCIATION_MAP[k.toLowerCase()]=PRONUNCIATIONS[k]);
   const PRONUNCIATION_RE=new RegExp("\\b("+Object.keys(PRONUNCIATIONS).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")\\b","gi");
@@ -352,7 +356,9 @@ function referenceMarkup(x){const link=(label,url)=>/^https?:\/\//.test(url||"")
   }
   function promptParts(text){return String(text??"").split(/\r?\n+|(?<=[.?!:])\s+/).map(s=>s.trim()).filter(Boolean)}
   function buildSegments(qn){
-    const segs=promptParts(qn.prompt).map(t=>({area:"prompt",...buildSpokenTokens(t)}));
+    const segs=[];
+    if(qn.scenario)promptParts(qn.scenario).forEach(t=>segs.push({area:"scenario",...buildSpokenTokens(t)}));
+    promptParts(qn.prompt).forEach(t=>segs.push({area:"prompt",...buildSpokenTokens(t)}));
     segs.push({area:"label",...buildSpokenTokens("The correct answer is:")});
     segs.push({area:"answer",...buildSpokenTokens(spokenAnswer(qn))});
     return segs;
@@ -372,7 +378,7 @@ function referenceMarkup(x){const link=(label,url)=>/^https?:\/\//.test(url||"")
   function startAudio(){
     clearInterval(timerId);
     loadVoices();
-    const all=[...QUESTION_BANK,...CASES.flatMap(c=>c.questions),...LOCKED_SET.questions.map(x=>({...x,locked:false}))];
+    const all=[...QUESTION_BANK,...CASES.flatMap(c=>c.questions),...LOCKED_SET.questions.map(x=>({...x,locked:false,scenario:LOCKED_SET.scenario}))];
     const pool=shuffle(all.map(q=>window.AI200_DATA.prepareQuestion(q,shuffle)).filter(q=>!["sample","manualText"].includes(q.type)));
     state={mode:"audio",pool,idx:0,playing:true};
     acquireWakeLock();
@@ -399,20 +405,23 @@ function referenceMarkup(x){const link=(label,url)=>/^https?:\/\//.test(url||"")
   }
   function audioReshuffle(){stopSpeech();state.pool=shuffle(state.pool);state.idx=0;renderAudio();if(state.playing)speakCurrent()}
   function exitAudio(){stopSpeech();releaseWakeLock();welcome()}
+  function setRate(v){if(isNaN(v))v=1.5;v=Math.min(5,Math.max(0.5,Math.round(v*2)/2));audioRate=v;const el=document.getElementById("aRate");if(el)el.value=v;localStorage.setItem("ai200-audio-rate",audioRate);if(state&&state.playing)speakCurrent()}
 
   function renderAudio(){
     loadVoices();
     const qn=state.pool[state.idx];
     const segs=buildSegments(qn);state.segments=segs;
+    const scenarioHTML=segs.map((seg,si)=>seg.area==="scenario"?`<p class="audio-line">${renderSeg(seg,si)}</p>`:"").join("");
     const promptHTML=segs.map((seg,si)=>seg.area==="prompt"?`<p class="audio-line">${renderSeg(seg,si)}</p>`:"").join("");
     const ai=segs.findIndex(s=>s.area==="answer");
     app.innerHTML=`<div class="shell"><header class="topbar"><div class="brand">AI-200</div><div class="exam-name">Listen &amp; learn</div><div class="top-spacer"></div><div class="top-count">${state.idx+1} of ${state.pool.length}</div></header>
       <main class="audio-stage"><section class="audio-player">
         <div class="question-meta"><span>${esc(DOMAINS[qn.domain]||"Instructor sample")}</span><span class="pill">${labelType(qn)}</span><span class="audio-state">${state.playing?"▶ Playing":"⏸ Paused"} · randomized loop</span></div>
+        ${scenarioHTML?`<div class="audio-scenario"><span class="audio-answer-label">Scenario</span>${scenarioHTML}</div>`:""}
         <div class="prompt audio-prompt">${promptHTML}</div>
         <div class="audio-answer"><span class="audio-answer-label">Correct answer</span><p class="audio-line">${renderSeg(segs[ai],ai)}</p></div>
         <div class="audio-controls"><button class="secondary" id="aPrev">⏮ Previous</button><button class="primary" id="aPlay">${state.playing?"⏸ Pause":"▶ Play"}</button><button class="secondary" id="aNext">Next ⏭</button><button class="secondary" id="aShuffle">⟳ Reshuffle</button><button class="quiet" id="aExit">Back to menu</button></div>
-        <div class="audio-settings"><label>Voice <select id="aVoice" ${audioVoices.length?"":"disabled"}>${audioVoices.length?audioVoices.map((v,i)=>`<option value="${i}" ${v===audioVoice?"selected":""}>${esc(v.name)} (${esc(v.lang)})</option>`).join(""):"<option>System default</option>"}</select></label><label>Speed <select id="aRate">${[0.75,1,1.25,1.5,2].map(r=>`<option value="${r}" ${r===audioRate?"selected":""}>${r}×</option>`).join("")}</select></label></div>
+        <div class="audio-settings"><label>Voice <select id="aVoice" ${audioVoices.length?"":"disabled"}>${audioVoices.length?audioVoices.map((v,i)=>`<option value="${i}" ${v===audioVoice?"selected":""}>${esc(v.name)} (${esc(v.lang)})</option>`).join(""):"<option>System default</option>"}</select></label><label>Speed <span class="stepper"><button type="button" id="aRateDown" aria-label="Slower">−</button><input type="number" id="aRate" min="0.5" max="5" step="0.5" value="${audioRate}"><button type="button" id="aRateUp" aria-label="Faster">+</button></span></label></div>
         ${speechReady?"":'<p class="warning">This browser does not support in-browser speech synthesis. Open the app in Microsoft Edge or Chrome to hear questions.</p>'}
       </section></main></div>`;
     document.getElementById("aPlay").onclick=()=>state.playing?audioPause():audioPlay();
@@ -421,7 +430,9 @@ function referenceMarkup(x){const link=(label,url)=>/^https?:\/\//.test(url||"")
     document.getElementById("aShuffle").onclick=audioReshuffle;
     document.getElementById("aExit").onclick=exitAudio;
     document.getElementById("aVoice").onchange=e=>{audioVoice=audioVoices[+e.target.value]||audioVoice;if(audioVoice)localStorage.setItem("ai200-audio-voice",audioVoice.name);if(state.playing)speakCurrent()};
-    document.getElementById("aRate").onchange=e=>{audioRate=+e.target.value;localStorage.setItem("ai200-audio-rate",audioRate);if(state.playing)speakCurrent()};
+    document.getElementById("aRate").onchange=e=>setRate(parseFloat(e.target.value));
+    document.getElementById("aRateDown").onclick=()=>setRate(audioRate-0.5);
+    document.getElementById("aRateUp").onclick=()=>setRate(audioRate+0.5);
   }
 
   welcome();
