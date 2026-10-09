@@ -2033,3 +2033,77 @@ Bronnen:
 - https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-query-overview
 - https://learn.microsoft.com/en-us/azure/azure-monitor/logs/get-started-queries
 - https://learn.microsoft.com/kusto/query
+
+### Azure Monitor-landschap
+
+**Azure Monitor** is de overkoepelende observabilitydienst. Het verzamelt, bewaart, analyseert, visualiseert en gebruikt metrics, logs, traces en events van applicaties en infrastructuur.
+
+```text
+Applicaties en Azure-resources
+  ├─ OpenTelemetry / Application Insights → applicatietraces en dependencies
+  ├─ Azure Monitor Agent + DCR            → OS- en machinegegevens
+  ├─ Diagnostic settings                 → resource- en platformlogs
+  └─ Managed Prometheus                  → Kubernetes/Prometheus-metrics
+                    ↓
+        Metrics-store / workspaces
+          ├─ Azure Monitor Metrics       → platformmetrics
+          ├─ Log Analytics workspace     → logs en traces
+          └─ Azure Monitor workspace     → Prometheus-metrics
+                    ↓
+ Metrics Explorer · Log Analytics · Application Insights · Workbooks · Grafana
+                    ↓
+              Alerts + action groups
+```
+
+| Naam | Wat is het? | Waarvoor gebruik je het? |
+|---|---|---|
+| **Azure Monitor** | Overkoepelende dienst | Alle observability: verzamelen, analyseren, visualiseren, alerts en autoscale |
+| **Azure Monitor Metrics** | Time-series store voor numerieke meetwaarden | Snelle grafieken en alerts op CPU, geheugen, latency, request count en andere metrics |
+| **Azure Monitor Logs** | Logdataplatform binnen Azure Monitor | Timestamped records verzamelen, bewaren en doorzoeken |
+| **Log Analytics workspace** | Azure-resource en datastore voor logs en traces | Tabellen, retentie, toegangsbeheer en kosten configureren |
+| **Log Analytics** | Querytool/interface | KQL-query's uitvoeren op een Log Analytics workspace |
+| **Application Insights** | Application Performance Monitoring-ervaring binnen Azure Monitor | Requests, dependencies, exceptions, distributed traces, availability en application map onderzoeken |
+| **Azure Monitor workspace** | Apart workspace-type | Momenteel vooral Managed Prometheus-metrics opslaan; niet verwarren met een Log Analytics workspace |
+| **Metrics Explorer** | Interactieve metrictool | Time-series grafieken maken, time grain en aggregatie kiezen |
+| **Workbooks** | Interactieve rapportagecanvas | KQL, metrics, tekst en parameters combineren in deelbare rapporten |
+| **Managed Grafana** | Dashboard- en visualisatieplatform | Vooral Prometheus- en andere metricdata visualiseren |
+| **Alerts** | Regels die condities bewaken | Activeren op metrics, KQL-logquery's, Activity Log-events of Prometheus-regels |
+| **Action group** | Herbruikbare verzameling acties | Bij een alert e-mail, sms, webhook, Function, Logic App of andere actie starten |
+
+**Databronnen en routing:**
+
+- **Platform metrics:** Azure-resources publiceren automatisch numerieke metingen naar Azure Monitor Metrics.
+- **Activity Log:** subscriptionniveau; registreert control-plane-acties zoals resource create, update en delete en service-health-events. Dit is niet hetzelfde als applicatielogging.
+- **Resource logs:** operationele details van één Azure-resource. Ze worden pas naar een Log Analytics workspace, Storage Account of Event Hub gestuurd wanneer je daarvoor een **diagnostic setting** configureert.
+- **Azure Monitor Agent (AMA):** agent op VM's en ondersteunde machines voor gast-OS-data, zoals Windows Event Logs, Syslog en performancegegevens.
+- **Data Collection Rule (DCR):** bepaalt welke data AMA of een andere ondersteunde bron verzamelt, eventuele transformaties en de bestemming.
+- **OpenTelemetry:** instrumenteert applicatiecode en maakt traces, spans, metrics en logs. De Azure Monitor OpenTelemetry Distro kan dit naar Application Insights sturen.
+
+**Metrics tegenover logs:**
+
+- Metrics zijn kleine numerieke tijdreeksen en zijn geschikt voor snelle detectie en alerts: *is de CPU nu te hoog?*
+- Logs en traces bevatten meer context en zijn geschikt voor root-cause-analyse met KQL: *welke request, revision en dependency veroorzaakten de fout?*
+- In de praktijk detecteer je vaak met een metric alert en onderzoek je daarna de bijbehorende logs en trace.
+
+**Application Insights en Log Analytics:** Application Insights is de APM-ervaring voor de applicatie. De workspace-based variant bewaart de onderliggende applicatielogs en traces in een gekoppelde Log Analytics workspace. Je bekijkt dezelfde data daardoor via gespecialiseerde Application Insights-schermen of rechtstreeks via KQL.
+
+**ELI5:** Azure Monitor is het ziekenhuis. Metrics zijn de hartslagmeter, logs zijn het patiëntendossier, Application Insights is de applicatiespecialist, Log Analytics is de onderzoekstafel met KQL, een alert is het alarm en de action group bepaalt wie wordt gebeld.
+
+**Examenkeuzes:**
+
+- Applicatierequests, dependencies, exceptions of distributed tracing → **Application Insights**.
+- Historische logs ad hoc onderzoeken → **Log Analytics + KQL**.
+- CPU/latency snel tekenen of bewaken → **Azure Monitor Metrics / Metrics Explorer / metric alert**.
+- Resource logs naar een workspace routeren → **diagnostic setting**.
+- VM-gastlogs verzamelen → **Azure Monitor Agent + DCR**.
+- Samengesteld interactief rapport → **Workbook**.
+- Melding of automatisering uitvoeren na een alert → **action group**.
+- Prometheus-metrics van AKS → **Azure Monitor workspace / Managed Prometheus**, vaak visualiseren in Grafana.
+
+Bronnen:
+
+- https://learn.microsoft.com/en-us/azure/azure-monitor/overview
+- https://learn.microsoft.com/en-us/azure/azure-monitor/fundamentals/data-platform
+- https://learn.microsoft.com/en-us/azure/azure-monitor/logs/data-platform-logs
+- https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-workspace-overview
+- https://learn.microsoft.com/en-us/azure/azure-monitor/metrics/azure-monitor-workspace-overview
