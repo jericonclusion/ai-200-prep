@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-21-pgvector-operator-mismatch",
+    "question": "A retrieval service on Azure Database for PostgreSQL flexible server has this index:\n\n```sql\nCREATE INDEX ON chunks USING hnsw (embedding vector_cosine_ops);\n```\n\nThe embeddings were produced by a model whose similarity metric is **cosine**, but the query was written as:\n\n```sql\nSELECT id, content FROM chunks ORDER BY embedding <-> $1 LIMIT 10;\n```\n\n`EXPLAIN` shows a sequential scan, and relevance is noticeably wrong. What should you do?",
+    "options": [
+        {
+            "text": "Change the query to use the cosine distance operator, which matches the index's operator class: `ORDER BY embedding <=> $1`.",
+            "correct": true
+        },
+        {
+            "text": "Rebuild the HNSW index with a larger `m` and `ef_construction` so it can also serve `<->` queries.",
+            "correct": false
+        },
+        {
+            "text": "Change the query to `ORDER BY embedding <#> $1` to use the inner-product operator instead.",
+            "correct": false
+        },
+        {
+            "text": "Normalize all stored vectors to unit length and keep `ORDER BY embedding <-> $1`.",
+            "correct": false
+        }
+    ],
+    "explanation": "pgvector defines one distance operator per metric — `<->` is **Euclidean (L2)**, `<#>` is **negative inner product**, and `<=>` is **cosine distance** — and an index built with `vector_cosine_ops` can only accelerate the *cosine* operator. The query uses `<->`, so the planner cannot use the index (hence the sequential scan) *and* it ranks by the wrong metric for cosine-trained embeddings (hence the poor relevance). Switching the `ORDER BY` to `<=>` fixes both at once: the metric matches the model, and the operator matches the index's operator class so HNSW search kicks in.\n\n**Why not the other options:**\n- **Rebuilding with larger `m`/`ef_construction`** — Those parameters trade build time and memory for graph quality; they never change *which operator* the index serves. That is fixed by the operator class (`vector_cosine_ops`), so `<->` still cannot use it.\n- **`<#>`** — Inner product is a third, different metric, and it also mismatches `vector_cosine_ops`, so the index remains unused. (Inner product only coincides with cosine ranking for unit-normalized vectors — and even then the index opclass would still need to match the operator.)\n- **Normalizing vectors and keeping `<->`** — For unit vectors, L2 *ordering* does coincide with cosine ordering, but the fix requires rewriting every stored embedding and every future insert — and the existing cosine-opclass index still cannot serve `<->`, so the sequential scan remains. A one-character query change is the correct, minimal fix.",
+    "category": "Develop AI solutions by using Azure data management services"
+}

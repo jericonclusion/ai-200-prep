@@ -1,0 +1,12 @@
+# Keep local development state and credentials out of the deployment package.
+local.settings.json
+.venv/
+.azurite/
+__pycache__/
+*.py[cod]
+tests/
+
+# Repository and editor metadata are not needed by the Functions host.
+.git/
+.github/
+.vscode/

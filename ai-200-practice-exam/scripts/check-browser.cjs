@@ -24,8 +24,9 @@ const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'ai200-browser-'));
 const contentTypes = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png' };
 const server = http.createServer((request, response) => {
   const requested = decodeURIComponent(new URL(request.url, 'http://localhost').pathname).replace(/^\/+/, '');
-  const file = path.resolve(root, requested || 'dist/index.html');
-  if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
+  const siteRoot = path.dirname(root);
+  const file = path.resolve(siteRoot, requested.startsWith('sources/') ? requested : 'ai-200-practice-exam/' + (requested || 'dist/index.html'));
+  if (!file.startsWith(siteRoot + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
     response.writeHead(404).end('Not found'); return;
   }
   response.setHeader('Content-Type', contentTypes[path.extname(file)] || 'application/octet-stream');
@@ -67,8 +68,10 @@ async function main() {
   await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
   let requestId = 0;
   const pending = new Map();
+  const runtimeErrors = [];
   socket.onmessage = event => {
     const message = JSON.parse(event.data);
+    if (message.method === 'Runtime.exceptionThrown') runtimeErrors.push(message.params.exceptionDetails.text);
     if (!message.id || !pending.has(message.id)) return;
     const { resolve, reject } = pending.get(message.id);
     pending.delete(message.id);
@@ -192,9 +195,82 @@ async function main() {
   await evaluate('window.scrollTo(0, 0); true');
   const caseScreenshot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false, fromSurface: true });
   fs.writeFileSync(caseScreenshotPath, Buffer.from(caseScreenshot.data, 'base64'));
-  console.log(`PASS: completed a 20-question browser session; results show ${summary.score}/1000 (${summary.outcome}), 20 review items, and ${summary.domains} skill areas; both instructor case-study labels render correctly.`);
-  console.log(`Screenshot: ${screenshotPath}`);
-  console.log(`Screenshot: ${caseScreenshotPath}`);
+  const home = async () => {
+    await evaluate("localStorage.removeItem('ai200-active-session-v1'); true");
+    await send('Page.navigate', {url: `http://127.0.0.1:${sitePort}/dist/index.html`});
+    await waitFor('!!document.querySelector("#start")', 'Welcome screen missing');
+  };
+  const launch = async mode => {
+    await evaluate(`document.querySelector('[data-mode="${mode}"]').click(); document.querySelector('#start').click(); document.querySelector('#ack').click(); document.querySelector('#launch').click(); true`);
+    await waitFor('!!document.querySelector(".top-count")', 'Selected session did not launch');
+    return evaluate("JSON.parse(localStorage.getItem('ai200-active-session-v1')).state");
+  };
+  await home();
+  await evaluate("document.querySelector('#selectAllSets').click(); document.querySelector('#setPicker summary').focus(); true");
+  await send('Input.dispatchKeyEvent',{type:'keyDown',key:' ',code:'Space',windowsVirtualKeyCode:32});
+  await send('Input.dispatchKeyEvent',{type:'keyUp',key:' ',code:'Space',windowsVirtualKeyCode:32});
+  assert.ok(await evaluate("document.querySelector('#setPicker').open"),'Keyboard opens the set picker');
+  assert.equal(await evaluate('document.querySelectorAll("[data-set]").length'),30);
+  assert.match(await evaluate('document.querySelector("#setSummary").textContent'),/1298/);
+  const homeScreenshot = await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
+  fs.writeFileSync(path.join(root,'docs/screenshots/exam-home.png'),Buffer.from(homeScreenshot.data,'base64'));
+  await evaluate("document.querySelector('#clearSets').click(); true");
+  assert.ok(await evaluate('document.querySelector("#start").disabled'),'Empty selection blocks start');
+  const small = await evaluate("window.AI200_SETS.sets.find(s=>s.id.startsWith('suralmk:') && s.count<=10)");
+  assert.ok(small,'Small set exists');
+  await evaluate(`document.querySelector('[data-set="${small.id}"]').click(); true`);
+  await send('Page.reload');
+  await waitFor('!!document.querySelector("#start")', 'Selection reload failed');
+  assert.deepEqual(await evaluate('[...document.querySelectorAll("[data-set]:checked")].map(e=>e.dataset.set)'),[small.id]);
+  let session = await launch('study');
+  assert.equal(session.flat.length,small.count);
+  assert.ok(session.flat.every(q=>q.setId===small.id));
+  const first=session.flat[0];
+  await evaluate(`document.querySelector('input[name="answer"][value="${first.answer}"]').click(); document.querySelector('#next').click(); true`);
+  assert.ok(await evaluate(`JSON.parse(localStorage.getItem('ai200-active-session-v1')).state.checked[${JSON.stringify(first.id)}]`));
+  await home();
+  session = await launch('exam');
+  assert.equal(session.flat.length,small.count);
+  assert.ok(session.flat.every(q=>q.setId===small.id));
+  assert.equal(session.seconds,small.count*120);
+  await home();
+  await evaluate("document.querySelector('#clearSets').click(); document.querySelector('[data-set=\"quizplay-set-3\"]').click(); true");
+  session = await launch('case');
+  assert.ok(session.flat.every(q=>q.caseData && q.setId==='quizplay-set-3'));
+  assert.ok(await evaluate('!!document.querySelector(".case-tabs") || !!document.querySelector("[data-tab]")'));
+  await home();
+  await evaluate("document.querySelector('#clearSets').click(); document.querySelector('[data-set=\"instructor\"]').click(); true");
+  session = await launch('exam');
+  assert.equal(session.flat.length,50);
+  assert.ok(session.flat.every(q=>q.setId==='instructor'),'Instructor-only exam has no injected core questions');
+  await home();
+  await send('Page.navigate',{url:`http://127.0.0.1:${sitePort}/ai-200-exam-form.html`});
+  await waitFor('document.querySelectorAll("[data-set]").length===30','Inline catalog did not load');
+  await evaluate("document.querySelector('#selectAllSets').click(); document.querySelector('#setPicker').open=true; true");
+  await send('Emulation.setDeviceMetricsOverride',{width:375,height:812,deviceScaleFactor:1,mobile:false});
+  assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth'),'Set picker fits a narrow screen');
+  await evaluate("document.querySelector('#setPicker').scrollIntoView(); true");
+  const mobileScreenshot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
+  fs.writeFileSync(path.join(root,'docs/screenshots/set-picker-mobile.png'),Buffer.from(mobileScreenshot.data,'base64'));
+  session = await launch('study');
+  assert.equal(session.flat.length,1298,'Entire inline study session persists within browser storage limits');
+  await send('Page.reload');
+  await waitFor('!!document.querySelector("#resumeSession")','Full study session can be resumed');
+  await evaluate("document.querySelector('#resumeSession').click(); true");
+  await waitFor('document.querySelector(".top-count")?.textContent.includes("of 1298")','Full study session resumes');
+  const inlineCase=await evaluate("JSON.parse(localStorage.getItem('ai200-active-session-v1')).state.flat.findIndex(q=>q.contextPage)");
+  await evaluate(`document.querySelector('[data-index="${inlineCase}"]').click(); document.querySelector('.scenario-launch').click(); document.querySelector('[data-scenario-view="image"]').click(); true`);
+  await waitFor('document.querySelector(".scenario-image-pane img")?.naturalWidth===1920','Embedded scenario image loads');
+  await send('Page.navigate',{url:`http://127.0.0.1:${sitePort}/sources/index.html`});
+  await waitFor('document.querySelectorAll(".guide").length===184','Library did not load');
+  await evaluate("document.querySelector('#search').value='4.5'; document.querySelector('#search').dispatchEvent(new Event('input')); true");
+  const visible = await evaluate('[...document.querySelectorAll(".guide:not([hidden])")].map(e=>e.textContent)');
+  assert.ok(visible.some(text=>text.includes('Analyze logs')),'Lab search finds KQL lab');
+  await evaluate("[...document.querySelectorAll('.guide')].find(e=>e.textContent.includes('Analyze logs')).open=true; true");
+  await waitFor('!!document.querySelector(".guide[data-loaded] pre")','Lab code did not render');
+  assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth'),'Library fits a narrow screen');
+  assert.deepEqual(runtimeErrors,[],'Browser has no uncaught errors');
+  console.log('PASS: browser walkthrough, answer review, resume, teacher scenarios, 30-set picker, keyboard access, persisted selection, small study/exam sessions, QuizPlay cases, instructor-only exam, inline app and searchable mobile library.');
   socket.close();
 }
 

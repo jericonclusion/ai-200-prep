@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-04-tarnwell-cosmos-ttl",
+    "question": "You must implement the Tarnwell retention requirement: every document in the `chat-sessions` container must be deleted automatically 30 days after it was last updated, with no cleanup job to build or operate.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Set the container's default time-to-live to 2,592,000 seconds (`DefaultTimeToLive = 2592000`); Cosmos DB then deletes each document 30 days after its last write, using leftover RUs in the background.",
+            "correct": true
+        },
+        {
+            "text": "Create an Azure Functions timer trigger that runs nightly, queries for documents whose `_ts` is older than 30 days, and deletes them in batches.",
+            "correct": false
+        },
+        {
+            "text": "Add a `deleteAfter` property to each document and configure an Event Grid subscription that fires when the date passes and calls a deletion webhook.",
+            "correct": false
+        },
+        {
+            "text": "Set `time_to_live` on the Cosmos client so the SDK filters out documents older than 30 days from every query result.",
+            "correct": false
+        }
+    ],
+    "explanation": "Azure Cosmos DB has built-in **time-to-live (TTL)**. Setting `DefaultTimeToLive` on the container to `2592000` (30 days in seconds) makes the service expire each item that many seconds after its `_ts` — which is refreshed on **every write**, so the clock restarts whenever the session is updated, matching \"30 days after it was last updated\" exactly. Expired items are removed by a background process that uses *spare* request units, and they immediately stop appearing in query results even before physical deletion. Nothing to build, schedule, or operate.\n\n**Why not the other options:**\n- **Nightly timer function** — Exactly the operational cleanup job the requirement forbids; the delete queries and per-document deletes also consume provisioned RUs during (or near) user traffic.\n- **Event Grid on a date property** — Event Grid delivers *events that occur*; it has no scheduler that watches document properties and fires when a timestamp passes. This design cannot work as described.\n- **Client-side filtering** — There is no such client setting, and hiding documents in queries would not delete anything: storage would grow forever and the privacy obligation to actually remove the data would be unmet.",
+    "category": "Develop AI solutions by using Azure data management services",
+    "caseStudy": "scenarios/case_study_tarnwell_hospitality.json"
+}

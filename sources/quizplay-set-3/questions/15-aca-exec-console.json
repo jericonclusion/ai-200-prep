@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-15-aca-exec-console",
+    "question": "A container app named `rag-api` returns wrong answers after a deployment, and you suspect the prompt-template files mounted into the container differ from what the release should contain. You need an **interactive shell inside a running replica** to list the mounted files and inspect environment variables — without redeploying or changing the image.\n\nWhich command should you use?",
+    "options": [
+        {
+            "text": "az containerapp exec --name rag-api --resource-group rg-ai --command /bin/sh",
+            "correct": true
+        },
+        {
+            "text": "az containerapp logs show --name rag-api --resource-group rg-ai --follow",
+            "correct": false
+        },
+        {
+            "text": "kubectl exec -it deploy/rag-api -- /bin/sh",
+            "correct": false
+        },
+        {
+            "text": "Rebuild the image with an SSH server installed, expose port 22 through ingress, and connect with an SSH client.",
+            "correct": false
+        }
+    ],
+    "explanation": "`az containerapp exec` opens an interactive console session **inside a running replica** of a container app — the Container Apps equivalent of `kubectl exec`. With `--command /bin/sh` you get a shell where you can `ls` the mounted template directory, `cat` the files, and run `env` to inspect variables, all against the live replica and with no image change or redeploy. (With multiple replicas, add `--replica` to pick a specific one.)\n\n**Why not the other options:**\n- **`az containerapp logs show --follow`** — Streams the container's stdout/stderr. Useful, but it is read-only observation of what the app chooses to print; it cannot list mounted files or dump the environment interactively.\n- **`kubectl exec`** — Container Apps runs on managed infrastructure whose underlying Kubernetes API is **not exposed to you**: there is no kubeconfig for the environment, so `kubectl` has nothing to connect to. That is AKS tooling.\n- **Baking in an SSH server** — Requires exactly the rebuild/redeploy the question forbids, replaces the replica you wanted to inspect (destroying the evidence), and adds a long-lived remote-access daemon to a production image — a security regression for a one-off inspection the platform already supports.",
+    "category": "Develop containerized solutions on Azure"
+}

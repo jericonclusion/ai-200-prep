@@ -1,0 +1,1853 @@
+[
+  {
+    "id": "quizplay-set-3",
+    "repository": "https://github.com/quizplay-io/quiz-player-quizzes-ai-200-question-set-3",
+    "revision": "b158ee5f8717ecd671bf6ea2b748cf09e83e048b",
+    "reviewDate": "2026-10-11",
+    "license": "AGPL-3.0-only",
+    "imported": true,
+    "status": "snapshot with separate reviewed app adaptations",
+    "files": [
+      {
+        "path": "LICENSE",
+        "sha256": "bdda9c85f9bcac0de22c80af064ea722b7bd63515bca4a340aee2687c6f94543",
+        "bytes": 32373
+      },
+      {
+        "path": "README.md",
+        "sha256": "55d96c8877264fc2509d1063020cd0c9f2094c0ec42ce87f16fc6a827086e8bb",
+        "bytes": 2639
+      },
+      {
+        "path": "assets/images/preview_ai200.svg",
+        "sha256": "02ee5bb38cebf491c3ec79ce76f62c1820fde7a3a212e44c60a7059c71c23639",
+        "bytes": 7963
+      },
+      {
+        "path": "questions/01-stellmarsh-workload-profile.json",
+        "sha256": "7db732ca0bd1fc9859db34db1518a29a4d41ed6625445ba9820647dd10f004b2",
+        "bytes": 2581
+      },
+      {
+        "path": "questions/02-stellmarsh-init-container.json",
+        "sha256": "112cdfc1beb8bd132dfd6593ffd6c92e53cba5b62f7a5bd7ec2ac7d72fe9b70b",
+        "bytes": 2732
+      },
+      {
+        "path": "questions/03-stellmarsh-aks-crashloop.json",
+        "sha256": "ec4c0c3a572814a21da2977716ddaac8a42aad42b65df254bf19aa4039e6493c",
+        "bytes": 2218
+      },
+      {
+        "path": "questions/04-tarnwell-cosmos-ttl.json",
+        "sha256": "c4d6de291f017ba8561cd53e6053f4b607aa7cfe09babc297d1a921da585d1a9",
+        "bytes": 2619
+      },
+      {
+        "path": "questions/05-tarnwell-cosmos-composite-index.json",
+        "sha256": "84df6e1e2b3b32363e0b35e0e149e3059bf30731452b2b90bb668d4b90ab5e63",
+        "bytes": 2375
+      },
+      {
+        "path": "questions/06-tarnwell-redis-getex.json",
+        "sha256": "7ea568b7933da2965c9683e38f388d998c541fe8be0b7e9f8168abc0281d86ba",
+        "bytes": 2235
+      },
+      {
+        "path": "questions/07-polwarren-servicebus-defer.json",
+        "sha256": "008db7be955bc0011515e41ded590dc0a4d1157e0c2e771f687b0f8888f606da",
+        "bytes": 3244
+      },
+      {
+        "path": "questions/08-polwarren-eventgrid-retry.json",
+        "sha256": "16ede4ab634989d815c2228b2cfab2e1ab183ffbaee7601ee1540b2b152c58a5",
+        "bytes": 2890
+      },
+      {
+        "path": "questions/09-polwarren-blob-eventgrid-trigger.json",
+        "sha256": "216bc2a9a05780098eeeef48fb460e3e2cc5e4114f4731bdce9b071c6d252b1d",
+        "bytes": 2986
+      },
+      {
+        "path": "questions/10-gantrell-appconfig-snapshot.json",
+        "sha256": "1c5ad4b83a0110d49e8bbca1e489e1c27f2b6c381cff02bf95d560099551c990",
+        "bytes": 3048
+      },
+      {
+        "path": "questions/11-gantrell-sampling-ratio.json",
+        "sha256": "4aa080b4138d8562710943488e0cd32da689c404a85c30596288275576d3bb74",
+        "bytes": 2941
+      },
+      {
+        "path": "questions/12-gantrell-kql-argmax.json",
+        "sha256": "76fd281565d83e226b70ba75536cf9b7569505a980f0afe552f752c9e250fea7",
+        "bytes": 2465
+      },
+      {
+        "path": "questions/13-acr-import-image.json",
+        "sha256": "99a2af0a450efb652a1ba3cca87b68ff29ee80212a586bfb4edd1cedfb01dea7",
+        "bytes": 2395
+      },
+      {
+        "path": "questions/14-aks-oomkilled.json",
+        "sha256": "ca1a1a0ea93087d58df65a6c2dcbdbcd9f8130b0e68902849853b2f7f1b1eb8a",
+        "bytes": 2483
+      },
+      {
+        "path": "questions/15-aca-exec-console.json",
+        "sha256": "cfa75fa86f3b1fa45a4d9d44781ca466ac3b97665455ccd198ae76b53488affc",
+        "bytes": 2402
+      },
+      {
+        "path": "questions/16-ordering-dockerfile-cache.json",
+        "sha256": "2bd0fe93da192d277673fb666af6c72511f46391de944af278580276e5361788",
+        "bytes": 2900
+      },
+      {
+        "path": "questions/17-multi-image-size.json",
+        "sha256": "be15d9e08cabcc2ecbc201d92629c676e112b6ff20c2f46d2c468d9d9f7b210c",
+        "bytes": 2886
+      },
+      {
+        "path": "questions/18-cosmos-patch-item.json",
+        "sha256": "fb23fe57d97402db71913ecf1a999080a21670efad41e01a86ae04baead35a3e",
+        "bytes": 3015
+      },
+      {
+        "path": "questions/19-cosmos-autoscale.json",
+        "sha256": "753eddb5e0255d69a069205566ec90f3522fe467efd608d76f6549ba1b269411",
+        "bytes": 2909
+      },
+      {
+        "path": "questions/20-blob-lifecycle-tiers.json",
+        "sha256": "53e5a5d648c7ef1eb34915860d14c3b8ef46ae93b2d2a7ee60b76af81a890f7a",
+        "bytes": 2893
+      },
+      {
+        "path": "questions/21-pgvector-operator-mismatch.json",
+        "sha256": "495b41bc91f8b421876fab74839aaefb8710a52f843f75a91c2dac647c2984c5",
+        "bytes": 2863
+      },
+      {
+        "path": "questions/22-redis-token-counter.json",
+        "sha256": "380e0d5e1c7f5938408b767fdaf1714d2722b0dd88dd411c3e9f789891d726f8",
+        "bytes": 2703
+      },
+      {
+        "path": "questions/23-multi-cosmos-chat-model.json",
+        "sha256": "0984fd4f9c13622029a9ea7f5fa4d1e47702802b8a06d9c48427b16cf28bafd3",
+        "bytes": 3242
+      },
+      {
+        "path": "questions/24-matching-redis-structures.json",
+        "sha256": "50660cb59069ac18a4250f41929192215dc1ed671c294ec4813932c1a5c68a44",
+        "bytes": 2265
+      },
+      {
+        "path": "questions/25-servicebus-receive-mode.json",
+        "sha256": "6bbed05231af4622963cb39842c93416f366c7aa06ab3c98dabdbc24d926ec5d",
+        "bytes": 2756
+      },
+      {
+        "path": "questions/26-eventhubs-consumer-groups.json",
+        "sha256": "a189f47db63638591b7adc5e52e45daa767c51e88b4e05be7911e22f7a3ccab8",
+        "bytes": 2852
+      },
+      {
+        "path": "questions/27-durable-fanout-fanin.json",
+        "sha256": "ba769698a7db87f1f692092de01051d14f86a10535838956dac091a7f23dd62a",
+        "bytes": 3139
+      },
+      {
+        "path": "questions/28-apim-rate-limit.json",
+        "sha256": "7e31a9b62e14032d38586f624592a54ee00aa33341fe67ec8d174aa025905fbb",
+        "bytes": 2640
+      },
+      {
+        "path": "questions/29-ordering-eventhubs-checkpoint.json",
+        "sha256": "71ad5206f18f94db689d9801c201ab84b7c229fa7c2a2db7f45e2a1c6edd24eb",
+        "bytes": 3319
+      },
+      {
+        "path": "questions/30-servicebus-message-batch.json",
+        "sha256": "c6ffad6e3c37f8795964e391270279a8c834d0a0a4e60b4713376977e31f0b48",
+        "bytes": 2895
+      },
+      {
+        "path": "questions/31-user-assigned-identity.json",
+        "sha256": "53e9cdbcb0c1eb09e170de72623b97f4eb4ccf4ce64eb7138044e5c9964d5504",
+        "bytes": 2933
+      },
+      {
+        "path": "questions/32-keyvault-cryptography-client.json",
+        "sha256": "b152c38f3e3da39ff7ba894d85e5be9699fd96ed0d34e18a016aa9526a493148",
+        "bytes": 2960
+      },
+      {
+        "path": "questions/33-appinsights-availability-test.json",
+        "sha256": "7a3d9bed3d43e401c9c463c90f832a13d2711426f9bb9a9981d89457d70dfdb9",
+        "bytes": 2933
+      },
+      {
+        "path": "questions/34-multi-otel-custom-metrics.json",
+        "sha256": "a5229ba5204e60923b73828e3b97ccedcd06ea5002a69849bc79efb80e7488da",
+        "bytes": 3221
+      },
+      {
+        "path": "questions/35-kql-dcount-daily.json",
+        "sha256": "a1fa22ba8acbadea3713478540f7c6e257734731cf9f24972eb3b00f0c8021a4",
+        "bytes": 2687
+      },
+      {
+        "path": "questions/36-functions-keyvault-reference.json",
+        "sha256": "51224c8c152f3549eefc86ed1e361c0046ce33b63cc5741e7951708e0388f41f",
+        "bytes": 2987
+      },
+      {
+        "path": "quiz.json",
+        "sha256": "95969244fdb6f795bd39388de395c5b8f13ad3183b4fbddd8e44c3385b579801",
+        "bytes": 2443
+      },
+      {
+        "path": "scenarios/case_study_gantrell_property.json",
+        "sha256": "38d9dd3840ef41e040ad6334bbf56ce7605cdca7e9aef36000cf3e5e86075e29",
+        "bytes": 2073
+      },
+      {
+        "path": "scenarios/case_study_polwarren_shipping.json",
+        "sha256": "e2b4fb8d702b41fa2562e5e4a797de6a4860867f68aab693dbcb6d38e0997341",
+        "bytes": 1987
+      },
+      {
+        "path": "scenarios/case_study_stellmarsh_aviation.json",
+        "sha256": "7fffee2c108960e7a2ed4fd16163f00088a2ec2ebf11e91851e71f012a637224",
+        "bytes": 1986
+      },
+      {
+        "path": "scenarios/case_study_tarnwell_hospitality.json",
+        "sha256": "954898df04702c6898f458dddfd63060b0f6b08395b6b8c8cd143a3a7c9f414a",
+        "bytes": 1924
+      }
+    ]
+  },
+  {
+    "id": "naytron-labs",
+    "repository": "https://github.com/Naytron/ai-200-labs",
+    "revision": "65c287f6beb10897f2c32668b544d58944e42e51",
+    "reviewDate": "2026-10-11",
+    "license": "MIT",
+    "imported": true,
+    "status": "snapshot with separate reviewed app adaptations",
+    "files": [
+      {
+        "path": ".gitignore",
+        "sha256": "55c4b321e26700b2cc1414f69a95fa2a55a774112a7864516be054514ee70a6d",
+        "bytes": 93
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "60b1a85a6129c85ac0f1e339ea15c63b28cd9e8e0d906f13a1132978b638866b",
+        "bytes": 1064
+      },
+      {
+        "path": "README.md",
+        "sha256": "a8537b72c86ab6539020d87c75ca57f3fbcc283df50465975d73d4cdadec17cf",
+        "bytes": 3374
+      },
+      {
+        "path": "index.html",
+        "sha256": "5349345f2f953a00fcba8f319d6dff058be7efdda34526048a31e2cfd82b9502",
+        "bytes": 424174
+      },
+      {
+        "path": "src/build.py",
+        "sha256": "272a1171f27418580fe0bca4db1a62cf79d141ea4c91a36204500befde76d856",
+        "bytes": 37680
+      },
+      {
+        "path": "src/domains/d1.py",
+        "sha256": "b15ef1e7a38a3e2e30c377e5b692b2a80f6a5a0559c0dcc541543e640a7501be",
+        "bytes": 46604
+      },
+      {
+        "path": "src/domains/d2.py",
+        "sha256": "894837ee276995f4c6579aef439211e4e7e604c259a4e6c26176f46285282698",
+        "bytes": 51275
+      },
+      {
+        "path": "src/domains/d3.py",
+        "sha256": "a32031c7f913b7a2ab757a6299266c9079cd50a55f9a18121ab25940bff3fb7f",
+        "bytes": 40104
+      },
+      {
+        "path": "src/domains/d4.py",
+        "sha256": "14f5bc712910dc3163490fd279d391fdb7e37e589881bcc657d6e111a1a6448f",
+        "bytes": 41425
+      },
+      {
+        "path": "src/study-aids/identity-governance-monitoring.md",
+        "sha256": "41bdbee6745df328167821678c1eaa05ecdf598ac02a758c187d9d901769f955",
+        "bytes": 34434
+      }
+    ]
+  },
+  {
+    "id": "suralmk",
+    "repository": "https://github.com/Suralmk/learn-AI-200",
+    "revision": "93386cbe02a3e4b669f8005657e2e123066506cd",
+    "reviewDate": "2026-10-11",
+    "license": null,
+    "imported": true,
+    "status": "snapshot; reuse authorized by repository owner in this task",
+    "files": [
+      {
+        "path": ".gitignore",
+        "sha256": "207e265ff4901f9ad9f96d8ce08530e04f9fc600815472a66d0a446096d654cd",
+        "bytes": 480
+      },
+      {
+        "path": "AGENTS.md",
+        "sha256": "e3447d84251880fb34cfae09131cb4c57471529bbfe60976a3245793cf621627",
+        "bytes": 327
+      },
+      {
+        "path": "CLAUDE.md",
+        "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+        "bytes": 11
+      },
+      {
+        "path": "README.md",
+        "sha256": "bbefc53b4ffb210e50566a5accdce98144ccef10a93bbce2ceb17feeb21712af",
+        "bytes": 3798
+      },
+      {
+        "path": "app/asset/Microsoft_Azure-Logo.wine.png",
+        "sha256": "67564e21f62c11b64fc7ebe720da57a1ec9db0541bfe21319cd007a45cf9396b",
+        "bytes": 34008
+      },
+      {
+        "path": "app/asset/ai_200_badge.png",
+        "sha256": "c623928386d3f425bb71dcc2f8053d9f9a36ba97bdd9b1d716ae132cdd0ffbe5",
+        "bytes": 40689
+      },
+      {
+        "path": "app/exam/[id]/page.tsx",
+        "sha256": "b30f36a143fdd2d1d53705bc9b057fa9950b2b6221370231ae399e6645ef75fc",
+        "bytes": 1716
+      },
+      {
+        "path": "app/exam/exam-list-client.tsx",
+        "sha256": "5c11ff00bc9de3edd6b2f0759f23bbbea65dbfee5e3812940e383255a2a5956c",
+        "bytes": 2058
+      },
+      {
+        "path": "app/exam/page.tsx",
+        "sha256": "ed439c7e91495749d8670935c00a21cca854c55210e295d02881cec300b8e53e",
+        "bytes": 1136
+      },
+      {
+        "path": "app/favicon.ico",
+        "sha256": "2b8ad2d33455a8f736fc3a8ebf8f0bdea8848ad4c0db48a2833bd0f9cd775932",
+        "bytes": 25931
+      },
+      {
+        "path": "app/globals.css",
+        "sha256": "713720d3cc3c16e07286de197914a45c350202b5074855f9bfc1d91a1305faed",
+        "bytes": 5293
+      },
+      {
+        "path": "app/icon.svg",
+        "sha256": "6be743e6f074a59a59082db2d46f21c147b968a7068fbe551ff7de59b4b15739",
+        "bytes": 270
+      },
+      {
+        "path": "app/layout.tsx",
+        "sha256": "bd04604fe4d83ed089d523c237ae61da073e854a0648aba6d27fc4ffe05e9223",
+        "bytes": 2617
+      },
+      {
+        "path": "app/opengraph-image.tsx",
+        "sha256": "427443e0954e5d0ca4455a90018f6fccd19aa349acc69bb4ee16cb348e3e0e87",
+        "bytes": 2498
+      },
+      {
+        "path": "app/page.tsx",
+        "sha256": "8bcb63eb74a28a1c77bbe5d8a132a4a14dbfa03d0f059d5be966f1c888b439b3",
+        "bytes": 4338
+      },
+      {
+        "path": "app/questions/page.tsx",
+        "sha256": "3338e25fae9b3420b3d161aea5c54f19f441850c32e340748531f7d8a1fb4a20",
+        "bytes": 593
+      },
+      {
+        "path": "app/questions/questions-client.tsx",
+        "sha256": "f0c7f75144d2e792a01db320f3abb95b4431c6c101263f3524f2c36ce542fe4e",
+        "bytes": 6957
+      },
+      {
+        "path": "app/robots.ts",
+        "sha256": "8d62aaf7e5e123ac16f21487279eeb6606587044e96b1c756270d5d3e3f5c1e7",
+        "bytes": 278
+      },
+      {
+        "path": "app/sitemap.ts",
+        "sha256": "4bf471596bc42e41ddfdf454ff74d10d314432454cb9f297b57ec75cd34d124d",
+        "bytes": 1811
+      },
+      {
+        "path": "app/study/[slug]/[topicSlug]/page.tsx",
+        "sha256": "31e28348cb042f269c320c99e4f26fe5f7bab001cc54061999519b57841498dd",
+        "bytes": 1930
+      },
+      {
+        "path": "app/study/[slug]/page.tsx",
+        "sha256": "268f40bc561d1054464de609bc965c3006f0061145794ce50cd05545655a0015",
+        "bytes": 4912
+      },
+      {
+        "path": "app/study/page.tsx",
+        "sha256": "7a898221a218a52bc90951abdb2d712710ca62b93e2ba1ade1a5a565f2aacc32",
+        "bytes": 823
+      },
+      {
+        "path": "app/study/study-client.tsx",
+        "sha256": "c476903da0f5b47c688e70d24adb23aca060e5eb93c8ae1ebe5e1cdf5cdfd83c",
+        "bytes": 7357
+      },
+      {
+        "path": "app/twitter-image.tsx",
+        "sha256": "db3b602fe83216c3cdddf0943b407ca7a0b1f59027c0d0fff9aa8cf3f4116f5b",
+        "bytes": 69
+      },
+      {
+        "path": "components/code-block.tsx",
+        "sha256": "7309e68aa7a1ec112e147279872d9a806623c9f5937eaab9e2abca386f8b5554",
+        "bytes": 5208
+      },
+      {
+        "path": "components/domain-badge.tsx",
+        "sha256": "082afcd7bbdc5a4a80d97fba7f334074005efb244d9b5f0cdcbcd907859ecbf1",
+        "bytes": 631
+      },
+      {
+        "path": "components/domain-filter.tsx",
+        "sha256": "3e36370b75ecf1e812c569a4cee28729983e1465bb262750052043375e294c26",
+        "bytes": 919
+      },
+      {
+        "path": "components/exam-results.tsx",
+        "sha256": "47e33bd2df9d4a6cf7b80cee0d62bab5c890245780f304e3348ea4271e197b47",
+        "bytes": 6673
+      },
+      {
+        "path": "components/exam-session.tsx",
+        "sha256": "2fe743140d6d43d57587ff11f2b87e2d3b9dbbd50766fb7b7c825dc32f5aabb2",
+        "bytes": 6042
+      },
+      {
+        "path": "components/google-analytics.tsx",
+        "sha256": "c71c08025050bfd5f092a38eefb2c7c2042bbd14544fc8424c9039487323df23",
+        "bytes": 494
+      },
+      {
+        "path": "components/json-ld.tsx",
+        "sha256": "d9181ab7064be5274b40e12c52337603329fa32cbbf1ec66451604e64b400af5",
+        "bytes": 1691
+      },
+      {
+        "path": "components/logo.tsx",
+        "sha256": "5b9ada92f7aa4b88e8d51f19678dc220dbcf868bda3f00817859c361eb4baaef",
+        "bytes": 1518
+      },
+      {
+        "path": "components/markdown-content.tsx",
+        "sha256": "cf5296704fdfce856989b3620e7e2831e8e51ef387c53debdae9ef4b66e9da2f",
+        "bytes": 3036
+      },
+      {
+        "path": "components/module-accordion.tsx",
+        "sha256": "4e03b5b968b68ad8da1b9d25ae4533ff1207681e6110fb6a2263bc3817c2cedd",
+        "bytes": 3223
+      },
+      {
+        "path": "components/question-card.tsx",
+        "sha256": "cf38b680801b65ff88780173ac6a479f64cecd1968b16a93bff8a21616611cfd",
+        "bytes": 5827
+      },
+      {
+        "path": "components/site-footer.tsx",
+        "sha256": "ee8f704bffbbfc5abe0c020af341f87a8ce9eab6f2c7ec127abf52365d38ea7d",
+        "bytes": 1291
+      },
+      {
+        "path": "components/site-header.tsx",
+        "sha256": "5734fe68e2a71f8aa7ea658e8717d5781e39b833c96cd584d561de9c8f1ebd92",
+        "bytes": 2537
+      },
+      {
+        "path": "components/skill-focus-section.tsx",
+        "sha256": "82fb9357521c62a29b11ff7a6e581549a0c860ea8919dbb526936035d6bc6c2a",
+        "bytes": 2004
+      },
+      {
+        "path": "components/study-article.tsx",
+        "sha256": "c2edd1eada61ec2813179971367630db72d01d6adb6165c41f0ebfd828ac564e",
+        "bytes": 962
+      },
+      {
+        "path": "components/study-toc.tsx",
+        "sha256": "43df1a1b0e235d3d27a46e1474c25c101b124a32678614f6daf9b4f7addc08e9",
+        "bytes": 1915
+      },
+      {
+        "path": "components/theme-provider.tsx",
+        "sha256": "03dbb33d93ab5483aa7987fc9d6a39d5cdfa60d2ea361095276235878e83f142",
+        "bytes": 299
+      },
+      {
+        "path": "components/theme-toggle.tsx",
+        "sha256": "8fa4e615b23b34941491d3b4677f950f2964a842c2fee83e9a48d9a945a90b35",
+        "bytes": 616
+      },
+      {
+        "path": "components/ui/button.tsx",
+        "sha256": "f0f90e796ef9d9f91e979effb497efbc9af3705f623e944e8c9e907f94ec9007",
+        "bytes": 2957
+      },
+      {
+        "path": "components/ui/card.tsx",
+        "sha256": "8336ff03ab4bf445dd82876ae81d2dd768da9dd8811d10c6e8efc71a298a60f1",
+        "bytes": 2489
+      },
+      {
+        "path": "components/ui/dialog.tsx",
+        "sha256": "ad9e1888955e73a085e49766d5b674877bf29d0d31ee1ee630606d39bdc0aec5",
+        "bytes": 4074
+      },
+      {
+        "path": "components/ui/input.tsx",
+        "sha256": "6aa855ad2335caab3f7af1d568d256084ac94b37eeaf862d6be84413b144081f",
+        "bytes": 1007
+      },
+      {
+        "path": "components/ui/popover.tsx",
+        "sha256": "4430089073309421def8948935a67f7af975edda7705856fc8bb860939db82e2",
+        "bytes": 2602
+      },
+      {
+        "path": "components/ui/separator.tsx",
+        "sha256": "75085bd84ff6965e4a356c53a4689799cabf65caa93c0bba064d5a0c6fa78f13",
+        "bytes": 545
+      },
+      {
+        "path": "components/ui/table.tsx",
+        "sha256": "e31edb92cb81ad582a30fd57925095b10b6ca3b5878ebec51a3db400938e4849",
+        "bytes": 2402
+      },
+      {
+        "path": "components/ui/tabs.tsx",
+        "sha256": "e2b3a9462a78a54ceb89f7970ba3e4c055e01eaf52fb0841a5db35c0cff2a338",
+        "bytes": 3507
+      },
+      {
+        "path": "components.json",
+        "sha256": "110e5d6c7870b998412c3162219fe2848fb6bb1b8f31e5b765ebcd367ebbad21",
+        "bytes": 516
+      },
+      {
+        "path": "content/questions/advanced-scenarios.json",
+        "sha256": "b8c68a08bcfa06269d362b355e1bb771e31cb7bdbf1be26e6df58ca50997a10c",
+        "bytes": 44427
+      },
+      {
+        "path": "content/questions/ai200-practice-set.json",
+        "sha256": "f8c8a45c61a1cb7e67b78a11642ccdbcffcfa20263e41523af8604558b1b6904",
+        "bytes": 124897
+      },
+      {
+        "path": "content/questions/azure-services-160.json",
+        "sha256": "5d2a075f6a3ac6c84a5e42c04627577593853162914df4eeb0e6f28827ccb2dd",
+        "bytes": 28520
+      },
+      {
+        "path": "content/questions/azure-services.json",
+        "sha256": "9d4087fba2b39cb3d15d89200fa949a4c628f66a93ed920f5b65d608487dee02",
+        "bytes": 7276
+      },
+      {
+        "path": "content/questions/containers-160.json",
+        "sha256": "773e6a5ecde89f222776bdaea2432373268f2fa471e52a1e4d421aec326c8fff",
+        "bytes": 23362
+      },
+      {
+        "path": "content/questions/containers.json",
+        "sha256": "696936c902b145e29e584b6e31c18fe07aecd9b0efd27acba803a1e5d65a4a45",
+        "bytes": 9989
+      },
+      {
+        "path": "content/questions/data-management-160.json",
+        "sha256": "cc635c3189d0b55cfec03eac6289e1ffe7d7e4d0bb515922da332967876e0a32",
+        "bytes": 31207
+      },
+      {
+        "path": "content/questions/data-management.json",
+        "sha256": "aa95098a69bba68ddb21479e934fa7b9511e9a7d869227c7487b77fd73625e17",
+        "bytes": 10445
+      },
+      {
+        "path": "content/questions/sdk-cli-part1.json",
+        "sha256": "702a8dbb3921d6afb4b3c51d53727477220f92e9bd6f4c6d95cd50f2f7221b76",
+        "bytes": 41534
+      },
+      {
+        "path": "content/questions/sdk-cli-part2.json",
+        "sha256": "3062938b181b70cd613de5b2319d0a07e348adde8b27d971b27ab56e04b6a1a7",
+        "bytes": 44980
+      },
+      {
+        "path": "content/questions/secure-monitor-160.json",
+        "sha256": "d494e79fd998bba6cfc9487e04b5c8dba5ed315b64b58b517ecd862c52e71442",
+        "bytes": 28778
+      },
+      {
+        "path": "content/questions/secure-monitor.json",
+        "sha256": "e1ae35498bf87f38277ed8ee43ee4397b931354bc4ba69162b90443d6b0a5592",
+        "bytes": 8406
+      },
+      {
+        "path": "content/study/guides/azure-functions-ai.md",
+        "sha256": "c094291bd61eb1f00f9eefddd85b4c20c120d5ba024522795faa6b21f839c44f",
+        "bytes": 2155
+      },
+      {
+        "path": "content/study/guides/azure-managed-redis.md",
+        "sha256": "13fa7f7a8508429c29866e47db0745fa62d69c4cbdbbccf1965668b4f6ab0d0a",
+        "bytes": 1810
+      },
+      {
+        "path": "content/study/guides/container-apps.md",
+        "sha256": "ceb1f6d06c515774fb966f78672b7a5f8e30c37fb43dfa7fa16c49574642c637",
+        "bytes": 2012
+      },
+      {
+        "path": "content/study/guides/cosmos-db-ai.md",
+        "sha256": "b0142a40a253ad693a03110a8652a84e3865cd18bc7b559a880b7c3ed481dc3d",
+        "bytes": 2329
+      },
+      {
+        "path": "content/study/guides/monitoring-kql.md",
+        "sha256": "d07f50d26e79e68bd4e095a88a95c44c70836f8f6542d2405734e0acd1ad3905",
+        "bytes": 4942
+      },
+      {
+        "path": "content/study/guides/postgresql-pgvector.md",
+        "sha256": "92e2508b8313d14feaa47902c014af86d2bac047c9122c3809e2448bd2584605",
+        "bytes": 2504
+      },
+      {
+        "path": "content/study/guides/security-keyvault.md",
+        "sha256": "660511fc4f4f3b57fbda46573120b6094707f9996d498a83178b0a2be7ebd6bf",
+        "bytes": 1910
+      },
+      {
+        "path": "content/study/guides/service-bus-event-grid.md",
+        "sha256": "3cc0e36e211682f0162de27fa6d4916d7e1f2cac322c6c6040ad0b8f16b76bae",
+        "bytes": 2014
+      },
+      {
+        "path": "content/study/learning-paths/deploy-and-manage-apps-on-azure-container-apps.md",
+        "sha256": "63b86e670eb828105776c9ad9aca37371cbb9cda17d7255dc2af68b6ac9860bf",
+        "bytes": 2336
+      },
+      {
+        "path": "content/study/learning-paths/deploy-and-monitor-applications-on-azure-kubernetes-service.md",
+        "sha256": "123520a975bb1968334692a5a0388894b608f4b569d541069e702f03ad8b3046",
+        "bytes": 2105
+      },
+      {
+        "path": "content/study/learning-paths/develop-ai-solutions-with-azure-cosmos-db-for-nosql.md",
+        "sha256": "2cf67bf728feff32cbd3f532813b6d47d25df9a77bb10fe63f51784016369c13",
+        "bytes": 2694
+      },
+      {
+        "path": "content/study/learning-paths/develop-ai-solutions-with-azure-database-for-postgresql.md",
+        "sha256": "74c832c2c02fe6d82f815052a699e7338b684145c12a8298430b9a50fdc15a6f",
+        "bytes": 2858
+      },
+      {
+        "path": "content/study/learning-paths/enhance-ai-solutions-with-azure-managed-redis.md",
+        "sha256": "1fd364c84036a3d1e8b41e617ac592a5310557f9e3001005ec20fc0fe429743b",
+        "bytes": 2169
+      },
+      {
+        "path": "content/study/learning-paths/implement-container-application-hosting-on-azure.md",
+        "sha256": "71549e7403f28f788c37c1fcb398213e392ccb9c7c282aaf9bc811c558ffba45",
+        "bytes": 3520
+      },
+      {
+        "path": "content/study/learning-paths/integrate-backend-services-for-ai-solutions.md",
+        "sha256": "0eda08f66d7acf54809d46056933f4b1ba3d2df088cbd8e14bcddb663ea9b17e",
+        "bytes": 2410
+      },
+      {
+        "path": "content/study/learning-paths/manage-application-secrets-and-configuration-for-ai-solutions.md",
+        "sha256": "83f8e308e266d5bd156f489c9c6d03fbf0f61b93499384d83991abce50d65bdc",
+        "bytes": 2110
+      },
+      {
+        "path": "content/study/learning-paths/observe-and-troubleshoot-apps-on-azure.md",
+        "sha256": "5276f7985e2b33238aad4d525aa25d37a1a516222598c2188912133a2425920f",
+        "bytes": 2027
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/apply-keda-scalers-for-custom-workloads.md",
+        "sha256": "ff581c1f6825f91757e5b427bc49ab0751ee8a1d8a937858d3088d06582cc178",
+        "bytes": 16400
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/choose-and-apply-revision-modes.md",
+        "sha256": "fc99a4d4c1f9b044a24cd4aa9840d16b609a7db4a798d4e80c19231a8e70d892",
+        "bytes": 6678
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/configure-health-probes-and-troubleshoot-failures.md",
+        "sha256": "cb28b533226272d0b0c8df37aab42031b4d987403d88ea9a688481e27f115ab9",
+        "bytes": 1463
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/configure-image-pull-authentication-on-private-registries.md",
+        "sha256": "f452b2dc9d95d4cc96879f829e19c32b6367e1c29adf3e8d121bff2b3267521e",
+        "bytes": 2420
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/configure-scale-rules.md",
+        "sha256": "149c702b55e7fac8390e73c772dd5a46e9f5440e4f5e4dab8bf36edec970b772",
+        "bytes": 1349
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/configure-secrets-and-variables-and-deploy-to-aca-in-azure.md",
+        "sha256": "efde6cd7877ad2fb1bcd5390d9b5447149464ff7e3d250dd9158e487cc116cf4",
+        "bytes": 12562
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/implement-event-driven-scaling-with-keda.md",
+        "sha256": "863326ac0a2dfa80850a16e639de5d38000e87b560e304c0b94661c8ad60420b",
+        "bytes": 10876
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/manage-the-container-app-lifecycle.md",
+        "sha256": "553d1cf2cdbc31eec10a1bfbf541d080c243a99e05401f2fc55d4bb99372d0e4",
+        "bytes": 1403
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/monitor-logs-and-troubleshoot-issues.md",
+        "sha256": "7f7aa5e540fb2183858ca0b03b661cdd305de02779a632ede991bce7c9d8edf3",
+        "bytes": 1411
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/optimize-container-resources-and-scaling.md",
+        "sha256": "27f08d58bcbf20903248f024f665b40f2d452713a1e98ee0dfa4c7e68d56b39e",
+        "bytes": 1427
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/select-compute-resources-for-performance-and-cost.md",
+        "sha256": "8128f3e8658353c1e44bcef857d6b4f799dcb12f4981387f8b64b369935cfcd7",
+        "bytes": 13779
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/update-images-and-manage-revisions-safely.md",
+        "sha256": "20bda122b8672fd6c7a7895a197b15e13d879be90035390751aa6590e3bd8576",
+        "bytes": 1431
+      },
+      {
+        "path": "content/study/topics/deploy-and-manage-apps-on-azure-container-apps/verify-deployment-with-logs-and-status.md",
+        "sha256": "53355d592d341950013545f358333a1915b353755db3408c6a96c8ad85c98ba9",
+        "bytes": 2224
+      },
+      {
+        "path": "content/study/topics/deploy-and-monitor-applications-on-azure-kubernetes-service/attach-persistent-storage-to-an-app.md",
+        "sha256": "4433ad864f1a039c17343caf262ded423127c6086433f009a64aa5e73eecdcd0",
+        "bytes": 1451
+      },
+      {
+        "path": "content/study/topics/deploy-and-monitor-applications-on-azure-kubernetes-service/create-kubernetes-deployment-manifests.md",
+        "sha256": "42ab171a72d26d1fe50550a368aa6a9232f6e7e683d43f9156661f2f8900b71c",
+        "bytes": 1457
+      },
+      {
+        "path": "content/study/topics/deploy-and-monitor-applications-on-azure-kubernetes-service/define-configmaps-for-application-settings.md",
+        "sha256": "ab74d9cd2f506a2e8baaf93b17c49d764d0ceb0e79dcc62bdc96093c3375bb91",
+        "bytes": 1479
+      },
+      {
+        "path": "content/study/topics/deploy-and-monitor-applications-on-azure-kubernetes-service/deploy-applications-to-azure-kubernetes-services.md",
+        "sha256": "d26e136fe36f12e96410c079376df89cbd7443e7a8d464b9c6bb03170b18f8d2",
+        "bytes": 1497
+      },
+      {
+        "path": "content/study/topics/deploy-and-monitor-applications-on-azure-kubernetes-service/exercise-troubleshoot-apps-on-azure-kubernetes-service.md",
+        "sha256": "6c8d04f77975b8ab3df9c6cdd3dcc6c21e2f70931319ed1d380b0c61198c0d18",
+        "bytes": 1547
+      },
+      {
+        "path": "content/study/topics/deploy-and-monitor-applications-on-azure-kubernetes-service/expose-applications-in-azure-kubernetes-services.md",
+        "sha256": "ff095195ee8db7f7d55a4d8024594d5654e909cba7dbb1fdbfb78d01a4db671c",
+        "bytes": 1497
+      },
+      {
+        "path": "content/study/topics/deploy-and-monitor-applications-on-azure-kubernetes-service/implement-secrets-for-sensitive-data.md",
+        "sha256": "ea34e697eb305569d8baf6947112ffc70d42124ac23dc782e723888084bb7b1d",
+        "bytes": 1455
+      },
+      {
+        "path": "content/study/topics/deploy-and-monitor-applications-on-azure-kubernetes-service/monitor-application-logs-and-metrics.md",
+        "sha256": "6dd669927fc5a26ab147eee47bea2da2593f83eafdb1a12dd7588be8ad9e3865",
+        "bytes": 1485
+      },
+      {
+        "path": "content/study/topics/deploy-and-monitor-applications-on-azure-kubernetes-service/troubleshoot-pods-and-services.md",
+        "sha256": "4678a2463445fa050da2f0a43e866fca7d1c1972f546e82ac8ebfbaa5daec937",
+        "bytes": 1461
+      },
+      {
+        "path": "content/study/topics/deploy-and-monitor-applications-on-azure-kubernetes-service/verify-service-connectivity-and-endpoints.md",
+        "sha256": "8146ef6bb035671281d39ccd56b29f53f4e847b3ebb83a19a33a1454ce4739b0",
+        "bytes": 1505
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/choose-consistency-levels-for-optimal-performance.md",
+        "sha256": "10177e631831cda4362456b28a7f14ff84953a9854637a50cf9c32fab42b79f4",
+        "bytes": 1503
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/combine-vector-similarity-results-with-metadata-filtering.md",
+        "sha256": "5410be60b86107ed08b575fe7c24fb539ef47cc228dc277672ef64dcd6dfbf32",
+        "bytes": 1527
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/configure-range-and-composite-indexes.md",
+        "sha256": "6fb93c17cbea04c377a0b84f95bea30a2ff6364827aef4e7738ddda626aabc37",
+        "bytes": 1455
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/execute-vector-similarity-queries-for-semantic-search.md",
+        "sha256": "990581064096b6d31ffb46e10b15339f94309c67efc46a92b3360adab8b58927",
+        "bytes": 1511
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/exercise-build-a-rag-document-store-on-azure-cosmos-db-for-nosql.md",
+        "sha256": "d71b8ed6b5d6d8721d542692f262b2dbea3fd785b267c873e27dae3c64bdf05e",
+        "bytes": 1527
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/exercise-build-a-semantic-search-application-with-azure-cosmos-db-for-nosql.md",
+        "sha256": "cadc179a8f874d0d4a8ee67ce4617a2bae2269b09409ef59d70436829a8b6509",
+        "bytes": 1589
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/exercise-optimize-query-performance-with-vector-indexes-on-azure-cosmos-db.md",
+        "sha256": "42f630aba3cbb4312f855cef74c40d794fa48c9d227b54a4c0691ef0f76136e3",
+        "bytes": 1593
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/explore-azure-cosmos-db-for-nosql.md",
+        "sha256": "e457b903eec386e9f78dca8162a590caadf5e56e8a036fd16380190db72e229d",
+        "bytes": 2210
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/implement-the-azure-cosmos-db-for-nosql-sdk.md",
+        "sha256": "4a1e2c84cbac622b25ff14f1e23f04dfc92a2afcade65798b5f93c0c511bd13a",
+        "bytes": 1453
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/query-azure-cosmos-db-for-nosql.md",
+        "sha256": "655042f96a7d19eb9d9303c1cd4587810477b02b8fe10b0b5907017559a75597",
+        "bytes": 1405
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/reduce-ru-costs-with-strategic-indexing.md",
+        "sha256": "c4c1629a8c09d9626fdfe5523645b85b951e22882002be129457633a709c895d",
+        "bytes": 1463
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/store-and-retrieve-embeddings-in-azure-cosmos-db.md",
+        "sha256": "0f9526234a6f5e11bc251f510ac5a8ad7e9a07fc1cb3213d0dcb5000e825c959",
+        "bytes": 1491
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/tune-vector-indexes-for-embedding-workloads.md",
+        "sha256": "d24a4593fc123ccab057d311b481e5f65bde7c730f5ceaf548892ad2986f522f",
+        "bytes": 1479
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/understand-indexes-in-azure-cosmos-db.md",
+        "sha256": "b0a887e0fb5e183dc651b7eea36fa20a39d97f556f0af338f4dc339b9c5c881d",
+        "bytes": 1455
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-cosmos-db-for-nosql/use-the-change-feed-to-trigger-embedding-refresh.md",
+        "sha256": "a8b7c028455879b0a5ab0ecd611e6536850736c17bd1b038463911911fe6cd69",
+        "bytes": 1491
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/choose-and-configure-vector-indexes.md",
+        "sha256": "3e8f7d8e802aabf502c9f83dbfd95e5a3f5dd88114b81a4684862b06aafa2af8",
+        "bytes": 1453
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/connect-to-postgresql.md",
+        "sha256": "9ccf4f85f62fbe6473f18f5494db63b5febc1a869f14532ea3c00614b59c8ab4",
+        "bytes": 1387
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/connection-optimization.md",
+        "sha256": "086233cfd946ecf85bf72de48de993d9abc61822d76e4fe1342966990426201c",
+        "bytes": 1405
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/create-and-manage-schemas.md",
+        "sha256": "199122d6beb68769024b760b902f8526046707887808cd0c15ccb49e2fa08b30",
+        "bytes": 1403
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/exercise-build-an-agent-tool-backend-on-azure-database-for-postgresql.md",
+        "sha256": "b109dcaf9e3db931f75567bb88378be98ac4f92bc26e9b056f0f44e3c565edba",
+        "bytes": 1569
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/exercise-implement-vector-search-on-azure-database-for-postgresql.md",
+        "sha256": "d1c0176b0b82850cd51fd22db3b7381815e3d4e5954b6c819e3fab10e8196fd8",
+        "bytes": 1569
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/exercise-optimize-vector-search-performance-in-azure-database-for-postgresql.md",
+        "sha256": "5679eeac795d3cfb53b801f23919c5a38458b21b11bc219a3fa3d0dae7fb6bdf",
+        "bytes": 1607
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/explore-azure-database-for-postgresql.md",
+        "sha256": "eee4d82b60091d826da5bb62a2d88bd58cccd7cb7b99b92a1809c8aedca4d01e",
+        "bytes": 1451
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/implement-retrieval-patterns-for-rag-pipelines.md",
+        "sha256": "4164dc3170f14283ab6c878e05a1ba83fec7027763aca6e981a9ba8bc6b893b4",
+        "bytes": 1503
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/integrate-sdks-and-applications.md",
+        "sha256": "b1327fad3300bb010a5de4dc1e8c7a829c653e0e42a0b130340ee91941aee709",
+        "bytes": 1427
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/manage-index-lifecycle-and-embedding-updates.md",
+        "sha256": "dd2ff2b968dd51f3ccdbc20582126f68e2117153aee7d02e04de9c911b90acd2",
+        "bytes": 1495
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/optimize-data-layout.md",
+        "sha256": "8c3e26f0f55b8b45d1dde3b9598e13608c619410d026f1ba98dd4beeb7b38989",
+        "bytes": 1393
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/perform-fast-vector-similarity-search.md",
+        "sha256": "d0a5a15ebaa897fce38b742e9a6f839eb75a0f52c5c48cc1f204ae1147ef3f46",
+        "bytes": 1467
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/query-data.md",
+        "sha256": "77f94265193307053bfdbdb79fc0704fba532a8513cb4af71f892a4880038284",
+        "bytes": 1343
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/run-vector-similarity-search-for-semantic-retrieval.md",
+        "sha256": "dc373bc19d5cc57fa04aa3042e088d3de2083e593436b7d4639bdef7a7fca8a4",
+        "bytes": 1523
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/scale-for-high-volume-workloads.md",
+        "sha256": "779497e19c2c425bff09053f189fe1d6bae9289b8026c8dfcfe7373cb705ce69",
+        "bytes": 1437
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/store-and-query-embeddings-with-pgvector.md",
+        "sha256": "4fbc99d0c0d4b5ea6db066b6106fb816c362d63cab182bd34ef65368373c93fc",
+        "bytes": 1479
+      },
+      {
+        "path": "content/study/topics/develop-ai-solutions-with-azure-database-for-postgresql/tune-postgresql-for-pgvector.md",
+        "sha256": "f2d46bf737410686dbd1394ab8763d5e75ca2da39714d7cee1068ab019a0c476",
+        "bytes": 1425
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/choose-between-broadcast-and-coordinated-distribution.md",
+        "sha256": "f6bd85c1bcea5ee365046dec5d9ca12613292cb9fd6e63e7541c86b98ba628a9",
+        "bytes": 1495
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/choose-vector-types-and-indexing-strategies.md",
+        "sha256": "0a2ec013e452ab11b0ccba2d4e3db430fe6af7b425668dd94c94046e4f5e074b",
+        "bytes": 1449
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/client-libraries-and-development-best-practices.md",
+        "sha256": "e3175ea5ceefa6e8fd2aeda4f631e3cfbb678b69d16bb2ef41520c9927d394fd",
+        "bytes": 1467
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/exercise-implement-semantic-search-in-azure-managed-redis.md",
+        "sha256": "1ac10720fb5f71b3ea084e629c61242358de00574d56e45d3990ce7987654a45",
+        "bytes": 1495
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/exercise-perform-data-operations-in-azure-managed-redis.md",
+        "sha256": "d005d3b957054b0ebaf3d8fed71748a08f42389e935021729db77830469f63d1",
+        "bytes": 1489
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/exercise-publish-and-subscribe-to-events-in-azure-managed-redis.md",
+        "sha256": "715aad70a490573f534da43060f4e06abb07f540f9304400c4143ceb7bcef3ba",
+        "bytes": 1525
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/explore-azure-managed-redis.md",
+        "sha256": "84302560e25569436bc771328f3dec4b5bafb3dc3dcaacaf3f042b5e3ddfc353",
+        "bytes": 1387
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/implement-data-operations.md",
+        "sha256": "220a5532166cd2dade2562706f94d4a726c7ffc2d7d3f2750c822d62613d876a",
+        "bytes": 1379
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/implement-task-queues-with-redis-streams.md",
+        "sha256": "ccd02463e591f8ac98e65c5aac39ae21e7961cf366fd758f3e682808f3abd0ed",
+        "bytes": 1443
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/index-and-query-vector-data.md",
+        "sha256": "d04eb320db258da8883b37abc52568bfe45c0df29231cee8d32010fd4d45b14e",
+        "bytes": 1385
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/optimize-redis-data-structures-for-vector-storage.md",
+        "sha256": "0c6b372d6cd28b67e17af26a1a12a4759094b9c32b5da143060349d029d038ba",
+        "bytes": 1473
+      },
+      {
+        "path": "content/study/topics/enhance-ai-solutions-with-azure-managed-redis/publish-and-subscribe-to-events-with-redis-pub-sub.md",
+        "sha256": "400e3d11a50565bf34c8a4554d65f1d34b302167ddb0f340916c54e76f3c278d",
+        "bytes": 1483
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/acr-authentication-options.md",
+        "sha256": "027c75fea46061b3b4702b332347db4677b444dd6e32bcea516a738ef19e16b2",
+        "bytes": 3199
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/app-settings.md",
+        "sha256": "2089f18bfc692e09a974d58d5125704c87fb634eb47098e095df0b9ceeb366c5",
+        "bytes": 2435
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/architecture-and-folder-structure.md",
+        "sha256": "41607038c96d8e9c2af8441d5752a5bcaa52891c69a1b77f401846e92c06bd83",
+        "bytes": 2081
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/bulk-editing.md",
+        "sha256": "3f3badb0b81fb83b1cf2173ecb5669a4dd0795b43f753896fa60fd51fc3104de",
+        "bytes": 1870
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/commands-reference.md",
+        "sha256": "bf7ffbabf9cc15f4bf2e801c49119a3c0d5d99d44fa21d5b6edb8eaf9dce87a3",
+        "bytes": 3233
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/common-issues-and-solutions.md",
+        "sha256": "8716d8540326f640f8262935cf7080c02c715f6f372af42c83886d6164d0de38",
+        "bytes": 5120
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/configure-container-logs.md",
+        "sha256": "808912a64309101c6a03fe0975cd4add73074c8e562e67a37e4aa97e89e4b580",
+        "bytes": 2873
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/configure-container-runtime-behavior.md",
+        "sha256": "b0d7fecc0a08ff91690c658848017ea7be2335ff229bf12eb738cb774de2b210",
+        "bytes": 5580
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/configure-health-probes-and-troubleshoot-failures.md",
+        "sha256": "ba6b05f083249c87332676c9bfa0facec3f771599c9c2a3d810b751b15da4b69",
+        "bytes": 1439
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/connection-strings.md",
+        "sha256": "8f56f7c982319e3265b5130f50b788f8c1a29c798ab295baf9f5fd10468c13ac",
+        "bytes": 1938
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/deploy-from-other-container-registries.md",
+        "sha256": "5b972ed82f225a5f1dd7127ca10cbc5e6e73076f67e9f94ecbe22276739a2809",
+        "bytes": 2577
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/deploy-script-explained.md",
+        "sha256": "bd8ab430835df976027660f8a5ee2a1e7b179e3a0778c1ad842d3e36d465e3ac",
+        "bytes": 3307
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/deploy-to-app-service-using-cli.md",
+        "sha256": "8c6826bd2f5bbef67a94730f3f2f2c12250b5cbb3c9397df8ee14fcb0139793d",
+        "bytes": 2556
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/deploy-using-the-azure-portal.md",
+        "sha256": "17638c5ebd603898a7b0e4c5b03d00275e33fff5270e53c5d96917252c905f10",
+        "bytes": 3090
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/diagnostic-console-kudu.md",
+        "sha256": "b5320664dabe9d89f929c3bf538293cb61a3ec43759d6f0d41e4239d534e2a14",
+        "bytes": 3420
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/enable-continuous-deployment.md",
+        "sha256": "7396cbe4b4c68334153988c936f60810a81fa314e6a425afb37e48809936efe2",
+        "bytes": 2264
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/environment-variables.md",
+        "sha256": "0b11e58fe74d567934c7881714bd78cfcd61598b154e726fca362c2c3b1bdc88",
+        "bytes": 1696
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/explore-container-apps-environments.md",
+        "sha256": "fc7794867460ebbbdac8519ed854ab859f8df25d39e9976f1ec9caeb7ae4e854",
+        "bytes": 1405
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/image-pull-behavior.md",
+        "sha256": "dc94b2cc3c72fd159da6b861ca45ca3c828fe9704a047b19d8c955693e9128d7",
+        "bytes": 2269
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/key-vault-references.md",
+        "sha256": "07612862fd18f46cd938420d22ff0ffe863bbf963b716b758f7864a26b223ce4",
+        "bytes": 2236
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/manage-the-container-app-lifecycle.md",
+        "sha256": "23927f1d82f0ae554bf93d7c2164468841a38b0f3cde31cf89f2101c3797341f",
+        "bytes": 1379
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/monitor-logs-and-troubleshoot-issues.md",
+        "sha256": "67a5818ac044788c2ae79675bdad674a890953d7e0f039dca4875fef9fb4d236",
+        "bytes": 1387
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/project-overview.md",
+        "sha256": "5e6778646679b2305cbb79793f87f1203b597ffcde2acf880487f79e846443ff",
+        "bytes": 2106
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/setup-and-local-run.md",
+        "sha256": "1c7303b7a2731c3ce25a7c7e7601f647602af17f67b56dda9c711827985cbe40",
+        "bytes": 1317
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/slot-settings.md",
+        "sha256": "3d047651ae4dfd166d98887f8ce0b6d165978bcbb7ea2933329e4bc6326c8324",
+        "bytes": 2423
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/stream-container-logs.md",
+        "sha256": "3e5d40638f1ba194f9415c074529c6fef41ebdbb647746ef1f441b1c4da53419",
+        "bytes": 2614
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/troubleshoot-container-apps.md",
+        "sha256": "53dea54d6ac64050278f0fb10bfc7c73b7224a6d063cd8886c347d288fbe986e",
+        "bytes": 1351
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/update-the-container-image.md",
+        "sha256": "643e374c49ee965b95acc5e4f1c8c939748afc7a976b872f72c3a6be6df26003",
+        "bytes": 2281
+      },
+      {
+        "path": "content/study/topics/implement-container-application-hosting-on-azure/verify-the-deployment.md",
+        "sha256": "85a6f8ad9d6c9816184c9dbe6f076b3e2fbfa6754aba264afe03bde374ba96a5",
+        "bytes": 2066
+      },
+      {
+        "path": "content/study/topics/integrate-backend-services-for-ai-solutions/choose-between-queues-and-topics-with-subscriptions.md",
+        "sha256": "0a7d8c298e5ea908dccca62c78a8dce43cfc11323a4b382e825a8a9935edbb5d",
+        "bytes": 1491
+      },
+      {
+        "path": "content/study/topics/integrate-backend-services-for-ai-solutions/configure-delivery-and-retry-policies-for-reliable-event-processing.md",
+        "sha256": "172cf3c068c924a54262f9fd18fd12c1f652e81f18e20d472dbf440d9553fcaf",
+        "bytes": 1557
+      },
+      {
+        "path": "content/study/topics/integrate-backend-services-for-ai-solutions/exercise-process-messages-with-azure-service-bus.md",
+        "sha256": "2af9f44e31220504c0f05e3a0d871987a7607a65dd29b51f7450389f86545ab8",
+        "bytes": 1469
+      },
+      {
+        "path": "content/study/topics/integrate-backend-services-for-ai-solutions/exercise-publish-and-receive-events-with-azure-event-grid.md",
+        "sha256": "a3f1616d068c1bb84ecf040beec5cb1e3731d55fe13579bd5f47dcb291c43c85",
+        "bytes": 1507
+      },
+      {
+        "path": "content/study/topics/integrate-backend-services-for-ai-solutions/explore-azure-service-bus-concepts-and-messaging-in-ai-architectures.md",
+        "sha256": "c42c7712d77a9c301b942c41c84796967b0b930fb48d558c94d5abec131a3be4",
+        "bytes": 1559
+      },
+      {
+        "path": "content/study/topics/integrate-backend-services-for-ai-solutions/process-messages-reliably.md",
+        "sha256": "515822735c3437806a14450cdfd00ebc4f2cc2165ccfc2136fd52a05c8ecbfc3",
+        "bytes": 1387
+      },
+      {
+        "path": "content/study/topics/integrate-backend-services-for-ai-solutions/publish-custom-events-from-ai-applications.md",
+        "sha256": "0f52145dbc257aa33bb8afd3fd5046896b9397c6b0ce78639effeb76a993dd5f",
+        "bytes": 1457
+      },
+      {
+        "path": "content/study/topics/integrate-backend-services-for-ai-solutions/structure-messages-for-ai-workloads.md",
+        "sha256": "d7b2de7dc671daf7f1422103e864603ca338533236b992fb891e771382333a5f",
+        "bytes": 1427
+      },
+      {
+        "path": "content/study/topics/integrate-backend-services-for-ai-solutions/understand-azure-event-grid-concepts-and-event-driven-patterns-for-ai-solutions.md",
+        "sha256": "334f450a045ea20ec6efaa6b5f2bad7186d07efbe97e961bf2dca23cc45be986",
+        "bytes": 1612
+      },
+      {
+        "path": "content/study/topics/integrate-backend-services-for-ai-solutions/work-with-event-schemas-and-properties.md",
+        "sha256": "ce6864377d2f6b775529b5244b913461e685719d181fd7fd0883099ebba96de7",
+        "bytes": 1441
+      },
+      {
+        "path": "content/study/topics/manage-application-secrets-and-configuration-for-ai-solutions/connect-to-app-configuration-from-application-code.md",
+        "sha256": "3ce616d096da2f0b93469a376eb22b08eb9cca998def61645ac234bd7b62e60e",
+        "bytes": 1527
+      },
+      {
+        "path": "content/study/topics/manage-application-secrets-and-configuration-for-ai-solutions/decide-what-to-store-in-app-configuration-vs-key-vault.md",
+        "sha256": "996666741f1757d8d593a7e7db8dd3af05c3517946b34aaa3d0b839e2099ecca",
+        "bytes": 1543
+      },
+      {
+        "path": "content/study/topics/manage-application-secrets-and-configuration-for-ai-solutions/exercise-manage-secrets-with-azure-key-vault.md",
+        "sha256": "853d239321160012148f52d5e49c05e9805ab5edb6f55b881bc8ff591a9d3ecf",
+        "bytes": 1475
+      },
+      {
+        "path": "content/study/topics/manage-application-secrets-and-configuration-for-ai-solutions/exercise-retrieve-settings-and-secrets-from-azure-app-configuration.md",
+        "sha256": "4c93f4b45a450a04730fa5e118d0be2cdec72c42345ae99507ac9b13f5c38ed7",
+        "bytes": 1585
+      },
+      {
+        "path": "content/study/topics/manage-application-secrets-and-configuration-for-ai-solutions/handle-secret-versioning-and-rotation.md",
+        "sha256": "23ef0a2e32b49950bbefd3001795f9447f5a8d1d3d7d0e420a461dc2be8d52e0",
+        "bytes": 1457
+      },
+      {
+        "path": "content/study/topics/manage-application-secrets-and-configuration-for-ai-solutions/implement-caching-strategies-to-reduce-key-vault-calls.md",
+        "sha256": "8110b13e3c4e2870bdc6233fb137e6ee1e28bfce78fb1ee506e9860e481a167b",
+        "bytes": 1525
+      },
+      {
+        "path": "content/study/topics/manage-application-secrets-and-configuration-for-ai-solutions/organize-settings-with-labels-and-feature-flags.md",
+        "sha256": "fce4ef8bb0ad47a20438737ee2262364cce734454da7fd1d0b28f30e9ff09ea1",
+        "bytes": 1515
+      },
+      {
+        "path": "content/study/topics/manage-application-secrets-and-configuration-for-ai-solutions/reference-key-vault-secrets-from-app-configuration.md",
+        "sha256": "dba9b6366d1ca0a59ce01edeacfa3d562df50c85c902d95275798a1930e6fd78",
+        "bytes": 1527
+      },
+      {
+        "path": "content/study/topics/manage-application-secrets-and-configuration-for-ai-solutions/retrieve-secrets-using-azure-sdk-client-libraries.md",
+        "sha256": "161faf86a16218abefda43512bccf0eab247947604208824fa8bbed347f9788d",
+        "bytes": 1505
+      },
+      {
+        "path": "content/study/topics/manage-application-secrets-and-configuration-for-ai-solutions/store-and-organize-secrets-keys-and-certificates.md",
+        "sha256": "eca424ff5d4adb2ad8180b1fddab93688d3ca1f153889b3d42c02d3e269b5823",
+        "bytes": 1511
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/add-the-opentelemetry-sdk-to-an-application.md",
+        "sha256": "eb68605a2bda45d805df9f4bc954473caa717b277abfc6b4819ec70ac87f1cf5",
+        "bytes": 4522
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/build-dashboards-for-app-telemetry.md",
+        "sha256": "f49da1336ccdfdd2cd00736e1e4486eebb944b53f4b2cf707f09ff51de917f7a",
+        "bytes": 3135
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/configure-spans-and-traces.md",
+        "sha256": "f9e99b0f24e36c6e65fab11f7b91e0799edf2c3dcfbfb8201d68073998edfbf6",
+        "bytes": 4685
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/create-workbooks-for-interactive-analysis.md",
+        "sha256": "fe79aa649450d5f25efa4ff4c564f379d6680455ba47aff17d78e34737a821b5",
+        "bytes": 3200
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/debug-distributed-flows-with-trace-data.md",
+        "sha256": "7c9cc716c1ff55c16a21989a97cce5f74d7d195888a314781ce1182ca425e958",
+        "bytes": 3677
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/exercise-instrument-an-app-with-the-opentelemetry-sdk.md",
+        "sha256": "687731074ef703a01c57883a76f8d86b4fa0a63bf6ff71bba8c5704d4f3ac430",
+        "bytes": 3178
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/exercise-query-logs-with-kql.md",
+        "sha256": "5078be58771d7c35d38155899a30b68eef2c8790927bc7f2f5f5ecc78f15f32f",
+        "bytes": 3063
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/explore-logs-for-errors-and-performance.md",
+        "sha256": "268057b84ce87d2a7ead12fa26962baf3b2f7f711000089412e763d2a7fb10f4",
+        "bytes": 3078
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/explore-opentelemetry-and-its-role-in-observability.md",
+        "sha256": "1b0940fa3915740dd536200c3bd1a841e3626cce075786ba2afbbf478da9349f",
+        "bytes": 4492
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/export-telemetry-to-azure-monitor.md",
+        "sha256": "ffec87c0aafa8ba323f72660afa8be54c6429b46b98d78f0ad86c8d40888c636",
+        "bytes": 4277
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/set-alerts-for-app-failures-and-anomalies.md",
+        "sha256": "1c61716ad2ef922207fcade67180e068089c9bff34017dcc5ecdc2407beff66f",
+        "bytes": 3619
+      },
+      {
+        "path": "content/study/topics/observe-and-troubleshoot-apps-on-azure/write-basic-kql-queries.md",
+        "sha256": "1c1650d7117b4282f733a15ed34801d5584a558dc811900796073674af3fd3bd",
+        "bytes": 5319
+      },
+      {
+        "path": "eslint.config.mjs",
+        "sha256": "870f1adccecf3051cbcd9fd307cef51d7633cf510979c181a81f4b1797273493",
+        "bytes": 465
+      },
+      {
+        "path": "lib/content.ts",
+        "sha256": "b82af7bd977ccea09f07689c7af83bcc8e2363ed6c4899d5ff7a1fe03b176c11",
+        "bytes": 4033
+      },
+      {
+        "path": "lib/domains.ts",
+        "sha256": "0107c7d2283b50fc32b17e33785dd8938ffed9ca8d8d086a22db0f48d1896fe1",
+        "bytes": 1471
+      },
+      {
+        "path": "lib/exams.ts",
+        "sha256": "3f852e783de1f6d89d08f4404d3477c3e5fdfd3312bbcb4723fe2a42d1e03cd1",
+        "bytes": 3563
+      },
+      {
+        "path": "lib/questions.ts",
+        "sha256": "5dc7152bbaa406bbe8b55d895f5adff85c74e006934beea3374a952c7d14599f",
+        "bytes": 1303
+      },
+      {
+        "path": "lib/site.ts",
+        "sha256": "c6bacd7ad2cc8d1a342ff82e9b9698d4d4c22854829ef7f5b275fc5fdeb573bd",
+        "bytes": 1010
+      },
+      {
+        "path": "lib/skill-focus.ts",
+        "sha256": "2a8fb451d45ba7ff7e97c47787bfce32e6d87ba91369cb5c5dabedf12b64ce50",
+        "bytes": 2278
+      },
+      {
+        "path": "lib/slugify.ts",
+        "sha256": "c2d57a37477e04d0b3a26199fb746e6266bcc1123193b225a6aeed95e05ed5af",
+        "bytes": 228
+      },
+      {
+        "path": "lib/toc.ts",
+        "sha256": "153624b161804bffd5c94d520a99faeb01600663cc4c0fc8412440e99d4b1262",
+        "bytes": 1218
+      },
+      {
+        "path": "lib/topics.ts",
+        "sha256": "a94edfa718745995df7465bdedf4d093519b75940bb085f9751da2dbd994a2b0",
+        "bytes": 1824
+      },
+      {
+        "path": "lib/utils.ts",
+        "sha256": "4e309888c6a922d63cb73f9442adb71800451e674192aada541759d45dea860b",
+        "bytes": 878
+      },
+      {
+        "path": "next.config.ts",
+        "sha256": "614bce25b089c3f19b1e17a6346c74b858034040154c6621e7d35303004767cc",
+        "bytes": 133
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "71cd12e5b4b1e4f7c9c6dcc2f4a1bef48870afe13b2f51e990aa1fd646390cd9",
+        "bytes": 406747
+      },
+      {
+        "path": "package.json",
+        "sha256": "429d5ec00128ed245030a1033f0d24407f0dc9715698ff5bd0494ca852d9de98",
+        "bytes": 1065
+      },
+      {
+        "path": "postcss.config.mjs",
+        "sha256": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde",
+        "bytes": 94
+      },
+      {
+        "path": "public/file.svg",
+        "sha256": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4",
+        "bytes": 391
+      },
+      {
+        "path": "public/globe.svg",
+        "sha256": "b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf",
+        "bytes": 1035
+      },
+      {
+        "path": "public/next.svg",
+        "sha256": "55995dfad6ecb4945a1e856ddca03c5e16aa5bf13fd21b4df6a74ae79357bcfc",
+        "bytes": 1375
+      },
+      {
+        "path": "public/vercel.svg",
+        "sha256": "f081337b2fee635b455b63275406a3e7f39d6a014e25ad90dab5a67e62a12ac4",
+        "bytes": 128
+      },
+      {
+        "path": "public/window.svg",
+        "sha256": "644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1",
+        "bytes": 385
+      },
+      {
+        "path": "scripts/generate-advanced-questions.mjs",
+        "sha256": "c4eeb65dce950a16c8896dd02879ca45b6330f31e6f464e2e50e7fce79867404",
+        "bytes": 40721
+      },
+      {
+        "path": "scripts/generate-topic-notes.mjs",
+        "sha256": "e56515313084f2f67df575bd7459b6e25c189e42473132a9a3c163db8c4214b3",
+        "bytes": 3495
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "be18523b23b78b6e1a876ddd107d330f0168bddf09d751b57e0b5edce69c66f3",
+        "bytes": 666
+      }
+    ],
+    "permission": "Included with permission. No general upstream reuse license was supplied."
+  },
+  {
+    "id": "bouvet",
+    "repository": "https://github.com/Bouvet-deler/AI-200-Bootcamp",
+    "revision": "cb616523401765277a983c61d22d96c8551476ab",
+    "reviewDate": "2026-10-11",
+    "license": null,
+    "imported": true,
+    "status": "snapshot; reuse authorized by repository owner in this task",
+    "files": [
+      {
+        "path": ".github/copilot-instructions.md",
+        "sha256": "70e9a99ce487937c561dd021f946f31b14bb7b05027b977ab2badd8f5fc19540",
+        "bytes": 1719
+      },
+      {
+        "path": ".gitignore",
+        "sha256": "b313cafb4634ea6912f757ae60d6b1c26100c7c19cac909576e3fbec5055eec8",
+        "bytes": 633
+      },
+      {
+        "path": "01-containers/README.md",
+        "sha256": "35e4273a7781eaebbe2c42be4f8ac1f164b9ed3d6f76634d4ca6ca91b209002a",
+        "bytes": 9840
+      },
+      {
+        "path": "01-containers/acr/README.md",
+        "sha256": "51e55ce0d42480ef7236f66d8e43e1957f3e89d550a1dcf64a133e83abf3eefb",
+        "bytes": 27655
+      },
+      {
+        "path": "01-containers/acr/app.py",
+        "sha256": "914c84f278627419a5e4aa62712600b340dbf3385c9042d21183ccad3886d4b9",
+        "bytes": 6887
+      },
+      {
+        "path": "01-containers/aks/README.md",
+        "sha256": "bc2af05fca5be891b32c0ed4b07f58123704436592d7630231d51fd1c6b10e85",
+        "bytes": 32499
+      },
+      {
+        "path": "01-containers/aks/app.py",
+        "sha256": "e9766a39ea087f554ee9629c60ee3947f780c7d958aa502823f482f0f2aa0c23",
+        "bytes": 16347
+      },
+      {
+        "path": "01-containers/aks/webapp-src/Dockerfile",
+        "sha256": "d62790187d5c8be8e8f445443f7be44f26c119b41fecc6e8c7528f5f671ce6b6",
+        "bytes": 893
+      },
+      {
+        "path": "01-containers/aks/webapp-src/default.conf",
+        "sha256": "3ad8ced476969a68f0cb56fccf75cc3c6ee2f5f42a09cff3125b4a1cb0bffbfb",
+        "bytes": 309
+      },
+      {
+        "path": "01-containers/aks/webapp-src/index.html",
+        "sha256": "c47f4bafc13808ed988948b237917714acc10c121f7371328549871accf2339a",
+        "bytes": 125
+      },
+      {
+        "path": "01-containers/aks/webapp.yaml",
+        "sha256": "e11a9500d5a66506bcdfbbf0b56d6b99d3e810d8b133d21eb2242b03cae419d0",
+        "bytes": 3409
+      },
+      {
+        "path": "01-containers/app-service-containers/README.md",
+        "sha256": "3ec8dd8f1ef3261e4bec8f5a5a8e66b16fb89b1c7923a895394a2beac62b16e6",
+        "bytes": 29246
+      },
+      {
+        "path": "01-containers/app-service-containers/app.py",
+        "sha256": "26443e0f237c19d08ceadc22cb69161e5bac86509d81e3c49a63a65b41f9cc5e",
+        "bytes": 8190
+      },
+      {
+        "path": "01-containers/container-apps-keda/README.md",
+        "sha256": "4a295c92d3dfbd338f04bcaca917e5c3264b3ca09baaf70c58b7a99dd309af68",
+        "bytes": 30964
+      },
+      {
+        "path": "01-containers/container-apps-keda/container-app.template.yaml",
+        "sha256": "00756bd7c3b9ec708e9d88fcab8eb0388022775868cd686d915e2c9dd83d6c5a",
+        "bytes": 1831
+      },
+      {
+        "path": "02-data-services/azure-managed-redis/README.md",
+        "sha256": "00505f168e77e0bf96cb44421d96e0da3d06d188acc6ca9220dbe0f7e795d89f",
+        "bytes": 20036
+      },
+      {
+        "path": "02-data-services/cosmos-db-nosql/README.md",
+        "sha256": "389b1c16f464eb65bdde8040b55aa58951c2e5f3aa70b0a90413661922b4ed42",
+        "bytes": 26371
+      },
+      {
+        "path": "02-data-services/postgresql-pgvector/README.md",
+        "sha256": "763738dceaa5b46a1b8411e4d7345a7155aec9e66e8aa739d243c7f03e8aa909",
+        "bytes": 23402
+      },
+      {
+        "path": "03-connect-consume/azure-functions/.funcignore",
+        "sha256": "f4b4ae6d71a675fecaa1ad6a6ad35d87615bdabb87bdd4ac40d16a4ca30c5fd3",
+        "bytes": 241
+      },
+      {
+        "path": "03-connect-consume/azure-functions/README.md",
+        "sha256": "03485ae90a3424183697a850663aa601fad7adfc5b35e456ca4aedc164719867",
+        "bytes": 42079
+      },
+      {
+        "path": "03-connect-consume/azure-functions/function_app.py",
+        "sha256": "2e1b44c41c5e8cb14c89ca09f023fd0b0c966b6ff57f1746120643f4ed768bfc",
+        "bytes": 12511
+      },
+      {
+        "path": "03-connect-consume/azure-functions/host.json",
+        "sha256": "1796ea4bd4c492772e7ecccf44a7a6c64486ae7c9c1590b69dfb75961c4de90f",
+        "bytes": 291
+      },
+      {
+        "path": "03-connect-consume/azure-functions/local.settings.example.json",
+        "sha256": "aa67ba1fd6e98da58681bed63abcf50e643cb651b878bdf46db3a8f6e0ee6700",
+        "bytes": 231
+      },
+      {
+        "path": "03-connect-consume/azure-functions/requirements.txt",
+        "sha256": "44570fe805cdf3932e896f4a8c955670d9a1596aaae50e19229cf0d7cac2d810",
+        "bytes": 1075
+      },
+      {
+        "path": "03-connect-consume/event-grid/README.md",
+        "sha256": "92858afb1d1d73d2b097f808ba981d86e950e528d881747dcfa7701acf2c073a",
+        "bytes": 30280
+      },
+      {
+        "path": "03-connect-consume/event-grid/publish_events.py",
+        "sha256": "814092a6ce2ea5f94f03175c57b4b4d1446ea39b2b51ddc261f6217392af1a64",
+        "bytes": 5322
+      },
+      {
+        "path": "03-connect-consume/event-grid/requirements.txt",
+        "sha256": "3161a9e089a55eea73d27fb7b92319846333bad5df945a3fdf2301bd830be457",
+        "bytes": 87
+      },
+      {
+        "path": "03-connect-consume/service-bus/README.md",
+        "sha256": "d075c152b434e7929553c45fee2caf02f42360086be544f21e76f31f10fa8eb9",
+        "bytes": 26623
+      },
+      {
+        "path": "03-connect-consume/service-bus/requirements.txt",
+        "sha256": "ff6ebded9c86d657fbb7b1512642c0d94c30199a0a685dc3fb5fc7e29233f7ac",
+        "bytes": 212
+      },
+      {
+        "path": "03-connect-consume/service-bus/send_receive_deadletter.py",
+        "sha256": "8b562e78889c90aa63d0de9ba585a87ff02504bb3965241107208ad03e7dd096",
+        "bytes": 11875
+      },
+      {
+        "path": "04-secure-monitor/app-configuration/README.md",
+        "sha256": "b286fe4ccd1eb532f13d81c711b8f7036eed7ac7291e57c984ed11849ed3c50b",
+        "bytes": 31482
+      },
+      {
+        "path": "04-secure-monitor/app-configuration/app.py",
+        "sha256": "422fa9b6327dbe1ee306f70be8c4d9cbb9c977edec3c2de4c94f4e0f54d3a1f2",
+        "bytes": 7142
+      },
+      {
+        "path": "04-secure-monitor/key-vault/README.md",
+        "sha256": "e96fa1ba24446899a731e191bc090345a1609831e70bff5762a7b59ad0b84736",
+        "bytes": 13201
+      },
+      {
+        "path": "04-secure-monitor/key-vault/app.py",
+        "sha256": "c8eb4028deee08901498239c4fa77052b1499fb98deba2afeefc144a673d7e0f",
+        "bytes": 2546
+      },
+      {
+        "path": "04-secure-monitor/kql/README.md",
+        "sha256": "fb81f343dffcc51bc7f713434b902545eb6832d1522d507e755a27eba5f78ebb",
+        "bytes": 23208
+      },
+      {
+        "path": "04-secure-monitor/kql/app.py",
+        "sha256": "fbd48d9074c6f95c059578963c4a6a0691876eec1babf03360aa5562f365e42d",
+        "bytes": 5174
+      },
+      {
+        "path": "04-secure-monitor/opentelemetry/README.md",
+        "sha256": "488278498e35b0af509f3e60b3539c6c19d4dc652e8da680ffec93adc5b0674a",
+        "bytes": 20301
+      },
+      {
+        "path": "04-secure-monitor/opentelemetry/app.py",
+        "sha256": "533a7cfb57dbf11f5726a6316d0f3d0ddc61ad1238344fdff1a738a0573c8b9c",
+        "bytes": 6565
+      },
+      {
+        "path": "04-secure-monitor/opentelemetry/interactive.py",
+        "sha256": "350fc5719e22168049e9e7d25f16fe47b35f8de3fa0cf143889122aaec9f0e4a",
+        "bytes": 17653
+      },
+      {
+        "path": "AGENTS.md",
+        "sha256": "4a7db0950afcd817f2cf0ed4ce53ece7b2c3b88ddc187c5980b51fd1f0fc4782",
+        "bytes": 2759
+      },
+      {
+        "path": "CLAUDE.md",
+        "sha256": "4023b5aeeea9e080cc551ccf9430ecb0790cfa129772c45d26d1e987fe0887b3",
+        "bytes": 2823
+      },
+      {
+        "path": "MISTRAL.md",
+        "sha256": "41c829aa3996c1110161948d8a74d4a906e8cd9120a049c94250ff9581650f14",
+        "bytes": 2197
+      },
+      {
+        "path": "README.md",
+        "sha256": "c7d1a924de749c3442eee33a7acdf254dbf6cc03552289705d594e491804bc1a",
+        "bytes": 3346
+      },
+      {
+        "path": "docs/TOPIC_TEMPLATE.md",
+        "sha256": "afa14c27e6b7dafe74114b7db431ddb7a5beae8aefd684b8ca92d3ebe4512918",
+        "bytes": 1691
+      },
+      {
+        "path": "quiz/README.md",
+        "sha256": "2f8386beb2851af599fe04059f64145d7afd007aedf4906730b36aae8f4222bc",
+        "bytes": 3611
+      },
+      {
+        "path": "quiz/index.html",
+        "sha256": "edcc39d0601dd958029703d580bb288a88e661785200edbd324cb2ba72b413ba",
+        "bytes": 937
+      },
+      {
+        "path": "quiz/package-lock.json",
+        "sha256": "df6cb2ad4bc8226dd7c20779fed8c71777407059b025e3c616b78b058a055542",
+        "bytes": 29067
+      },
+      {
+        "path": "quiz/package.json",
+        "sha256": "9f29b8e52a5a65387539b9cc0f20e76dd94ae80c05302d17891c44fb2ea051aa",
+        "bytes": 618
+      },
+      {
+        "path": "quiz/public/background.jpg",
+        "sha256": "89849d32f70ed44d1e819194c4e801dda17924eaf7d8c60b0ebe826943463641",
+        "bytes": 867966
+      },
+      {
+        "path": "quiz/public/favicon.svg",
+        "sha256": "0750e00f630158ea0a3ab4e06893ece6dd1c1d0731a1b374171d0aad748e71fe",
+        "bytes": 260
+      },
+      {
+        "path": "quiz/scripts/validate-questions.mjs",
+        "sha256": "4edc3534024da7c588635fd341417df993c38d85adc765ba4b8eabde62e141bf",
+        "bytes": 10129
+      },
+      {
+        "path": "quiz/src/App.tsx",
+        "sha256": "767c5b6ffb3ea3e7376afcf0826f87464d70b972b80eb7e2d0adb0e917c1eaba",
+        "bytes": 27895
+      },
+      {
+        "path": "quiz/src/index.css",
+        "sha256": "7d9b725751f2f7720aa6b3159c2596619d4e0aab9f8b46113bd1f266abec9582",
+        "bytes": 22259
+      },
+      {
+        "path": "quiz/src/lib/examWeights.ts",
+        "sha256": "991c25920ce638546017442e78c7abb1e13ec273d6cf83781f45161b9bcaab19",
+        "bytes": 996
+      },
+      {
+        "path": "quiz/src/main.tsx",
+        "sha256": "14a10dee4aaa2130d9f57c136db7f16f95f524d60d77146b17776e91c2ab626c",
+        "bytes": 236
+      },
+      {
+        "path": "quiz/src/questions/01-containers/acr.json",
+        "sha256": "653a05eab045eea4db6c6d706b0755efaea56bce662364378931305f03c849d9",
+        "bytes": 22559
+      },
+      {
+        "path": "quiz/src/questions/01-containers/aks.json",
+        "sha256": "54778f4b58b7debb224f8682f0e78314f0c1ca082f95b435dfac14774316fc57",
+        "bytes": 22197
+      },
+      {
+        "path": "quiz/src/questions/01-containers/app-service-containers.json",
+        "sha256": "97ef8925e6dff20642353972183b89962ee4dbf0d5721926f59880ec7c99662f",
+        "bytes": 18330
+      },
+      {
+        "path": "quiz/src/questions/01-containers/container-apps-keda.json",
+        "sha256": "93de239ccd14243324d2a405cba7a4d3885d2cf81f929fa07979d539a241b7ef",
+        "bytes": 29661
+      },
+      {
+        "path": "quiz/src/questions/02-data-services/azure-managed-redis.json",
+        "sha256": "b98318526e6b28265e7ec5dd6a704bf51e084252b130bf86617f5f91b5cfba03",
+        "bytes": 31560
+      },
+      {
+        "path": "quiz/src/questions/02-data-services/cosmos-db-nosql.json",
+        "sha256": "49f1ede6483ed6a3c5f11fdc4c0ebe33bd07e4be7a7223e1295e16864c1cef67",
+        "bytes": 41608
+      },
+      {
+        "path": "quiz/src/questions/02-data-services/postgresql-pgvector.json",
+        "sha256": "c9a5b3222f6b3c1f6210c06e9888decf64ba9e3d85a94c9beb19ae18ab026c98",
+        "bytes": 39780
+      },
+      {
+        "path": "quiz/src/questions/03-connect-consume/azure-functions.json",
+        "sha256": "d64721bc29167de6bf135dbd152d1bbf2dda151f5b360f13090f1c1e8c48fdcd",
+        "bytes": 30138
+      },
+      {
+        "path": "quiz/src/questions/03-connect-consume/event-grid.json",
+        "sha256": "12ed801db365a7f1662cf5eaa0f6cebf49fc2661a2573102be9eb97547222e56",
+        "bytes": 23570
+      },
+      {
+        "path": "quiz/src/questions/03-connect-consume/service-bus.json",
+        "sha256": "17f5fc3025ff10627682cb5017f83714f63eab3f4205235d1a13edaff5549035",
+        "bytes": 24398
+      },
+      {
+        "path": "quiz/src/questions/04-secure-monitor/app-configuration.json",
+        "sha256": "f3d0a87c5aabeeae79127a057374cc8cce97959641b6d835aaa72b097b79491a",
+        "bytes": 24697
+      },
+      {
+        "path": "quiz/src/questions/04-secure-monitor/key-vault.json",
+        "sha256": "cb69eebbefd96ea0a412c7ecb3037e834cbda00dbfe6a3af777418043be1585d",
+        "bytes": 41432
+      },
+      {
+        "path": "quiz/src/questions/04-secure-monitor/kql.json",
+        "sha256": "99250743ab3571850f4f1f8f0b7ef78fe78b5656c165a3f990a6a0050ecdcd93",
+        "bytes": 30207
+      },
+      {
+        "path": "quiz/src/questions/04-secure-monitor/opentelemetry.json",
+        "sha256": "60e5c5af03640c3f839791389a6de81a4ad8126a12966da38bfae8f73e5ce80b",
+        "bytes": 24030
+      },
+      {
+        "path": "quiz/src/questions/index.ts",
+        "sha256": "f246b29a45c2bb29bfa030777e7e9ce345c2f9a0fc995daea52670a9f7bfc725",
+        "bytes": 1336
+      },
+      {
+        "path": "quiz/src/types.ts",
+        "sha256": "e2b677615dc0dfd6e788a4ab6cfa463239427f485f6cd4c3497e7a37ee23bf1d",
+        "bytes": 1320
+      },
+      {
+        "path": "quiz/src/vite-env.d.ts",
+        "sha256": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+        "bytes": 38
+      },
+      {
+        "path": "quiz/tsconfig.json",
+        "sha256": "2235d1191036f04731eb964680338c36d7fcfa6ecc71411d8ccc158ce6b24876",
+        "bytes": 720
+      },
+      {
+        "path": "quiz/tsconfig.node.json",
+        "sha256": "bb9fd8592a9e364641441219f10d84daae9ba2ca5cc85db798efad6913bb8257",
+        "bytes": 233
+      },
+      {
+        "path": "quiz/vite.config.ts",
+        "sha256": "2d8b8a9c0291a6635f5efef200ae0fae8bfd0f5d57b3e456125e71aea661be6a",
+        "bytes": 163
+      }
+    ],
+    "permission": "Included with permission. No general upstream reuse license was supplied."
+  }
+]

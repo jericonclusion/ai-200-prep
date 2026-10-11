@@ -1,0 +1,13 @@
+{
+    "id": "case_study_stellmarsh_aviation",
+    "tabs": [
+        {
+            "title": "Company Overview",
+            "content": "**Stellmarsh Aviation** provides predictive-maintenance analytics for regional airlines. Its Python services analyze engine-sensor telemetry and predict component failures before they occur.\n\n**Current Environment:**\n- All container images are built in CI and stored in the Azure Container Registry `stellmarshacr`.\n- Real-time inference APIs run in an **Azure Container Apps** environment named `stell-env`, which has workload profiles enabled. All apps currently run on the Consumption profile.\n- A nightly fleet-wide batch scorer runs as a Deployment on an existing **Azure Kubernetes Service** cluster named `stell-batch`.\n- Trained model weights are versioned and stored in an **Azure Blob Storage** container named `models`. The current turbine-anomaly model is approximately **8 GB**."
+        },
+        {
+            "title": "Requirements",
+            "content": "**Inference Requirements:**\n- A new turbine-anomaly detection model requires **GPU compute**. It must run inside the existing `stell-env` environment; the team will not create or operate a Kubernetes cluster for it.\n- The inference API container image must stay small: the 8 GB model weights must **not** be baked into the image, must be fully present on a local volume **before** the API container starts accepting traffic, and a new model version must be deployable without rebuilding the API image.\n\n**Batch Scoring Requirements:**\n- The nightly scorer on `stell-batch` is currently unhealthy: its pods restart repeatedly and `kubectl get pods` shows `CrashLoopBackOff`. Each container exits roughly 20 seconds after starting. Engineers need to see the output the crashed container produced before it exited.\n\n**General:**\n- All services authenticate to Azure resources with managed identities; no keys or passwords in images or manifests."
+        }
+    ]
+}

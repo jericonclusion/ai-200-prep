@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-32-keyvault-cryptography-client",
+    "question": "A Python service must encrypt patients' identifiers before storing them and decrypt them on read. Compliance requires that the encryption key **never leaves Azure Key Vault** — no key material may exist in application memory, configuration, or logs.\n\nHow should the service perform the cryptographic operations?",
+    "options": [
+        {
+            "text": "Create a **key** in Key Vault and use `CryptographyClient` from `azure-keyvault-keys`: `crypto_client.encrypt(EncryptionAlgorithm.rsa_oaep_256, plaintext)` and `crypto_client.decrypt(...)` — the private-key operations execute inside the Key Vault service.",
+            "correct": true
+        },
+        {
+            "text": "Store a symmetric key as a Key Vault **secret**, fetch it at startup with `SecretClient.get_secret()`, and run AES encryption locally with the `cryptography` package.",
+            "correct": false
+        },
+        {
+            "text": "Create a Key Vault **certificate**, download it with its private key at startup, and use the private key for local encryption and decryption.",
+            "correct": false
+        },
+        {
+            "text": "Derive an AES key at startup from a passphrase stored in App Configuration, so no key is ever stored anywhere.",
+            "correct": false
+        }
+    ],
+    "explanation": "Key Vault **keys** are non-exportable by design, and `CryptographyClient` is the SDK surface for using them without possessing them: for private-key operations such as `decrypt`, the client sends the ciphertext to the vault, the operation runs **inside the Key Vault (or Managed HSM) boundary**, and only the result returns. The application authenticates with its managed identity and holds plaintext and ciphertext — never key material — which is exactly the compliance requirement. Access to each operation is auditable in the vault's logs.\n\n**Why not the other options:**\n- **Symmetric key in a secret** — A secret's value is *returned to the caller*: the key now lives in process memory (and potentially in dumps, traces, or logs), violating \"never leaves Key Vault.\" Secrets are for things the app must possess, like third-party API keys — not for keys that must stay enclosed.\n- **Certificate with downloadable private key** — Same flaw made explicit: downloading the certificate's private key moves the crypto material into the app. Certificates in Key Vault target TLS/identity scenarios; a certificate whose key must stay protected would also be used through `CryptographyClient`, not downloaded.\n- **Key derived from a passphrase** — The passphrase *is* key material, stored in a service built for configuration, not secrets. Every instance derives the same key into memory, there is no rotation story, no HSM protection, and no per-operation audit trail.",
+    "category": "Secure, monitor, and troubleshoot Azure solutions"
+}

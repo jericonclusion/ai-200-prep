@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-35-kql-dcount-daily",
+    "question": "Request telemetry in the `AppRequests` table carries the conversation identifier in `Properties.sessionId`. Product management needs the number of **distinct conversations per day** over the last 30 days.\n\nWhich KQL query should you use?",
+    "options": [
+        {
+            "text": "AppRequests\n| where TimeGenerated > ago(30d)\n| extend sessionId = tostring(Properties.sessionId)\n| summarize ActiveConversations = dcount(sessionId) by bin(TimeGenerated, 1d)",
+            "correct": true
+        },
+        {
+            "text": "AppRequests\n| where TimeGenerated > ago(30d)\n| summarize ActiveConversations = count() by bin(TimeGenerated, 1d)",
+            "correct": false
+        },
+        {
+            "text": "AppRequests\n| where TimeGenerated > ago(30d)\n| extend sessionId = tostring(Properties.sessionId)\n| distinct sessionId\n| count",
+            "correct": false
+        },
+        {
+            "text": "AppRequests\n| where TimeGenerated > ago(30d)\n| extend sessionId = tostring(Properties.sessionId)\n| summarize ActiveConversations = count() by sessionId, bin(TimeGenerated, 1d)",
+            "correct": false
+        }
+    ],
+    "explanation": "Two pieces do the work: `extend ... tostring(Properties.sessionId)` materializes the identifier from the dynamic `Properties` column as a scalar string, and `summarize dcount(sessionId) by bin(TimeGenerated, 1d)` counts **distinct** identifiers within each one-day bucket. `dcount()` is the distinct-count aggregation (a fast approximation suited to dashboards; `dcountif`/`count_distinct` exist for conditional or exact variants), and `bin(..., 1d)` supplies the per-day grouping — one row per day, each with that day's unique conversation count.\n\n**Why not the other options:**\n- **`count() by bin(...)`** — Counts *rows* (requests) per day, not unique conversations: a single chatty conversation with 500 requests inflates the day by 500. Distinctness is the entire point of the metric.\n- **`distinct sessionId | count`** — Collapses the whole 30-day window into one grand total. There is no per-day dimension left, so it cannot show the daily trend management asked for — and a conversation active on several days is counted once overall rather than once per active day.\n- **`count() by sessionId, bin(...)`** — Groups by *both* session and day, returning one row per conversation per day (with its request count) — thousands of rows, not a daily distinct total. It answers \"how many requests did each conversation make each day,\" a different question.",
+    "category": "Secure, monitor, and troubleshoot Azure solutions"
+}

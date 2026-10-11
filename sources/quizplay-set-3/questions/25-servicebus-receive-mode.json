@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-25-servicebus-receive-mode",
+    "question": "A Python worker consumes invoice-processing jobs from an Azure Service Bus queue with:\n\n```python\nreceiver = client.get_queue_receiver(\n    queue_name=\"transcribe-jobs\",\n    receive_mode=ServiceBusReceiveMode.RECEIVE_AND_DELETE,\n)\n```\n\nWhen a worker crashes mid-job, that job is **gone** — it is never processed by any worker. Jobs must be processed at least once even if workers crash.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Switch to `ServiceBusReceiveMode.PEEK_LOCK` and call `receiver.complete_message(msg)` only after the job has been fully processed; a crashed worker's lock expires and the broker redelivers the message.",
+            "correct": true
+        },
+        {
+            "text": "Keep RECEIVE_AND_DELETE but wrap the processing code in `try/except` and re-send the message to the queue from the exception handler.",
+            "correct": false
+        },
+        {
+            "text": "Turn on the duplicate-detection feature so the broker restores messages that were deleted but not processed.",
+            "correct": false
+        },
+        {
+            "text": "Raise `max_delivery_count` on the queue so the broker attempts delivery more times before giving up.",
+            "correct": false
+        }
+    ],
+    "explanation": "`RECEIVE_AND_DELETE` is **at-most-once** delivery: the broker deletes the message the moment it hands it over, so a crash between receive and completion destroys the only copy. `PEEK_LOCK` (the SDK default) is the **at-least-once** mode: the message stays in the queue under a time-limited lock while the worker processes it, and it is removed only when the worker explicitly calls `complete_message` after success. If the worker crashes, the lock simply expires and the broker makes the message available again for another worker — exactly the required behavior.\n\n**Why not the other options:**\n- **`try/except` + re-send** — An exception handler never runs when the process crashes, the VM dies, or the container is OOM-killed — precisely the failures described. The window between broker-side deletion and durable re-send is exactly where jobs vanish.\n- **Duplicate detection** — Deduplicates messages with the same `message_id` *on the send path*. It has no record of what consumers processed and cannot resurrect a message the broker already deleted on receive.\n- **`max_delivery_count`** — Counts *failed peek-lock delivery attempts* before dead-lettering. In RECEIVE_AND_DELETE mode every delivery succeeds from the broker's perspective (the handoff completed), so this setting never comes into play.",
+    "category": "Connect to and consume Azure services"
+}

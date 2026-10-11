@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-20-blob-lifecycle-tiers",
+    "question": "A document-intelligence pipeline stores every source PDF in the Blob Storage container `raw-docs`. Documents are processed within days of upload, are occasionally re-read for about 90 days, and must then be retained for 5 years for compliance but are almost never read again. Storage cost must be reduced **automatically, with no code or jobs to run**, while keeping recent documents instantly readable.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Add a **lifecycle management policy** on the storage account that moves blobs in `raw-docs` to the cool tier 90 days after last modification, to the archive tier at 180 days, and deletes them after 5 years.",
+            "correct": true
+        },
+        {
+            "text": "Upload every document directly to the archive tier so all documents get the cheapest storage price from day one.",
+            "correct": false
+        },
+        {
+            "text": "Deploy a timer-triggered Azure Function that lists the container nightly and calls `set_standard_blob_tier` on blobs older than the thresholds.",
+            "correct": false
+        },
+        {
+            "text": "Enable blob soft delete with a 5-year retention period so old documents stop incurring standard storage charges.",
+            "correct": false
+        }
+    ],
+    "explanation": "**Lifecycle management** is the storage account's built-in, policy-driven tiering engine: a JSON rule with `tierToCool` (90 days), `tierToArchive` (180 days), and `delete` (5 years) conditions on `daysAfterModificationGreaterThan`, filtered to the `raw-docs` prefix, runs automatically inside the platform. Hot recent documents stay instantly readable, the 90-day re-read window sits in cool (cheaper storage, still online, millisecond access), the compliance tail costs archive prices, and expiry is enforced without anyone writing or operating code.\n\n**Why not the other options:**\n- **Uploading straight to archive** — Archive is **offline**: a blob must first be rehydrated, which takes up to several hours (or costs a premium for high-priority rehydration), before it can be read. The pipeline processes documents within days of upload, so day-one archive breaks the primary workflow.\n- **Nightly tiering Function** — Functionally a hand-built copy of lifecycle management: it must page through millions of blobs, handle throttling and partial failures, and be monitored forever — the \"no code or jobs\" requirement exists to rule this out.\n- **Soft delete with 5-year retention** — Soft delete *retains deleted data for recovery*; it does not tier anything and does not reduce cost — retained soft-deleted data is itself billed. It solves accidental deletion, not storage economics.",
+    "category": "Develop AI solutions by using Azure data management services"
+}

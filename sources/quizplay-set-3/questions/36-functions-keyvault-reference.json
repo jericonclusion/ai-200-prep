@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-36-functions-keyvault-reference",
+    "question": "An Azure Functions app reads a third-party translation API key with `os.environ[\"TRANSLATE_API_KEY\"]`. Security now requires the key's value to live **only in Azure Key Vault** and to be rotatable centrally — **without changing the application code**, which must keep reading the environment variable.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Enable the function app's managed identity, grant it read access to the vault's secrets, and set the app setting to a Key Vault reference: `TRANSLATE_API_KEY = @Microsoft.KeyVault(SecretUri=https://<vault>.vault.azure.net/secrets/translate-api-key/)`.",
+            "correct": true
+        },
+        {
+            "text": "Add the key to the project's `local.settings.json` and publish the app so the setting travels with the deployment.",
+            "correct": false
+        },
+        {
+            "text": "Replace the environment-variable read with a `SecretClient(vault_url, DefaultAzureCredential()).get_secret(\"translate-api-key\")` call at startup.",
+            "correct": false
+        },
+        {
+            "text": "Move the key into Azure App Configuration as a plain key-value named `TRANSLATE_API_KEY` and connect the function app to the store.",
+            "correct": false
+        }
+    ],
+    "explanation": "A **Key Vault reference** in an app setting keeps the contract intact on both sides: the setting named `TRANSLATE_API_KEY` still surfaces to the process as an ordinary environment variable, but its *value* now lives only in Key Vault — the App Service/Functions platform resolves the `@Microsoft.KeyVault(SecretUri=...)` syntax at runtime using the app's **managed identity**. Because the URI omits the version, rotation is central: store a new secret version in the vault and the app picks it up, with no redeploy and zero code change.\n\n**Why not the other options:**\n- **`local.settings.json`** — That file feeds the *local* development host only; it is not deployed as app settings (and is normally git-ignored precisely because it holds secrets). The deployed app would still lack the value, and committing it would put the key in source control — the exact exposure being eliminated.\n- **`SecretClient` in code** — Puts the value in Key Vault, but by rewriting the application: the question requires the code to keep reading the environment variable unchanged. It also adds startup latency and caching concerns the platform reference already handles.\n- **Plain key-value in App Configuration** — App Configuration is not a secret store: values sit unencrypted-at-the-application-layer, readable by anyone with store access, outside Key Vault's access policies, auditing, and rotation workflow. (App Configuration would itself use a Key Vault *reference* for secrets — leading back to the correct mechanism.)",
+    "category": "Secure, monitor, and troubleshoot Azure solutions"
+}

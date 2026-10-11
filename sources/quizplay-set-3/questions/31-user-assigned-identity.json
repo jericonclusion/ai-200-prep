@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-31-user-assigned-identity",
+    "question": "Elmsgarth Analytics deploys a fleet of ~30 short-lived Container Apps jobs that are **deleted and recreated on every release**. All of them need the same access to one Key Vault and one Cosmos DB account. Requirements: role assignments are granted **once, in advance**, must **survive** job recreation, and must not be repeated per job or per release.\n\nHow should the jobs authenticate?",
+    "options": [
+        {
+            "text": "Create one **user-assigned managed identity**, grant it the Key Vault and Cosmos DB roles once, attach it to every job, and authenticate in code with `DefaultAzureCredential(managed_identity_client_id=\"<client-id>\")`.",
+            "correct": true
+        },
+        {
+            "text": "Enable a **system-assigned managed identity** on each job and grant the roles to each identity as part of every release pipeline.",
+            "correct": false
+        },
+        {
+            "text": "Create one Microsoft Entra app registration with a client secret, store the secret as a Container Apps secret on each job, and authenticate with `ClientSecretCredential`.",
+            "correct": false
+        },
+        {
+            "text": "Grant the roles to the resource group so that any resource created inside it inherits the permissions.",
+            "correct": false
+        }
+    ],
+    "explanation": "The deciding factor is **lifecycle**. A user-assigned managed identity is a standalone Azure resource: it exists before any job does, its two role assignments are made exactly once, and deleting or recreating the jobs that reference it changes nothing — every recreated job reattaches the same identity and inherits the same, already-propagated permissions. Passing the identity's client ID to `DefaultAzureCredential` pins authentication to it even if a job later carries several identities.\n\n**Why not the other options:**\n- **System-assigned identity per job** — A system-assigned identity is created and destroyed **with its resource**. Every release deletes 30 identities and mints 30 new principal IDs, so the pipeline must re-grant roles each time (60 assignments per release), and jobs race RBAC propagation delays at startup — the exact churn the requirements forbid.\n- **App registration + client secret** — Reintroduces a credential to store, distribute to 30 jobs, rotate, and leak. Managed identities exist precisely so workloads running on Azure compute never handle a secret.\n- **Role assignment on the resource group** — Azure RBAC grants a scope's permissions to a *principal*; resources created in a group do not \"inherit\" rights to act — they still need an identity to act *as*. And granting broadly at group scope, even to a real principal, violates least privilege compared with two targeted assignments.",
+    "category": "Secure, monitor, and troubleshoot Azure solutions"
+}

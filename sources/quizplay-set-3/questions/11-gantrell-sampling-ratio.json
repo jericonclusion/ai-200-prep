@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-11-gantrell-sampling-ratio",
+    "question": "You must implement the Gantrell telemetry cost requirement: cut ingested trace volume to roughly 10% of today's ~40 million requests per day, while request counts and failure rates shown in Application Insights remain statistically accurate and sampled requests keep their full end-to-end traces.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Enable fixed-rate sampling in the Azure Monitor OpenTelemetry distro by passing `sampling_ratio=0.1` to `configure_azure_monitor()` in every service.",
+            "correct": true
+        },
+        {
+            "text": "Set a daily ingestion cap on the Application Insights resource sized to 10% of the current daily volume.",
+            "correct": false
+        },
+        {
+            "text": "Raise the logging level so only warnings and errors are exported, cutting the trace volume to roughly one tenth.",
+            "correct": false
+        },
+        {
+            "text": "In custom middleware, call the instrumentation for only every tenth incoming request and skip telemetry entirely for the rest.",
+            "correct": false
+        }
+    ],
+    "explanation": "The distro's `sampling_ratio` enables its built-in **fixed-percentage, trace-ID-based sampler**. Two properties make it the right answer. First, the decision is made per *trace ID*, so for a sampled request every span in the distributed operation is kept — end-to-end transactions stay intact. Second, the exporter stamps each retained item with the sample rate (item count), so Application Insights experiences **multiply counts back up**: request totals and failure rates remain statistically accurate even though only ~10% of items are ingested. Volume, and therefore ingestion cost, drops to roughly a tenth.\n\n**Why not the other options:**\n- **Daily ingestion cap** — A cap ingests 100% of telemetry until the limit, then drops **everything** for the rest of the day. The result is a biased dataset (mornings fully represented, evenings missing entirely), broken traces at the cutoff, and dashboards that are wrong rather than statistically adjusted.\n- **Warnings-and-errors-only logging** — This changes *which kinds* of telemetry survive, not the rate: successful-request telemetry disappears entirely, so failure *rates* become incomputable (no denominator), and the retained data is systematically skewed toward failures.\n- **Instrumenting every tenth request in middleware** — Hand-rolled skipping records nothing App Insights can correct for — there is no sample-rate stamp, so all counts read ~10% of reality — and because the decision ignores trace context, downstream services still emit spans for \"skipped\" requests, producing orphaned partial traces.",
+    "category": "Secure, monitor, and troubleshoot Azure solutions",
+    "caseStudy": "scenarios/case_study_gantrell_property.json"
+}

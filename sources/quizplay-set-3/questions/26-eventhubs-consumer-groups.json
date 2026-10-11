@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-26-eventhubs-consumer-groups",
+    "question": "Thornebridge Energy streams meter telemetry into an Azure Event Hub. Two independent applications read the stream: a real-time anomaly scorer and an archival service. Both were configured to read from the `$Default` consumer group with the same checkpoint container, and now each application receives only part of the stream — the two apps steal partitions and overwrite each other's checkpoints.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Create a dedicated **consumer group** on the event hub for each application (for example `anomaly-scoring` and `archival`), give each its own checkpoint store, and have each app read through its own group.",
+            "correct": true
+        },
+        {
+            "text": "Create a second event hub and change the producers to send every event to both hubs.",
+            "correct": false
+        },
+        {
+            "text": "Double the event hub's partition count so there are enough partitions for both applications.",
+            "correct": false
+        },
+        {
+            "text": "Replace the event hub with a Service Bus queue so both applications can receive the same messages.",
+            "correct": false
+        }
+    ],
+    "explanation": "A **consumer group** is an independent *view* (cursor) over the same event stream — this is precisely the mechanism Event Hubs provides for multiple downstream applications. Instances *within* one consumer group cooperatively balance partitions and share checkpoints; two *different applications* in the same group therefore look like one scaled-out app and fight over partitions and offsets, which is the observed failure. With one group (and one checkpoint store) per application, each app independently reads 100% of the stream at its own pace, and scaling instances within an app keeps working as designed.\n\n**Why not the other options:**\n- **A second event hub with double-send** — Duplicates ingestion cost, forces every producer change, and creates two streams that can drift (one send succeeds, the other fails). Consumer groups exist so a single stream can be read many times.\n- **More partitions** — Partition count controls parallelism *within* a consumer group; both apps in `$Default` would still balance the (now larger) partition set between themselves and still each see only a subset. The problem is shared cursors, not partition scarcity.\n- **Service Bus queue** — A queue is *competing consumers*: each message is delivered to exactly one receiver, which is the very behavior to eliminate. (Topics/subscriptions would fan out, but abandon Event Hubs' high-throughput streaming, offset replay, and checkpointing that a telemetry pipeline relies on.)",
+    "category": "Connect to and consume Azure services"
+}

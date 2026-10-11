@@ -14,6 +14,6 @@ Gebruik in voorbeelden uitsluitend fictieve organisaties, placeholders en niet-w
 
 ## Oefenapp
 
-De lokale oefenapp heeft geen accountregistratie en verstuurt geen antwoorden. Pogingshistorie blijft in `localStorage` van de browser. Wissen kan via de browserinstellingen voor websitegegevens. De inline variant kan interface-status opslaan via de omgeving waarin deze wordt uitgevoerd, maar vraagt geen identiteit of contactgegevens.
+De lokale oefenapp heeft geen accountregistratie en verstuurt geen antwoorden. Setkeuzes, actieve sessies, antwoorden, opmerkingen en pogingshistorie blijven in `localStorage` van de browser. Wissen kan via de browserinstellingen voor websitegegevens. De gegenereerde inline variant gebruikt dezelfde lokale opslag en vraagt geen identiteit of contactgegevens. Externe bronlinks worden alleen geopend wanneer je erop klikt.
 
 Meld een privacyprobleem zonder de gevoelige waarde in een publieke issue te herhalen. Verwijder een gelekte credential onmiddellijk uit de bron en roteer of trek de credential in; alleen een Git-commit verwijderen maakt een credential niet weer veilig.

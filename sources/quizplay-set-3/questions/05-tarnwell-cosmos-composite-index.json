@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-05-tarnwell-cosmos-composite-index",
+    "question": "The Tarnwell hotel-detail query fails when it runs against the `reviews` container:\n\n```sql\nSELECT * FROM c\nWHERE c.hotelId = @hotelId\nORDER BY c.rating DESC, c.stayDate DESC\n```\n\nThe query must run as-is, with the sorting done by Cosmos DB at low RU cost. What should you do?",
+    "options": [
+        {
+            "text": "Add a **composite index** on `(/rating DESC, /stayDate DESC)` to the container's indexing policy.",
+            "correct": true
+        },
+        {
+            "text": "Remove the second sort key and re-sort the page of results by `stayDate` in the Python service.",
+            "correct": false
+        },
+        {
+            "text": "Increase the container's provisioned throughput; multi-property `ORDER BY` succeeds once enough RU/s are available.",
+            "correct": false
+        },
+        {
+            "text": "Add separate range indexes for `/rating/?` and `/stayDate/?` to the indexing policy.",
+            "correct": false
+        }
+    ],
+    "explanation": "An `ORDER BY` over **two or more properties** in Azure Cosmos DB for NoSQL requires a **composite index** whose paths and sort directions match the query (`/rating DESC, /stayDate DESC`). Without it the query is rejected — which is why it fails today. With the composite index, the service reads results in already-sorted order, so the query runs as written and consumes far fewer RUs than any workaround.\n\n**Why not the other options:**\n- **Re-sort in the application** — Changing the query violates the \"runs as-is\" requirement, and client-side sorting is only correct if you first fetch *all* of a hotel's reviews (not just a page), which multiplies RU cost and latency.\n- **More throughput** — The multi-property `ORDER BY` failure is a *missing-index* error, not a throttling problem. Extra RU/s change nothing.\n- **Separate range indexes** — The default policy already range-indexes every path; single-property indexes exist and the query still fails. Cosmos DB cannot combine two independent single-property indexes to produce one multi-property sort order — that is precisely what composite indexes are for.",
+    "category": "Develop AI solutions by using Azure data management services",
+    "caseStudy": "scenarios/case_study_tarnwell_hospitality.json"
+}

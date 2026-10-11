@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-09-polwarren-blob-eventgrid-trigger",
+    "question": "You must fix the Polwarren document-processing latency: a PDF uploaded to `customs-inbound` must start processing within a few seconds, but the current polling-based blob trigger sometimes takes minutes to fire and continuously scans the container.\n\nHow should you change the Azure Functions (Python v2) trigger?",
+    "options": [
+        {
+            "text": "Switch the blob trigger to the Event Grid source — `@app.blob_trigger(arg_name=\"blob\", path=\"customs-inbound/{name}\", source=\"EventGrid\", connection=\"StorageConnection\")` — and create an Event Grid subscription for `Microsoft.Storage.BlobCreated` on the storage account that targets the function.",
+            "correct": true
+        },
+        {
+            "text": "Keep the polling blob trigger but set a 1-second polling interval in `host.json` so the container is scanned more often.",
+            "correct": false
+        },
+        {
+            "text": "Replace the blob trigger with a queue trigger and require shipping agents to enqueue a message after each upload.",
+            "correct": false
+        },
+        {
+            "text": "Replace the blob trigger with a timer trigger that runs every second and lists the container for blobs it has not seen before.",
+            "correct": false
+        }
+    ],
+    "explanation": "The blob trigger's default detection mechanism is polling-based container scanning, which is explicitly documented as *best effort* — it can take minutes on busy or large containers. The fix is to keep the same blob-trigger programming model but change its **source to Event Grid**: `source=\"EventGrid\"` in the decorator, plus a `BlobCreated` event subscription on the storage account. Uploads then *push* an event to the function within seconds, the continuous scanning stops, and the shipping agents' workflow is untouched — the binding still hands the function the blob itself.\n\n**Why not the other options:**\n- **Faster polling interval** — Blob-trigger detection is not governed by a simple per-second polling knob; it relies on container scans and log processing whose latency is inherently best-effort. Even more frequent scanning keeps the expensive continuous listing the requirement says to eliminate.\n- **Queue trigger with agent-enqueued messages** — Shipping agents are external parties who upload files; forcing every agent's system to also send a queue message changes the public contract, and any agent that forgets produces a silently unprocessed PDF.\n- **Per-second timer that lists the container** — This is hand-rolled polling: it pays for a listing every second forever, needs its own \"already seen\" state store, and still races against listing consistency. The platform's event-driven trigger does the same job natively.",
+    "category": "Connect to and consume Azure services",
+    "caseStudy": "scenarios/case_study_polwarren_shipping.json"
+}

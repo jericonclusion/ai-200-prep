@@ -1,0 +1,33 @@
+# Node / Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# Azure / secrets — never commit credentials
+*.pem
+*.key
+# Local state produced by the Cosmos DB change-feed learning sample.
+change-feed.continuation
+# A generated Container Apps manifest includes the storage connection string used by the guide.
+/01-containers/container-apps-keda/container-app.yaml
+# Local Functions settings can contain connection strings. Commit only .example templates.
+local.settings.json
+
+# Claude local settings
+.claude/

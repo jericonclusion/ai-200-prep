@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-18-cosmos-patch-item",
+    "question": "A Python assistant service stores each conversation as one Azure Cosmos DB for NoSQL document containing a `messages` array and a `tokensUsed` counter. Appending a turn currently reads the ~400 KB document, appends in memory, and calls `replace_item` — burning RUs on the full round trip and losing updates when two turns land concurrently. You must append a message and increment the counter **server-side, in a single call, without transferring the document** — and the team will not maintain server-side JavaScript.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Use partial document update: `container.patch_item(item=doc_id, partition_key=session_id, patch_operations=[{\"op\": \"add\", \"path\": \"/messages/-\", \"value\": turn}, {\"op\": \"incr\", \"path\": \"/tokensUsed\", \"value\": turn_tokens}])`.",
+            "correct": true
+        },
+        {
+            "text": "Keep the read-modify-replace flow but pass `etag` and `MatchConditions.IfNotModified` to `replace_item`, retrying in a loop on `412 Precondition Failed`.",
+            "correct": false
+        },
+        {
+            "text": "Write a stored procedure that appends the message and increments the counter, and invoke it with `scripts.execute_stored_procedure`.",
+            "correct": false
+        },
+        {
+            "text": "Call `upsert_item` with only the changed fields — Cosmos DB merges partial documents with the stored item automatically.",
+            "correct": false
+        }
+    ],
+    "explanation": "**Partial document update (patch)** executes a list of operations *inside the service*: `add` with the `/messages/-` array-append path pushes the new turn onto the end of the array, and `incr` atomically increments `tokensUsed` — one request, no document download or upload, and no read-modify-write window for concurrent turns to clobber. RU cost scales with the patched paths rather than the 400 KB document, and up to 10 operations in one call are applied atomically.\n\n**Why not the other options:**\n- **ETag + retry** — Optimistic concurrency makes the lost update *detectable*, not gone: every append still ships 400 KB down and up, and concurrent turns now cost extra round trips in `412` retry loops. The requirement was to stop transferring the document, not to referee the race.\n- **Stored procedure** — It would run server-side and atomically, but it is exactly the server-side JavaScript the team refuses to maintain, with its own deployment, debugging, and bounded-execution concerns. Patch provides the same effect as a first-class API.\n- **`upsert_item` with partial fields** — Upsert **replaces the whole document** with whatever body you send. There is no merge semantics in Cosmos DB; this would overwrite the conversation with a document containing only the new fields, destroying the message history.",
+    "category": "Develop AI solutions by using Azure data management services"
+}

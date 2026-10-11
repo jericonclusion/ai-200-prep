@@ -1,0 +1,47 @@
+// Question types for the AI-200 quiz app
+
+// Choice type for build-list questions
+export interface BuildListChoice {
+  id: string;
+  text: string;
+}
+
+// Question base type
+export interface QuestionBase {
+  id: string;
+  domain: string; // e.g., "04-secure-monitor"
+  topic: string; // e.g., "kql"
+  question: string;
+  explanation: string;
+  reference: string; // link to the topic guide or other directly supporting local material
+}
+
+// Discriminated union for question types
+export type QuestionType = 'single' | 'multi' | 'build-list';
+
+export interface SingleAnswerQuestion extends QuestionBase {
+  type: 'single';
+  choices: string[];
+  answer: number[];
+}
+
+export interface MultiAnswerQuestion extends QuestionBase {
+  type: 'multi';
+  choices: string[];
+  answer: number[];
+}
+
+export interface BuildListQuestion extends QuestionBase {
+  type: 'build-list';
+  // Stable IDs let the UI reorder choices without changing the meaning of an answer.
+  choices: BuildListChoice[];
+  // Answer is the correct order of choice IDs
+  answer: string[];
+}
+
+export type Question = SingleAnswerQuestion | MultiAnswerQuestion | BuildListQuestion;
+
+// Domain weights for full-exam sampling (mirror official AI-200 percentages)
+export interface DomainWeights {
+  [domain: string]: number; // e.g., "01-containers": 0.225 (22.5%)
+}

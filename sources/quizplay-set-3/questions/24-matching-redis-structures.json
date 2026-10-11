@@ -1,0 +1,21 @@
+{
+    "id": "ai200-s3-24-matching-redis-structures",
+    "type": "matching",
+    "question": "Match each application requirement to the Azure Managed Redis data structure that fits it best.",
+    "sourceItems": [
+        "Store the fields of a signed-in user's session (display name, tier, language) so individual fields can be read or updated without rewriting the rest",
+        "Maintain a live ranking of agents by resolved-ticket score with efficient top-10 queries",
+        "Hold a backlog of render jobs that workers pop in first-in, first-out order",
+        "Keep an append-only log of inference events that multiple consumer groups read independently, each acknowledging entries and able to replay from an ID",
+        "Cache a rendered answer string that must expire automatically one hour after it was written"
+    ],
+    "targetSlots": [
+        "Hash",
+        "Sorted set",
+        "List",
+        "Stream"
+    ],
+    "correctMapping": [0, 1, 2, 3],
+    "explanation": "- **Hash** — A hash stores named fields under one key: `HSET session:42 tier gold` updates one field and `HGET`/`HMGET` reads specific fields, without serializing and rewriting the whole session object the way a single JSON string value would require.\n- **Sorted set** — Members ordered by score are exactly a leaderboard: `ZINCRBY` adjusts an agent's score and `ZREVRANGE ... 0 9 WITHSCORES` returns the top 10 in logarithmic time.\n- **List** — `LPUSH` producers and `BRPOP` consumers make a simple FIFO work queue; blocking pops let idle workers wait without polling.\n- **Stream** — Streams are the append-only log structure: entries get monotonic IDs, **consumer groups** track delivery and acknowledgement (`XREADGROUP`/`XACK`) per group, and any group can replay from an earlier ID — semantics none of the other structures provide.\n\n**Why not the other options:**\n- The fifth requirement — a value that simply **expires an hour after being written** — is the decoy: that is a plain **String** written with `SET key value EX 3600`, and String is deliberately absent from the targets. None of the four listed structures is the natural fit for a single self-expiring value.",
+    "category": "Develop AI solutions by using Azure data management services"
+}

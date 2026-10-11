@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-28-apim-rate-limit",
+    "question": "Partners call an inference API through Azure API Management, each with its own APIM subscription. GPU capacity behind the API is limited, so each partner subscription must be capped at **100 calls per minute**, with excess calls rejected as `429 Too Many Requests` — and the backend service must not be modified.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Add a rate-limiting policy to the API's inbound section, for example `<rate-limit calls=\"100\" renewal-period=\"60\" />`, which enforces the cap per subscription and returns 429 when it is exceeded.",
+            "correct": true
+        },
+        {
+            "text": "Add a `<validate-jwt>` policy to the inbound section so only tokens with an approved claim can call the API.",
+            "correct": false
+        },
+        {
+            "text": "Add an `<ip-filter>` policy allowing only the partners' IP address ranges.",
+            "correct": false
+        },
+        {
+            "text": "Implement a per-caller request counter in the backend API's middleware and return 429 from there.",
+            "correct": false
+        }
+    ],
+    "explanation": "Call-rate throttling is exactly what the **`rate-limit`** policy does: placed in the API's inbound pipeline, it counts calls **per subscription** over the sliding `renewal-period` (here 60 seconds) and rejects calls beyond `calls=\"100\"` with `429 Too Many Requests` before they ever reach the backend. Each partner's subscription gets its own counter, the GPU tier is protected at the gateway, and the backend stays untouched. (For keys other than subscription — for example per client IP or per claim — the `rate-limit-by-key` variant takes an arbitrary `counter-key` expression.)\n\n**Why not the other options:**\n- **`validate-jwt`** — Authentication/authorization, not throttling: it decides *who may call at all*, but an authorized partner could still send unlimited traffic. It also changes the calling contract, which the scenario doesn't ask for.\n- **`ip-filter`** — A network allow/deny list. Like `validate-jwt`, it admits or blocks callers wholesale; it has no notion of calls-per-minute and offers no 429 behavior.\n- **Backend middleware counters** — Violates the \"backend must not be modified\" constraint, and does the work in the wrong place: the request has already consumed gateway and backend resources by the time it is counted, and every backend replica needs shared counter state that APIM's gateway already maintains for you.",
+    "category": "Connect to and consume Azure services"
+}

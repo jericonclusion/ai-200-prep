@@ -1,0 +1,13 @@
+{
+    "id": "case_study_polwarren_shipping",
+    "tabs": [
+        {
+            "title": "Company Overview",
+            "content": "**Polwarren Shipping** operates container-port terminals. Its Python services coordinate vessel arrivals, customs clearance, and yard planning.\n\n**Current Environment:**\n- Customs-clearance commands for arriving vessels flow through an **Azure Service Bus** queue named `clearance-commands`. Workers receive in PEEK_LOCK mode.\n- Vessel status changes are published to an **Azure Event Grid** custom topic named `pol-vessel-events`. A customs-broker partner subscribes with an HTTPS webhook.\n- Customs declaration PDFs are uploaded by shipping agents to the **Azure Blob Storage** container `customs-inbound`.\n- Document processing runs on **Azure Functions** (Python v2 programming model)."
+        },
+        {
+            "title": "Requirements",
+            "content": "**Clearance Processing Requirements:**\n- A clearance command sometimes arrives **before** the vessel's cargo manifest has been registered. Such a command cannot be processed yet, but it must not be lost, must not block other vessels' commands, and must be retrievable **individually and exactly** once its manifest arrives — without re-sending it or letting it expire.\n\n**Partner Webhook Requirements:**\n- The customs broker's gateway rate-limits aggressively. If the webhook is down, Event Grid must stop retrying a given event after **at most 10 attempts** and must consider an event expired **1 hour** after publication. Undeliverable events are already captured by an existing dead-letter destination.\n\n**Document Processing Requirements:**\n- When an agent uploads a PDF to `customs-inbound`, a function must begin processing it **within a few seconds**. The current polling-based blob trigger sometimes takes several minutes to fire and scans the container continuously.\n\n**General:**\n- All services authenticate with managed identities."
+        }
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "id": "ai200-s3-23-multi-cosmos-chat-model",
+    "type": "multi",
+    "question": "You are designing the Azure Cosmos DB for NoSQL data model for an AI assistant. Conversations can run to thousands of turns; some turns include large tool outputs (multi-megabyte JSON or file content). The dominant query loads one conversation's recent turns. Writes for a conversation must never degrade as it grows.\n\nWhich **three** design decisions should you make? (Select three.)",
+    "options": [
+        {
+            "text": "Store each turn as its **own item** that carries the conversation's ID, rather than appending turns to one ever-growing conversation document.",
+            "correct": true
+        },
+        {
+            "text": "Partition the container on the conversation ID (for example `/conversationId`) so loading a conversation is a single-partition query.",
+            "correct": true
+        },
+        {
+            "text": "Keep multi-megabyte tool outputs in Azure Blob Storage and store only a reference (URL and metadata) in the turn item.",
+            "correct": true
+        },
+        {
+            "text": "Keep each conversation as one document holding a `turns` array, so the whole conversation is always read and written as a unit.",
+            "correct": false
+        },
+        {
+            "text": "Partition the container on the calendar date of the message so each day's traffic is spread across a fresh partition.",
+            "correct": false
+        },
+        {
+            "text": "Store large tool outputs inline in the item, compressed with gzip and base64-encoded to stay within limits.",
+            "correct": false
+        }
+    ],
+    "explanation": "The three decisions attack the three growth problems. **One item per turn** keeps every write small and constant-cost no matter how long the conversation gets. **Partitioning on `/conversationId`** co-locates all of a conversation's turns in one logical partition, so the dominant query (\"recent turns of this conversation\") is an efficient single-partition query with a partition key filter. **Blob references for large payloads** keep items far below the 2 MB item size limit and keep RU charges (which scale with item size) low — Cosmos DB stores the conversational structure, Blob Storage stores the bulk bytes.\n\n**Why not the other options:**\n- **One document with a `turns` array** — An unbounded array is the classic anti-pattern: every append rewrites a growing document at rising RU cost, concurrent turns contend on one item, and a long conversation eventually slams into the **2 MB item limit** and can no longer be written at all.\n- **Partitioning on message date** — All of today's writes land in a single hot logical partition (the current date), throttling at peak; and reading one conversation now fans out across every date it touched — a cross-partition query for the workload's most common operation.\n- **Inline gzip + base64** — Base64 inflates data by ~33%, the item stays huge (RU cost tracks size), and multi-megabyte payloads still breach the 2 MB cap. Encoding tricks postpone the limit; they do not remove it.",
+    "category": "Develop AI solutions by using Azure data management services"
+}

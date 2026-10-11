@@ -22,12 +22,12 @@ Map: `ai-200-practice-exam`
 
 Lokale start: open `ai-200-practice-exam/dist/index.html`.
 
-De Engelstalige applicatie bevat 263 gecontroleerde vragen plus een afzonderlijke docentenset van 174 voorbeeldvragen. Daarvan komen 133 vragen rechtstreeks uit de openbare moduletoetsen van alle 27 modules in de officiële AI-200-cursus:
+De Engelstalige applicatie bevat 1.298 vragen in 30 selecteerbare sets: 263 bestaande vragen, 174 docentvragen en 861 communityvragen. Daarvan komen 133 vragen uit de openbare moduletoetsen van alle 27 modules in de officiële AI-200-cursus. Kies de gewenste bronnen onder **Question sets**. Zie `18-community-bronnen-en-controle.md` voor de uitbreiding en controle.
 
-1. **Official exam flow:** 50 vragen, 100 minuten, case study en een vastgezette Yes/No-set. De standaardbron mengt 15 docentenvragen met de gecontroleerde bank. De bronkeuze kan ook één bank afdwingen.
-2. **Quick assessment:** 20 vragen, 40 minuten.
-3. **Case study drill:** één casus met tabbladen en vijf vragen, zonder aparte timer.
-4. **Study mode:** alle vragen, geen timer en directe uitleg.
+1. **Official exam flow:** maximaal 50 vragen, twee minuten per vraag, uitsluitend uit de gekozen sets. Casussen en vastgezette vragen hangen van de selectie af.
+2. **Quick assessment:** maximaal 20 vragen, twee minuten per vraag.
+3. **Case study drill:** één beschikbare casus uit de gekozen sets, zonder timer; het aantal vragen hangt van de casus af.
+4. **Study mode:** alle vragen uit de gekozen sets, geen timer en directe uitleg.
 5. **Instructor sample:** alle 174 aangeleverde voorbeeldvragen als aparte set.
 
 Alle 174 docentvragen worden in de eigen huisstijl weergegeven en kunnen automatisch worden nagekeken. Keuzevragen, multiple response, matching, build lists en drag-and-drop gebruiken native bediening. De 48 oorspronkelijke hot-area- en configuratievragen gebruiken native selectierasters; code staat in kopieerbare codeblokken. De laatste antwoordschermen zijn visueel dubbelgecontroleerd en daarna vervangen door native antwoordopties.
@@ -40,16 +40,16 @@ Alle 174 docentvragen worden in de eigen huisstijl weergegeven en kunnen automat
 - Na het verlaten van de casus kun je niet terug.
 - Een casus gebruikt dezelfde algemene examencountdown en heeft geen eigen timer.
 
-De app bevat twee fictieve casussen: **Northwind Research** en **Fabrikam Claims**. Gebruik `Case study drill` om direct met dit vraagtype te oefenen.
+De app bevat de bestaande casussen **Northwind Research** en **Fabrikam Claims**, de twee docentcasussen en vier QuizPlay-casussen. Gebruik `Case study drill` om direct met dit vraagtype te oefenen.
 
 ### Overeenkomst en beperkingen
 
-- De plaatsing van de casus wordt in de volledige simulatie afgewisseld: vóór of na de algemene vragen.
+- In de volledige simulatie volgen gegroepeerde casussen op de algemene vragen. Eventuele vastgezette Yes/No-vragen komen als laatste.
 - De simulator ondersteunt single choice, multiple response, matching, build list, drag-and-drop, case studies en niet-terugkeerbare Yes/No-vragen.
 - Microsoft kan daarnaast hot-area-vragen, meerdere casussen en mogelijk een praktijklab aanbieden. De exacte samenstelling wordt pas op het introductiescherm van het echte examen getoond.
 - De visuele vorm is een benadering van de Microsoft/Pearson-interface. De officiële sandbox is de beste bron voor het exacte bedieningsmodel: https://aka.ms/examdemo
 
-De volledige simulatie gebruikt de officiële domeinwegingen als benadering. De score van 0-1000 is een oefenindicatie, omdat Microsoft de echte omzetting van ruwe punten naar schaalscore niet publiceert.
+De volledige simulatie gebruikt de officiële domeinwegingen als benadering voor zover de geselecteerde sets dat toelaten. Beperkte selecties en de niet per domein geclassificeerde docentenset kunnen daarvan afwijken. De score van 0-1000 is een oefenindicatie, omdat Microsoft de echte omzetting van ruwe punten naar schaalscore niet publiceert.
 
 ## Gebruikte officiële bronnen
 

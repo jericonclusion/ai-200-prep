@@ -31,10 +31,13 @@
 - `15-oefenvragen-bronbeoordeling.md`: beoordeling van externe oefenvragen en bruikbare vraagpatronen
 - `16-examenervaring-en-oefenapp.md`: officiële examenervaring, afname en gebruik van de Engelstalige oefenapp
 - `17-online-oefenvraagbronnen.md`: openbare vraagbanken, broncontrole en vaste werkwijze voor nieuwe proefvragen
-- `ai-200-practice-exam/`: lokale Engelstalige exam simulator met 263 gecontroleerde oefenvragen, waarvan 133 officiële Microsoft Learn-modulevragen
+- `ai-200-practice-exam/`: lokale Engelstalige exam simulator met 1.298 vragen in 30 selecteerbare sets, waarvan 133 Microsoft Learn-modulevragen
 
 ## Werkwijze
 
 - Feiten worden zo precies mogelijk genoteerd.
 - Aannames en onbevestigde informatie worden duidelijk gemarkeerd.
 - Notities blijven kort en praktisch.
+
+- `18-community-bronnen-en-controle.md`: bronoverzicht, leerroute en controle van de community-import.
+- `sources/index.html`: doorzoekbare gidsen en labs.

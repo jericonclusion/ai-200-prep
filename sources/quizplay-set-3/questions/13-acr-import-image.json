@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-13-acr-import-image",
+    "question": "Orrinbay Freight's policy requires that every image its Container Apps and AKS workloads run is pulled from the company registry `orrinbayacr`. The team needs the vendor-published image `docker.io/vexlorn/ocr-engine:2.4` available in that registry. The CI agents have **no Docker daemon**, and the image must not be rebuilt — the vendor's exact bits must be used.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "az acr import --name orrinbayacr --source docker.io/vexlorn/ocr-engine:2.4 --image vexlorn/ocr-engine:2.4",
+            "correct": true
+        },
+        {
+            "text": "docker pull docker.io/vexlorn/ocr-engine:2.4, then docker tag and docker push the image to orrinbayacr.azurecr.io",
+            "correct": false
+        },
+        {
+            "text": "az acr build --registry orrinbayacr --image vexlorn/ocr-engine:2.4 .",
+            "correct": false
+        },
+        {
+            "text": "Reference docker.io/vexlorn/ocr-engine:2.4 directly in the workload manifests and let each node pull it from Docker Hub.",
+            "correct": false
+        }
+    ],
+    "explanation": "`az acr import` performs a **server-side copy**: the registry service itself pulls the image from the source (Docker Hub, MCR, or another ACR) and stores it under your repository and tag. No Docker daemon, no local pull/push through the CI agent, no rebuild — the manifest and layers arrive byte-for-byte identical to what the vendor published, satisfying both the \"exact bits\" and the \"no daemon\" constraints in one command.\n\n**Why not the other options:**\n- **`docker pull` / `tag` / `push`** — Requires a local Docker daemon on the agent, which the scenario rules out; it also funnels every layer down to the agent and back up, which is slower and adds an unnecessary intermediary.\n- **`az acr build`** — ACR Tasks *builds a new image from a Dockerfile and build context* in the cloud. There is no Dockerfile here, and any rebuild would produce new layers rather than the vendor's exact bits.\n- **Referencing Docker Hub directly** — Violates the stated policy that workloads pull only from `orrinbayacr`, and exposes production pulls to Docker Hub rate limiting and availability — the reasons such policies exist.",
+    "category": "Develop containerized solutions on Azure"
+}

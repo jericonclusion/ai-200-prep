@@ -1,0 +1,13 @@
+{
+    "id": "case_study_tarnwell_hospitality",
+    "tabs": [
+        {
+            "title": "Company Overview",
+            "content": "**Tarnwell Hospitality** operates a booking platform for boutique hotels. An AI concierge answers guest questions about properties, availability, and local activities. The back end is a set of Python services.\n\n**Current Environment:**\n- **Azure Cosmos DB for NoSQL** hosts the `concierge` database with two containers:\n  - `chat-sessions` — concierge conversation transcripts, partitioned on `/sessionId`.\n  - `reviews` — guest reviews, partitioned on `/hotelId`. Each document has `hotelId`, `rating` (number), and `stayDate` (ISO 8601 string) properties. The container uses the default indexing policy.\n- **Azure Managed Redis** caches rendered concierge answers keyed by a hash of the normalized question. Answers are written with a 1-hour expiration.\n- Embeddings for review search are produced by an external embedding model."
+        },
+        {
+            "title": "Requirements",
+            "content": "**Data Retention Requirements:**\n- Privacy policy: a chat-session document must be deleted automatically **30 days after it was last updated**. The team must not build or operate any cleanup job, and deletions must not consume RUs reserved for user traffic beyond what the platform manages itself.\n\n**Review Browsing Requirements:**\n- The hotel detail page runs this query, which currently fails:\n\n```sql\nSELECT * FROM c\nWHERE c.hotelId = @hotelId\nORDER BY c.rating DESC, c.stayDate DESC\n```\n\n- The query must run as-is, sorted by the service, with low RU cost.\n\n**Caching Requirements:**\n- Frequently asked questions must stay cached as long as guests keep asking them: every cache **read** must extend the entry's remaining lifetime back to 1 hour, in a single round trip. Entries nobody reads must still expire on their own."
+        }
+    ]
+}

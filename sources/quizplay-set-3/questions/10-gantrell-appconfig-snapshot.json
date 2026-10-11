@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-10-gantrell-appconfig-snapshot",
+    "question": "You must implement the Gantrell configuration requirement: each release must promote exactly the set of ~40 App Configuration key-values tested in staging, as one immutable named unit; rollback must restore exactly the previous unit; and later edits to individual keys must not affect what already-released instances load.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "At release time, create an App Configuration **snapshot** of the `Valuation:*` key-values (for example `az appconfig snapshot create --snapshot-name release-2026-07-12 ...`); deploy each release pinned to its snapshot name, and roll back by pointing instances at the previous snapshot.",
+            "correct": true
+        },
+        {
+            "text": "Copy the 40 keys to a new **label** per release (for example `release-2026-07-12`) and have instances load that label; on rollback, load the previous label.",
+            "correct": false
+        },
+        {
+            "text": "Export the 40 keys to a JSON file at release time and re-import them into the store over the `prod` label during each deployment.",
+            "correct": false
+        },
+        {
+            "text": "Mark the 40 key-values as read-only with `az appconfig kv lock` after each release so nobody can change what instances load.",
+            "correct": false
+        }
+    ],
+    "explanation": "An App Configuration **snapshot** is precisely the required artifact: a **named, immutable, point-in-time subset** of the store's key-values, defined by key/label filters. Creating a snapshot at release time freezes all 40 `Valuation:*` keys as one unit; instances that load from the snapshot always see exactly that tested set, no matter how the live key-values change afterward. Rollback is redeploying with the previous snapshot's name — guaranteed to restore *exactly* the prior unit, because snapshots cannot be modified after creation.\n\n**Why not the other options:**\n- **A label per release** — Labels organize variants, but labeled key-values remain **mutable**: anyone can edit a key under the `release-2026-07-12` label after the release, silently changing what \"released\" instances load on their next refresh. That breaks both immutability and exact-rollback guarantees.\n- **Export/re-import over `prod`** — The imported values are again ordinary, editable key-values, and the import itself is a multi-key write with no atomicity: an instance refreshing mid-import can load a half-old, half-new mixture of the 40 interdependent keys.\n- **`az appconfig kv lock`** — Read-only key-values prevent edits, but they create no *named unit* and no history to roll back to; releasing the next version requires unlocking and mutating the very values the previous release depends on, which is exactly the interference the requirement rules out.",
+    "category": "Secure, monitor, and troubleshoot Azure solutions",
+    "caseStudy": "scenarios/case_study_gantrell_property.json"
+}

@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-02-stellmarsh-init-container",
+    "question": "You must satisfy the Stellmarsh model-loading requirement: the 8 GB turbine-anomaly weights must not be baked into the API image, must be fully present on a local volume **before** the API container starts accepting traffic, and a new model version must be deployable without rebuilding the API image.\n\nHow should you configure the container app?",
+    "options": [
+        {
+            "text": "Define an **init container** in the app's template that downloads the weights from the `models` blob container to a shared volume; mount the same volume into the API container. The API container starts only after the init container completes.",
+            "correct": true
+        },
+        {
+            "text": "Add a `COPY models/ /models/` instruction to the API image's Dockerfile so the weights ship inside the image layer cache.",
+            "correct": false
+        },
+        {
+            "text": "Run the downloader as a **sidecar container** in the same replica so it fetches the weights in parallel while the API container boots.",
+            "correct": false
+        },
+        {
+            "text": "Download the weights lazily inside the API process when the first inference request arrives, caching them in memory for later requests.",
+            "correct": false
+        }
+    ],
+    "explanation": "Azure Container Apps supports **init containers**: containers in the replica template that run to completion, in order, *before* any app container starts. An init container that pulls the current weights from Blob Storage (authenticating with the app's managed identity) onto a volume shared with the API container guarantees the model is fully on disk before the API begins serving. Shipping a new model version means updating a blob (or a model-version app setting) and restarting the revision — no image rebuild.\n\n**Why not the other options:**\n- **`COPY` into the image** — Directly violates the requirement: an 8 GB layer bloats the image, slows every pull and cold start, and each new model version forces an image rebuild and push.\n- **Sidecar container** — Sidecars run *concurrently* with the app container. There is no ordering guarantee, so the API could start accepting traffic while the weights are still downloading — precisely the race the requirement forbids.\n- **Lazy download on first request** — The first request would wait for an 8 GB transfer (likely timing out), and the requirement explicitly says the weights must be present *before* the container starts serving traffic.",
+    "category": "Develop containerized solutions on Azure",
+    "caseStudy": "scenarios/case_study_stellmarsh_aviation.json"
+}

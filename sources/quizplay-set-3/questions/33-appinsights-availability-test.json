@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-33-appinsights-availability-test",
+    "question": "Fennwick Marine's public chat endpoint `https://chat.fennwickmarine.example/healthz` must be probed **from outside Azure-hosted app code, from multiple geographic locations, every 5 minutes**; operations must be alerted when the endpoint fails to return `200 OK` within 30 seconds from two or more locations. No application code may be added or changed.\n\nWhat should you configure?",
+    "options": [
+        {
+            "text": "A **standard availability test** on the Application Insights resource with the URL, a 30-second timeout, a 5-minute frequency, and several test locations — plus its alert rule set to fire when two or more locations fail.",
+            "correct": true
+        },
+        {
+            "text": "A log search alert on the `AppRequests` table that fires when no successful request to `/healthz` has been recorded in the last 5 minutes.",
+            "correct": false
+        },
+        {
+            "text": "A liveness probe on the container app pointing at `/healthz` so the platform detects and restarts an unhealthy replica.",
+            "correct": false
+        },
+        {
+            "text": "A timer-triggered Azure Function that requests the endpoint every 5 minutes and writes failures to a table monitored by an alert.",
+            "correct": false
+        }
+    ],
+    "explanation": "**Standard availability tests** are Application Insights' built-in synthetic monitoring: the platform's own probes request your URL on the schedule you set, **from the test locations you pick around the world**, evaluating success criteria such as status code 200 and the 30-second timeout. Results land in the availability experience, and the associated metric alert supports exactly the required condition — fail when N or more locations fail — so operations get paged on real outside-in unavailability with zero code changes.\n\n**Why not the other options:**\n- **Log search alert on `AppRequests`** — `AppRequests` records traffic that *reached the app*. Quiet periods with no users look identical to outages, DNS/TLS/network failures in front of the app never appear at all, and there is no concept of probing from chosen geographies. It observes demand, not availability.\n- **Liveness probe** — Probes run *inside* the environment against the replica, exist to trigger restarts rather than notifications, and say nothing about whether the public URL is reachable from the internet (ingress, DNS, or certificate failures are invisible to them).\n- **Timer-triggered Function** — Hand-builds what the platform ships: you would maintain probe code, multi-region deployment (a function runs in *its* region, not several), storage, and alert plumbing forever. It also violates the spirit of \"no code\" by creating a new codebase to operate.",
+    "category": "Secure, monitor, and troubleshoot Azure solutions"
+}

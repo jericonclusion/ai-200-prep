@@ -1,0 +1,21 @@
+{
+    "id": "ai200-s3-29-ordering-eventhubs-checkpoint",
+    "type": "ordering",
+    "question": "Windgale Mobility is building a Python consumer for an existing Azure Event Hub. The consumer must resume where it left off after restarts and share the partitions automatically when more instances are added. Nothing on the consuming side exists yet.\n\nPlace the steps in the correct order.",
+    "items": [
+        "Create a dedicated consumer group for this application on the event hub.",
+        "Create a blob container to hold the application's checkpoint and ownership data.",
+        "Construct a `BlobCheckpointStore` for that container and an `EventHubConsumerClient` for the consumer group with `checkpoint_store` set to it.",
+        "In the event handler, process each event and then call `partition_context.update_checkpoint(event)`.",
+        "Start additional identical instances and verify partition ownership is balanced across them."
+    ],
+    "correctOrder": [
+        "Create a dedicated consumer group for this application on the event hub.",
+        "Create a blob container to hold the application's checkpoint and ownership data.",
+        "Construct a `BlobCheckpointStore` for that container and an `EventHubConsumerClient` for the consumer group with `checkpoint_store` set to it.",
+        "In the event handler, process each event and then call `partition_context.update_checkpoint(event)`.",
+        "Start additional identical instances and verify partition ownership is balanced across them."
+    ],
+    "explanation": "Each step consumes the previous step's output:\n\n1. **Consumer group first** — The application needs its own cursor over the stream; creating the group up front means the app never contends with other applications reading through `$Default`.\n2. **Blob container** — The checkpoint store must have somewhere durable to write offsets and partition-ownership records before any client code can run against it.\n3. **`BlobCheckpointStore` + `EventHubConsumerClient`** — The client is constructed *with* the checkpoint store and the consumer group name; this wiring is what turns independent processes into a load-balanced processor group that resumes from stored checkpoints.\n4. **Process, then `update_checkpoint`** — Checkpointing after successful processing yields at-least-once semantics: a crash between processing and checkpointing replays the event, but progress is never falsely recorded ahead of work actually done.\n5. **Scale out and verify** — Only once one instance runs correctly does adding instances make sense; new instances claim ownership of a share of partitions through the same checkpoint store, which is the behavior to verify.\n\n**Why not the other options:**\n- Constructing the client before the container (or group) exists fails at runtime — the checkpoint store has nowhere to persist ownership, and the group name must already exist on the hub.\n- Calling `update_checkpoint` *before* processing inverts the delivery guarantee to at-most-once: a crash right after checkpointing silently skips the unprocessed event.\n- Scaling out before checkpointing works just multiplies instances that all start from the beginning of the stream and duplicate each other's work.",
+    "category": "Connect to and consume Azure services"
+}

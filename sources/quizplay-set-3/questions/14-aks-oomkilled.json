@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-14-aks-oomkilled",
+    "question": "An embedding service on AKS restarts every few minutes under load. `kubectl describe pod` shows:\n\n```text\nLast State:  Terminated\n  Reason:    OOMKilled\n  Exit Code: 137\n```\n\nThe container loads a large in-memory vector table at startup, and its Deployment sets `resources.limits.memory: \"2Gi\"`. You must stop the restarts.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Measure the container's real working set and raise `resources.requests.memory` and `resources.limits.memory` in the Deployment to accommodate it, for example `limits.memory: \"8Gi\"`.",
+            "correct": true
+        },
+        {
+            "text": "Increase `resources.limits.cpu` so the process finishes loading the vector table before the kernel intervenes.",
+            "correct": false
+        },
+        {
+            "text": "Add a HorizontalPodAutoscaler so more replicas share the memory pressure.",
+            "correct": false
+        },
+        {
+            "text": "Set the pod's `restartPolicy` to `Never` so Kubernetes stops killing the container.",
+            "correct": false
+        }
+    ],
+    "explanation": "`Reason: OOMKilled` with exit code **137** (128 + SIGKILL) means the container exceeded its **memory limit** and the kernel's out-of-memory killer terminated it. A service that loads a large vector table simply needs more memory than the 2 GiB cgroup limit allows. The fix is to size the limit (and the request, so the scheduler places the pod on a node with room) to the measured working set. If nodes are too small for the new limit, that is a node-pool sizing follow-up — but the Deployment change is what stops the kills.\n\n**Why not the other options:**\n- **More CPU** — CPU limits cause *throttling*, never kills; the OOM killer acts on memory alone. The process would still cross the 2 GiB memory ceiling and be SIGKILLed regardless of how fast it runs.\n- **HorizontalPodAutoscaler** — Scaling out multiplies identical replicas. Each replica still loads the whole vector table and still exceeds its own 2 GiB limit, so you get *more* OOMKilled pods, not fewer.\n- **`restartPolicy: Never`** — Kubernetes is not killing the container as a policy decision; the kernel is, because the limit is breached. Disabling restarts just leaves the workload dead after the first OOM kill instead of recovering.",
+    "category": "Develop containerized solutions on Azure"
+}

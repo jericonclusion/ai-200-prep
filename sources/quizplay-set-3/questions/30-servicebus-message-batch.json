@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-30-servicebus-message-batch",
+    "question": "A nightly Python job must publish about 200,000 small notification messages to an Azure Service Bus queue. Sending them one `send_messages(msg)` call at a time takes over an hour. You must maximize send throughput **without ever exceeding the broker's maximum batch size**, regardless of individual message sizes.\n\nWhat should the sender code do?",
+    "options": [
+        {
+            "text": "Create batches with `batch = sender.create_message_batch()` and fill each with `batch.add_message(msg)`; when adding a message raises the batch-size error, send the current batch with `sender.send_messages(batch)` and start a new one.",
+            "correct": true
+        },
+        {
+            "text": "Pass the whole list in one call — `sender.send_messages(list_of_200000_messages)` — and let the SDK transmit it as a single operation.",
+            "correct": false
+        },
+        {
+            "text": "Spawn one thread per 1,000 messages, each with its own `ServiceBusClient`, and send the messages individually in parallel.",
+            "correct": false
+        },
+        {
+            "text": "Gzip-compress each message body before sending so more messages fit within the hourly window.",
+            "correct": false
+        }
+    ],
+    "explanation": "`create_message_batch()` returns a batch object that **tracks its encoded size against the broker's limit as you fill it**: `add_message` accepts messages while they fit and raises once the next message would push the batch over the maximum. That exception is the flow-control signal — send the full batch (one network operation for hundreds of messages, amortizing the per-call latency that made the naive loop slow) and start filling the next. Throughput rises by orders of magnitude and, by construction, no transmitted batch can ever exceed the size limit.\n\n**Why not the other options:**\n- **One call with the entire list** — `send_messages` with a list attempts to put all of them into a single batch; 200,000 messages far exceeds the maximum batch size, so the call fails outright. Even when a large list happens to fit, you are relying on luck about payload sizes — the requirement says *never* exceed the limit.\n- **Thread-per-1,000 with separate clients** — Still pays one network round trip per message (the actual bottleneck), while stampeding the namespace with hundreds of concurrent connections, inviting throttling and connection-limit errors. Parallelism multiplies an inefficient unit of work instead of fixing it.\n- **Gzip per message** — Shrinks bodies but keeps 200,000 individual sends, each dominated by per-operation latency and framing overhead rather than payload bytes; consumers must also all learn to decompress. It optimizes the wrong variable.",
+    "category": "Connect to and consume Azure services"
+}

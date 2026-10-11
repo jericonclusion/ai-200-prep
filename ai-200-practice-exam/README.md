@@ -4,11 +4,14 @@ English-language practice application for AI-200. Open `dist/index.html` in a br
 
 ## Included
 
-- 263 verified practice questions mapped to the current AI-200 skills outline
+- 1,298 questions in 30 selectable sets: 263 existing questions, 174 instructor questions, and 861 imported community questions
+- 36 QuizPlay, 300 Suralmk and 525 Bouvet questions, with 136 documented correction/clarification records
+- Persistent set selection for Study mode, timed exams, quick assessments, case drills and audio
+- Offline study library with 184 guides/labs, including all 23 Naytron labs; complete upstream snapshots under `../sources/`
 - 133 questions from Microsoft Learn module assessments across all 27 AI-200 modules, including technical adaptations with original module and technical reference URLs
 - Free preview questions from external practice providers are reworded and checked against technical documentation
-- Full simulation: 50 questions in 100 minutes
-- Quick assessment: 20 questions in 40 minutes
+- Full simulation: up to 50 questions, two minutes each, using only selected sets
+- Quick assessment: up to 20 questions, two minutes each
 - Case study drill with scenario tabs and section review
 - Study mode with immediate explanations
 - Case-study questions retain their named scenario and readable context when randomized in Study mode
@@ -31,9 +34,25 @@ The 100-minute full simulation models Microsoft's associate/expert role-based ex
 
 ## Question-bank validation
 
-Single-choice and multiple-response options are shuffled once per session, with correct-answer indexes remapped. Yes/No options retain their familiar order. Full simulations include case-study and locked items in the domain totals: 12 container, 14 data, 12 services, and 12 operations questions (24%, 28%, 24%, and 24%). The practice score is the percentage correct scaled to 1000, not Microsoft's scoring formula.
+Single-choice and multiple-response options are shuffled once per session, with correct-answer indexes remapped. Yes/No options retain their familiar order. Full simulations target 12 container, 14 data, 12 services, and 12 operations questions (24%, 28%, 24%, and 24%). Core-only exams meet those totals, including their case and locked items. Limited selections use the available questions without borrowing from excluded sets. Instructor questions have no domain classification, so their inclusion changes the distribution; this is disclosed before the session and in results. Study mode contains every selected question and keeps scenarios together. The practice score is the percentage correct scaled to 1000, not Microsoft's scoring formula.
 
-After changing the question bank or inline runtime, run `node scripts/build-inline.cjs` to update both embedded HTML versions, then `node scripts/check-questions.cjs` to check answer mappings, domain selection, and embedded-content consistency. Run `node scripts/check-runtime.cjs` to test session startup, case-study grouping, feedback, partial and perfect scores, and answer review in both app versions. Run `node scripts/check-browser.cjs` for a full headless browser walkthrough of a 20-question quick assessment and its result screen. The browser test requires Microsoft Edge, Chrome, or an `AI200_BROWSER` path.
+Build and validate from this directory (Python 3 and Node.js 22 or later):
+
+```sh
+python3 scripts/import-community.py
+python3 scripts/build-library.py
+node scripts/build-inline.cjs
+node scripts/check-questions.cjs
+node scripts/check-community.cjs
+node scripts/check-runtime.cjs
+node scripts/check-browser.cjs
+```
+
+Set `AI200_BROWSER` to a Chromium-based executable for the browser check. It checks session resume, answer review, teacher scenarios, set selection and persistence, small study/exam sessions, keyboard access, inline rendering and the mobile library. Data checks validate all 1,298 answer structures, selection isolation, domain targets, source checksums and randomized answer mappings.
+
+Both embedded HTML files are generated from the same `dist/` application; there is no separate inline runtime. The form includes its scripts, styles and scenario images. Its library link expects this repository's directory layout.
+
+Content corrections live in `data/community-corrections.json`. The unmodified snapshots and notices live under `../sources/`; do not edit their contents without updating the pinned revision and manifest. `../sources/review.html` describes the review scope and links each correction to its primary reference. Review does not certify every upstream sentence, and the labs have not been deployed in Azure.
 
 Technical review clarified Service Bus redelivery versus duplicate sends, ACR RBAC versus ABAC roles, App Service sidecar port configuration, Key Vault refresh and secret rotation, Cosmos DB consistency and vector-index limits, Python pagination, and SDK credentials versus Functions binding configuration. Question C13 now tests a concrete diagnostic action instead of requiring an arbitrary troubleshooting order.
 

@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-19-cosmos-autoscale",
+    "question": "Veslyn Retail's recommendation container in Azure Cosmos DB for NoSQL is provisioned at a constant 40,000 RU/s to survive daytime peaks, but traffic is under 4,000 RU/s all night and spikes unpredictably during promotions, sometimes causing 429s beyond the fixed provision. You must have throughput follow the workload automatically — no schedules, no scaling code to operate — while keeping peak capacity available.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Migrate the container to **autoscale throughput** with a maximum of 40,000 RU/s (for example `az cosmosdb sql container throughput migrate ... --throughput-type autoscale`); it then scales instantly between 4,000 and 40,000 RU/s based on usage, billing for the highest RU/s actually reached each hour.",
+            "correct": true
+        },
+        {
+            "text": "Keep manual throughput and run a scheduled job that raises provisioned RU/s every morning and lowers it every evening.",
+            "correct": false
+        },
+        {
+            "text": "Recreate the account in serverless mode so the container has no provisioned throughput at all.",
+            "correct": false
+        },
+        {
+            "text": "Keep 4,000 RU/s provisioned and configure the SDK's retry policy to absorb 429s during peaks.",
+            "correct": false
+        }
+    ],
+    "explanation": "**Autoscale throughput** is the built-in answer to spiky, unpredictable workloads: you set only the maximum (`Tmax = 40,000 RU/s`), and the service instantly and automatically scales the container between 10% of that value (4,000 RU/s) and the maximum, second by second, with no schedules, functions, or operator action. Nighttime hours bill near the 4,000 RU/s floor; an unforeseen promotion gets the full 40,000 RU/s immediately instead of 429s.\n\n**Why not the other options:**\n- **Scheduled scale job** — Re-introduces exactly the operational machinery the requirement excludes, and a *schedule* cannot anticipate *unpredictable* promotion spikes: the job scales up after the 429s have already happened.\n- **Serverless** — Serverless is designed for small, intermittent workloads and cannot be switched to on an existing provisioned account (it is chosen at account creation, requiring a migration). Sustained daytime traffic at this scale is usually more expensive per RU consumed, and serverless containers have lower throughput ceilings than a 40,000 RU/s autoscale container.\n- **Retry policy at 4,000 RU/s** — Retries do not create capacity; they re-queue the same work against the same exhausted budget. Peak traffic ten times the provision produces sustained throttling, ballooning latency, and eventually exhausted retries surfacing as errors to users.",
+    "category": "Develop AI solutions by using Azure data management services"
+}

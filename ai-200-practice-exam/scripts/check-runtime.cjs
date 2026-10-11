@@ -17,7 +17,7 @@ const assertScenarioBlocks = (questions, label) => {
 // Run session startup, feedback and results with a small in-memory DOM facade.
 for (const engine of ['dist', 'inline']) {
   for (const randomValue of [0.1, 0.9]) {
-    const modes = engine === 'dist' ? [['exam',50],['quick',20],['case',5],['study',263],['sample',174]] : [['exam',50],['quick',20],['case',5],['study',263]];
+    const modes = [['exam',50],['quick',20],['case',5],['study',263],['sample',174]];
     for (const [mode, total] of modes) {
       const elements = new Map();
       const element = id => {
@@ -33,19 +33,17 @@ for (const engine of ['dist', 'inline']) {
         localStorage:{getItem:key=>storage.get(key)||null, setItem:(key,value)=>storage.set(key,value), removeItem:key=>storage.delete(key)},
         setInterval:()=>1, clearInterval:()=>{}
       };
-      vm.runInNewContext(read('dist/questions.js'), context);
-      if (engine === 'dist') vm.runInNewContext(read('dist/instructor-sample.js'), context);
-      let script;
-      if (engine === 'dist') {
-        const original = read('dist/app.js');
-        script = original.replace(/\n\s*welcome\(\);\s*\}\)\(\);\s*$/, '\nwindow.__review={start:(mode,source)=>{selectedMode=mode;if(source)selectedSource=source;startSession()},state:()=>state,feedback:feedbackMarkup,options:optionMarkup,answered:isAnswered,correct:isCorrect,finish,render:renderQuestion,next};welcome();\n})();');
-        assert.notEqual(script, original);
-      } else {
-        const original = read('inline/runtime.part').replace(/<\/script>\s*$/, '');
-        script = original.replace(/\nhome\(\);\s*\}\)\(\);\s*$/, '\nwindow.__review={start,state:()=>st,feedback,finish,render,next};home();\n})();');
-        assert.notEqual(script, original);
+      const scripts = engine === 'dist'
+        ? ['questions','instructor-sample','community-questions','question-sets','app'].map(name=>read('dist/' + name + '.js'))
+        : [...read('ai-200-exam-form.html').matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(match=>match[1]);
+      for (let script of scripts) {
+        if (script.includes('function startSession()')) {
+          const original = script;
+          script = script.replace(/\n\s*welcome\(\);\s*\}\)\(\);\s*$/, '\nwindow.__review={start:(mode,ids)=>{selectedMode=mode;selectedSetIds=ids||(mode==="sample"?["instructor"]:["curated","microsoft-learn"]);startSession()},state:()=>state,feedback:feedbackMarkup,options:optionMarkup,answered:isAnswered,correct:isCorrect,finish,render:renderQuestion,next};welcome();\n})();');
+          assert.notEqual(script, original);
+        }
+        vm.runInNewContext(script, context);
       }
-      vm.runInNewContext(script, context);
       const api = context.window.__review;
       api.start(mode);
       const state = api.state();
@@ -54,7 +52,7 @@ for (const engine of ['dist', 'inline']) {
       if (engine === 'dist') assert.ok(storage.has('ai200-active-session-v1'),`${mode}: active session is persisted`);
       if (engine === 'dist') assert.equal(element('app').innerHTML.includes('Take a break'),['exam','quick'].includes(mode),`${mode}: break control matches timed-session behavior`);
       if (engine === 'dist' && mode === 'exam') {
-        assert.equal(questions.filter(q=>q.id.startsWith('INS')).length, 15, 'mixed official flow contains 15 instructor questions');
+        assert.equal(questions.filter(q=>q.id.startsWith('INS')).length, 0, 'core-only exam excludes instructor questions');
         assertScenarioBlocks(questions.filter(q=>q.id.startsWith('INS')), 'mixed official flow instructor questions');
       }
       if (engine === 'dist' && mode === 'sample') {
@@ -163,7 +161,7 @@ for (const engine of ['dist', 'inline']) {
         }
         api.next();
         assert.equal(state.checked[first.id], true, `${engine}: Next must check an answered Study mode question`);
-        const studyMarkup = element(engine === 'dist' ? 'app' : 'ai200-screen').innerHTML;
+        const studyMarkup = element('app').innerHTML;
         assert.ok(studyMarkup.includes('answer-incorrect'), `${engine}: incorrect Study mode question remains red`);
         assert.ok(studyMarkup.includes('incorrect'), `${engine}: incorrect state has an accessible label`);
       }
@@ -185,15 +183,15 @@ for (const engine of ['dist', 'inline']) {
         assert.ok(feedback.endsWith('</div>'));
       }
       api.finish();
-      const markup = element(engine === 'dist' ? 'app' : 'ai200-screen').innerHTML;
+      const markup = element('app').innerHTML;
       if (engine === 'dist') assert.ok(!storage.has('ai200-active-session-v1'),`${mode}: submitted session is cleared`);
       assert.ok(markup.includes('1000'));
       assert.ok(markup.includes('Answer review'));
       assert.ok(!markup.includes('{state.comments'));
       assert.ok(!/\}\/div>|\}\/details>/.test(markup));
       if (engine === 'dist' && mode === 'exam' && randomValue === 0.1) {
-        api.start('exam','sample');
-        assert.equal(api.state().flat.filter(q=>q.id.startsWith('INS')).length,41,'instructor-only official flow contains 41 instructor questions plus case and locked sections');
+        api.start('exam',['instructor']);
+        assert.equal(api.state().flat.filter(q=>q.id.startsWith('INS')).length,50,'instructor-only exam contains only instructor questions');
         assertScenarioBlocks(api.state().flat.filter(q=>q.id.startsWith('INS')),'instructor-only official flow');
       }
     }

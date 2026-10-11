@@ -1,0 +1,33 @@
+{
+    "id": "ai200-s3-17-multi-image-size",
+    "type": "multi",
+    "question": "A Python inference image has grown to 6.5 GB. Cold starts and scale-out on Azure Container Apps are slow because every new replica must pull the image. The model weights are already loaded at runtime from Blob Storage, so the size comes from the image itself.\n\nWhich **three** actions reduce the image size? (Select three.)",
+    "options": [
+        {
+            "text": "Use a multi-stage build: compile wheels and install build tooling in a builder stage, then copy only the installed packages and application code into the final runtime stage.",
+            "correct": true
+        },
+        {
+            "text": "Base the runtime stage on a slim image such as `python:3.12-slim` instead of the full `python:3.12` image.",
+            "correct": true
+        },
+        {
+            "text": "Add a `.dockerignore` that excludes `.git`, test data, notebooks, and local caches so they never enter the build context or get swept into `COPY . .`.",
+            "correct": true
+        },
+        {
+            "text": "Compress the image with `docker save` piped through gzip before pushing it to the registry.",
+            "correct": false
+        },
+        {
+            "text": "Bake the model weights into the image as well, so replicas skip the Blob Storage download at startup.",
+            "correct": false
+        },
+        {
+            "text": "Raise the container app's CPU and memory allocation so replicas can pull the image faster.",
+            "correct": false
+        }
+    ],
+    "explanation": "Image size is determined by what ends up in the final image's layers, so the three effective levers are: a **multi-stage build**, which leaves compilers, headers, and build caches behind in the discarded builder stage; a **slim base image**, which drops hundreds of megabytes of OS packages the service never uses; and a **`.dockerignore`**, which keeps repository junk (git history, datasets, notebook checkpoints) out of the build context so a broad `COPY` cannot embed it in a layer.\n\n**Why not the other options:**\n- **`docker save` + gzip** — That compresses a local tarball export. Registry pushes and pulls already transfer layers compressed; the layers stored and pulled by Container Apps are unchanged, so cold-start pull time does not improve.\n- **Baking in the model weights** — Moves gigabytes *into* the image, making the pull that is already the bottleneck several times worse. Runtime loading from Blob Storage (or a volume) is the pattern that keeps images small and models independently versionable.\n- **More CPU/memory** — Image pull speed is dominated by image size and registry/network throughput, not by the replica's compute allocation. This raises cost without addressing the cause.",
+    "category": "Develop containerized solutions on Azure"
+}

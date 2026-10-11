@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-07-polwarren-servicebus-defer",
+    "question": "You must implement the Polwarren clearance requirement: a clearance command received from `clearance-commands` before its vessel's manifest is registered must not be lost, must not block other vessels' commands, and must be retrievable individually and exactly once its manifest arrives — without re-sending it or letting it expire.\n\nWhat should the Python worker do with such a command?",
+    "options": [
+        {
+            "text": "Call `receiver.defer_message(msg)` and durably record the message's sequence number against the vessel; when the manifest arrives, retrieve exactly that command with `receiver.receive_deferred_messages(sequence_numbers=[seq])`, process it, and complete it.",
+            "correct": true
+        },
+        {
+            "text": "Call `receiver.abandon_message(msg)` so the command returns to the queue and is redelivered until the manifest is ready.",
+            "correct": false
+        },
+        {
+            "text": "Call `receiver.dead_letter_message(msg, reason=\"manifest-missing\")` and replay the dead-letter sub-queue after each manifest registration.",
+            "correct": false
+        },
+        {
+            "text": "Complete the message, then re-send a copy of it with `sender.schedule_messages(copy, enqueue_time_utc)` set 15 minutes in the future, repeating until the manifest exists.",
+            "correct": false
+        }
+    ],
+    "explanation": "**Message deferral** is built for exactly this \"can't process it *yet*\" case. `defer_message` sets the message aside inside the queue: it stops being delivered by normal receives (so other vessels' commands flow freely), it is never lost, and it can later be fetched **individually and directly** by its **sequence number** with `receive_deferred_messages`. The worker records the sequence number with the vessel record; when the manifest registration lands, it pulls that one deferred command, processes it, and completes it. Nothing is re-sent and the original message — with its original identity — is processed once.\n\n**Why not the other options:**\n- **`abandon_message`** — Abandoning releases the lock and the broker redelivers the message almost immediately. The worker spins on the same unprocessable command, its delivery count climbs, and after `max_delivery_count` attempts the broker dead-letters it — the opposite of \"must not be lost\" through a slow manifest.\n- **Dead-letter and replay** — The dead-letter sub-queue is for messages that *failed*, not messages that are merely early. It can only be drained sequentially; there is no way to receive one specific vessel's command by key, so every manifest registration would require scanning and re-sending the rest — exactly the re-send the requirement forbids.\n- **Complete + re-schedule a copy** — This deletes the original and re-sends clones on a guessed cadence, violating \"without re-sending it.\" The copy has a new identity, ordering and audit history are lost, and a manifest that takes hours produces an unbounded chain of re-sends.",
+    "category": "Connect to and consume Azure services",
+    "caseStudy": "scenarios/case_study_polwarren_shipping.json"
+}

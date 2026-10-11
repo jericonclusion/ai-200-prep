@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-22-redis-token-counter",
+    "question": "Marnwick Travel enforces a per-user daily LLM token budget. Twelve API instances must add each request's token count to the user's daily total **atomically**, read the total cheaply before each request, and have totals reset automatically each day — all in Azure Managed Redis.\n\nWhat should the instances do?",
+    "options": [
+        {
+            "text": "Maintain one key per user per day, such as `tokens:{userId}:{yyyyMMdd}`: add usage with `INCRBY` (atomic on the server), set an expiration of about 48 hours when the key is created, and read the total with `GET`.",
+            "correct": true
+        },
+        {
+            "text": "`GET` the user's counter, add the tokens in Python, and `SET` the new value back with the same key.",
+            "correct": false
+        },
+        {
+            "text": "Keep the running totals in each instance's process memory and have a background task sum them into Redis every minute.",
+            "correct": false
+        },
+        {
+            "text": "Add each request's token count as a member of a Redis set per user and compute the total by summing the members at read time.",
+            "correct": false
+        }
+    ],
+    "explanation": "`INCRBY` executes **atomically inside the Redis server**: twelve instances can increment the same key concurrently and every addition is applied exactly once, with the new total returned by the same command. Encoding the date in the key (`tokens:{userId}:{yyyyMMdd}`) makes \"reset each day\" free — each day simply starts a fresh key at zero — and an expiration set at creation (48 h comfortably outlives the day) garbage-collects yesterday's keys automatically. Reads are a single `GET` of one small string.\n\n**Why not the other options:**\n- **`GET`, add locally, `SET`** — A classic read-modify-write race: two instances read 900, both add 200, both write 1,100, and 200 tokens vanish from the budget. Under concurrent load the counter systematically undercounts — the worst failure mode for a quota.\n- **Per-instance memory + periodic sync** — Between syncs, no instance sees the others' usage, so a user can burn through many times the budget by spreading requests across instances; instance restarts lose unsynced counts entirely.\n- **A set of per-request counts** — Sets store unique members, so two requests consuming the same token count collapse into one member and the sum is wrong; even with unique members, memory grows per request and every read must fetch and sum the whole collection instead of reading one integer.",
+    "category": "Develop AI solutions by using Azure data management services"
+}

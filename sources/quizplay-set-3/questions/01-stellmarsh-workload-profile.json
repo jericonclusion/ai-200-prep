@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-01-stellmarsh-workload-profile",
+    "question": "You must host the new Stellmarsh turbine-anomaly model, which requires GPU compute, inside the existing `stell-env` Container Apps environment. The team will not create or operate a Kubernetes cluster.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Add a GPU workload profile to `stell-env` (for example `az containerapp env workload-profile add --workload-profile-type Consumption-GPU-NC24-A100`), then deploy the inference app with `--workload-profile-name` set to that profile.",
+            "correct": true
+        },
+        {
+            "text": "Keep the app on the Consumption profile and raise its resource allocation to the maximum `--cpu` and `--memory` values so the model runs faster.",
+            "correct": false
+        },
+        {
+            "text": "Add a GPU node pool to the `stell-batch` AKS cluster and move the inference API there with a `nvidia.com/gpu` resource request in its Deployment manifest.",
+            "correct": false
+        },
+        {
+            "text": "Add a custom KEDA scale rule to the app so it scales out to enough CPU replicas to match GPU throughput.",
+            "correct": false
+        }
+    ],
+    "explanation": "GPU compute in Azure Container Apps is delivered through **workload profiles**. You add a GPU profile (serverless consumption GPU or a dedicated GPU profile such as an NC-series type) to the workload-profiles-enabled environment, then pin the container app to it with `--workload-profile-name`. The app then runs on GPU-backed compute inside `stell-env`, with no cluster for the team to manage — exactly what the requirement demands.\n\n**Why not the other options:**\n- **Max CPU/memory on Consumption** — The default Consumption profile provides only CPU and memory. No amount of vCPU allocation gives the container a GPU; a model that requires GPU compute simply cannot meet its latency targets there.\n- **GPU node pool on AKS** — This would work technically, but it violates two stated constraints: the model must run *inside the existing `stell-env` environment*, and the team will not operate Kubernetes for it. Moving the API to `stell-batch` does both.\n- **KEDA scale rule** — Scaling controls *how many* replicas run, not *what hardware* they run on. Scaling out CPU replicas does not provide GPU acceleration and multiplies cost without meeting the requirement.",
+    "category": "Develop containerized solutions on Azure",
+    "caseStudy": "scenarios/case_study_stellmarsh_aviation.json"
+}

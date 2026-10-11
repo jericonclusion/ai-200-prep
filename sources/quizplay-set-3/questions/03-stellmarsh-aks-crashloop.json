@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-03-stellmarsh-aks-crashloop",
+    "question": "The Stellmarsh nightly scorer pods on `stell-batch` are in `CrashLoopBackOff`: each container exits about 20 seconds after starting, and Kubernetes keeps restarting it. Engineers need to see the output the **crashed** container wrote before it exited.\n\nWhich command should they run?",
+    "options": [
+        {
+            "text": "kubectl logs <pod-name> --previous",
+            "correct": true
+        },
+        {
+            "text": "kubectl exec -it <pod-name> -- cat /var/log/app.log",
+            "correct": false
+        },
+        {
+            "text": "kubectl get events --field-selector involvedObject.name=<pod-name>",
+            "correct": false
+        },
+        {
+            "text": "az aks update --attach-acr stellmarshacr",
+            "correct": false
+        }
+    ],
+    "explanation": "`kubectl logs <pod> --previous` (`-p`) returns the stdout/stderr of the **previous, terminated instance** of the container — exactly what you need in a crash loop, where the *current* instance has just restarted and its log stream is empty or about to die again. Kubelet retains the last terminated container's log for this purpose. The exit output usually contains the stack trace or fatal error that explains the ~20-second crash.\n\n**Why not the other options:**\n- **`kubectl exec`** — `exec` needs a *running* container. In `CrashLoopBackOff` the container is either dead or lives only a few seconds, so an interactive shell is impractical — and the crash output went to stdout, not necessarily to a file inside the container.\n- **`kubectl get events`** — Events show lifecycle facts (`Back-off restarting failed container`, probe failures, image pulls) but **not the application's own output**. They tell you *that* it crashed, not *why* the process exited.\n- **`az aks update --attach-acr`** — Registry integration fixes `ImagePullBackOff` (401s from the registry). These pods pull fine and *start*; the failure is inside the running process, so registry permissions are irrelevant.",
+    "category": "Develop containerized solutions on Azure",
+    "caseStudy": "scenarios/case_study_stellmarsh_aviation.json"
+}

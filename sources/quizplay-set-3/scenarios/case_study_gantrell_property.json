@@ -1,0 +1,13 @@
+{
+    "id": "case_study_gantrell_property",
+    "tabs": [
+        {
+            "title": "Company Overview",
+            "content": "**Gantrell Property Group** runs an AI-assisted property-valuation platform. A Python scoring service produces automated valuations; every valuation run emits structured telemetry.\n\n**Current Environment:**\n- Application settings and model-tuning parameters (about 40 related keys such as `Valuation:ModelVersion`, `Valuation:ComparableRadiusKm`, `Valuation:ConfidenceFloor`) live in **Azure App Configuration**. The keys are tuned together: a change to one usually requires coordinated changes to several others.\n- All services are instrumented with the **Azure Monitor OpenTelemetry distro** (`azure-monitor-opentelemetry`) and send telemetry to a workspace-based **Application Insights** resource.\n- The valuation service logs one structured trace per completed valuation to `AppTraces`, with the property identifier in the `Properties` dynamic column (`Properties.propertyId`) alongside the valuation status."
+        },
+        {
+            "title": "Requirements",
+            "content": "**Configuration Requirements:**\n- A release must promote **exactly** the set of App Configuration key-values that was tested in staging — all 40 keys as one immutable, named unit. Rolling back must restore exactly the previous unit. Individual keys continuing to change in the store must not affect what already-released instances load.\n\n**Telemetry Cost Requirements:**\n- The platform now handles ~40 million requests per day and Application Insights ingestion cost has become unacceptable. Ingested trace volume must be cut to roughly **10%**, while request **counts and failure rates shown in Application Insights experiences must remain statistically accurate**, and sampled requests must keep their full end-to-end traces.\n\n**Operations Requirements:**\n- An operations dashboard must show, for **each property**, only the **most recent** valuation trace row (all of its columns), derived from `AppTraces`."
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-08-polwarren-eventgrid-retry",
+    "question": "You must implement the Polwarren webhook requirement: for the customs broker's subscription on `pol-vessel-events`, Event Grid must stop retrying a given event after at most 10 delivery attempts and must consider an event expired 1 hour after publication. The dead-letter destination already exists.\n\nWhat should you do?",
+    "options": [
+        {
+            "text": "Update the event subscription's retry policy: `az eventgrid event-subscription update --name broker-sub ... --max-delivery-attempts 10 --event-ttl 60`. Delivery stops when either limit is reached first.",
+            "correct": true
+        },
+        {
+            "text": "Update the event subscription with `--max-delivery-attempts 10 --event-ttl 3600`, specifying the time-to-live as 3,600 seconds.",
+            "correct": false
+        },
+        {
+            "text": "Have the webhook count deliveries per event `id` in its own store and return `200 OK` for any event it has already seen 10 times or that is older than 1 hour.",
+            "correct": false
+        },
+        {
+            "text": "Add a lifecycle management rule on the dead-letter storage container that deletes blobs 1 hour after creation.",
+            "correct": false
+        }
+    ],
+    "explanation": "Retry behavior for an Event Grid subscription is controlled by its **retry policy**, which has exactly the two knobs the requirement names: `--max-delivery-attempts` (1–30) and `--event-ttl`, which is expressed in **minutes** (1–1440). Setting them to `10` and `60` means Event Grid abandons an event after the tenth failed attempt *or* one hour after publication, **whichever comes first**, and then hands it to the already-configured dead-letter destination. The aggressive rate-limiter stops being hammered, and nothing is silently discarded.\n\n**Why not the other options:**\n- **`--event-ttl 3600`** — The unit trap: `event-ttl` is in **minutes**, not seconds. 3,600 minutes would be 2.5 days — and it also exceeds the allowed maximum of 1,440, so the command is rejected. Either way, it does not implement a 1-hour expiry.\n- **Counting deliveries in the webhook** — Returning `200` makes Event Grid record a *successful* delivery, corrupting the meaning of delivery metrics and dead-lettering: the event is acknowledged, not expired, so it never reaches the dead-letter destination. It also forces the rate-limited endpoint to keep absorbing the very retries the requirement is trying to stop.\n- **Lifecycle rule on the dead-letter container** — That deletes events *after* they were already dead-lettered. It has no effect on how many times or for how long Event Grid retries delivery — the actual requirement.",
+    "category": "Connect to and consume Azure services",
+    "caseStudy": "scenarios/case_study_polwarren_shipping.json"
+}

@@ -1,0 +1,21 @@
+{
+    "id": "ai200-s3-16-ordering-dockerfile-cache",
+    "type": "ordering",
+    "question": "Caldermere Insurance builds a Python FastAPI inference image in CI on every commit. Dependencies in `requirements.txt` change rarely; application source changes on almost every build. You must order the Dockerfile instructions so that a source-only change reuses the cached dependency layer instead of re-running `pip install`.\n\nPlace the instructions in the correct order.",
+    "items": [
+        "Start from the base image and set the working directory: `FROM python:3.12-slim` and `WORKDIR /app`.",
+        "Copy only the dependency manifest: `COPY requirements.txt .`",
+        "Install the pinned dependencies: `RUN pip install --no-cache-dir -r requirements.txt`",
+        "Copy the application source: `COPY src/ ./src/`",
+        "Declare the startup command: `CMD [\"uvicorn\", \"src.main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]`"
+    ],
+    "correctOrder": [
+        "Start from the base image and set the working directory: `FROM python:3.12-slim` and `WORKDIR /app`.",
+        "Copy only the dependency manifest: `COPY requirements.txt .`",
+        "Install the pinned dependencies: `RUN pip install --no-cache-dir -r requirements.txt`",
+        "Copy the application source: `COPY src/ ./src/`",
+        "Declare the startup command: `CMD [\"uvicorn\", \"src.main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]`"
+    ],
+    "explanation": "Docker's build cache is invalidated **top-down**: the first instruction whose input changes forces every later layer to rebuild. The ordering therefore runs from least- to most-frequently changing:\n\n1. **`FROM` + `WORKDIR`** — Every Dockerfile begins with the base image; `WORKDIR` establishes the path the later `COPY` and `RUN` instructions rely on.\n2. **`COPY requirements.txt .`** — Copy *only* the manifest, so the next layer's cache key depends on nothing but this one file.\n3. **`RUN pip install ...`** — The expensive step. Because its inputs are just the base layers and `requirements.txt`, a build where only source changed reuses this layer straight from cache.\n4. **`COPY src/ ./src/`** — The volatile source comes *after* the install; changing it invalidates only this cheap layer and the ones below it.\n5. **`CMD [...]`** — Metadata-only and effectively free; conventionally last, it defines how the final image starts.\n\n**Why not the other options:**\n- The classic mistake is a single `COPY . .` **before** `pip install` — then any source edit changes the copy layer's checksum, invalidating the install layer, and every CI build re-downloads and compiles all dependencies.\n- Installing dependencies before copying `requirements.txt` cannot work at all: the manifest is not yet in the build context's filesystem when `pip` runs.",
+    "category": "Develop containerized solutions on Azure"
+}

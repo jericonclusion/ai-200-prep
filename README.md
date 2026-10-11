@@ -10,9 +10,13 @@ Persoonlijke studieomgeving voor **Microsoft AI-200: Developing AI Cloud Solutio
 - `kennisbank/04-labtracker.md` — voortgang van de 24 verplichte labs.
 - `kennisbank/14-officiele-examengap-analyse.md` — dekking tegenover de officiële studiegids.
 - `kennisbank/17-online-oefenvraagbronnen.md` — beoordeling van openbare oefenbronnen.
-- `ai-200-practice-exam/` — Engelstalige simulator met 263 gecontroleerde vragen en een afzonderlijke set van 174 door de docent verstrekte voorbeeldvragen.
+- `kennisbank/18-community-bronnen-en-controle.md` — leerroute, bronoverzicht en inhoudelijke controle.
+- `ai-200-practice-exam/` — Engelstalige simulator met 1.298 vragen in 30 selecteerbare testsets.
+- `sources/index.html` — doorzoekbare offline bibliotheek met 184 gidsen en labs, waaronder 23 Naytron-labs; volledige snapshots van alle vier communityrepositories.
 
-Open `ai-200-practice-exam/dist/index.html` lokaal in een browser om de simulator te gebruiken. `Official exam flow` mengt standaard de gecontroleerde vraagbank met de docentenset. Via de bronkeuze kun je ook uitsluitend de gecontroleerde bank of uitsluitend de docentenset gebruiken. De volledige docentenset is daarnaast apart beschikbaar.
+Open `ai-200-practice-exam/dist/index.html` lokaal in een browser. Kies onder **Question sets** welke sets meetellen voor **Study mode**, een proefexamen, een korte toets of een casusdrill. De keuze blijft bewaard. Een proefexamen bevat maximaal 50 vragen en gebruikt uitsluitend de gekozen sets; kleinere selecties krijgen een kortere sessie. Via **Open the study library** lees je de gidsen en labinstructies.
+
+De uitbreiding voegt 861 vragen toe: QuizPlay 36, Suralmk 300 en Bouvet 525. De inhoudelijke beoordeling leverde 136 correctie- en verduidelijkingsrecords op. Antwoordstructuren, bronbestanden en selectiegedrag zijn automatisch gecontroleerd. De labs zijn niet in Azure uitgevoerd; de reikwijdte van de controle staat in `sources/review.html`.
 
 ## Screenshots
 
@@ -42,10 +46,10 @@ Open `ai-200-practice-exam/dist/index.html` lokaal in een browser om de simulato
 
 ## Privacy en AVG
 
-- De repository bevat geen namen van cursisten, privé-e-mailadressen, telefoonnummers, labaccounts, tijdelijke toegangscodes of ingevulde persoonlijke formulieren.
+- Er worden geen cursistgegevens, labaccounts, tijdelijke toegangscodes of ingevulde persoonlijke formulieren gepubliceerd. Bronvermeldingen en openbare auteursgegevens blijven behouden.
 - De oefenapp vraagt niet om een naam, e-mailadres of andere persoonsgegevens.
-- De zelfstandige browserversie bewaart alleen oefenresultaten in lokale browseropslag. Deze gegevens worden niet door de app naar een server verzonden.
-- Vrije opmerkingen bij vragen blijven binnen de actieve browsersessie.
+- De browserversies bewaren setkeuzes, actieve sessies, antwoorden, opmerkingen en oefenresultaten in lokale browseropslag. Deze gegevens worden niet door de app naar een server verzonden.
+- Vrije opmerkingen blijven lokaal en worden samen met de actieve sessie opgeslagen.
 - Voeg nooit `.env`-bestanden, Azure-aanmeldgegevens, TAP-tokens, API-sleutels of exports met persoonsgegevens toe.
 
 Zie ook `PRIVACY.md`.

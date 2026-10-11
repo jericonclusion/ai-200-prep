@@ -1,0 +1,29 @@
+{
+    "id": "ai200-s3-34-multi-otel-custom-metrics",
+    "type": "multi",
+    "question": "A Python service already calls `configure_azure_monitor()` from the Azure Monitor OpenTelemetry distro. The team now wants **pre-aggregated custom metrics** for LLM cost control — tokens per request and per-model call counts — chartable and alertable in Azure Monitor, splittable by model name and tenant.\n\nWhich **three** statements are correct? (Select three.)",
+    "options": [
+        {
+            "text": "Obtain a meter with `meter = metrics.get_meter(__name__)` (from `opentelemetry.metrics`) and create instruments such as `meter.create_histogram(\"tokens_per_request\")` and `meter.create_counter(\"model_calls\")`.",
+            "correct": true
+        },
+        {
+            "text": "Record measurements with attributes — for example `histogram.record(prompt_tokens + completion_tokens, {\"model\": model_name, \"tenant\": tenant_id})` — so charts and alerts can split and filter by those dimensions.",
+            "correct": true
+        },
+        {
+            "text": "The recorded metrics are exported to Application Insights automatically and can be queried as custom metrics (the `customMetrics` collection, `AppMetrics` in a workspace) for dashboards and alert rules.",
+            "correct": true
+        },
+        {
+            "text": "Custom metrics must be pushed by calling the Azure Monitor REST ingestion endpoint directly, because the distro exports only traces and logs.",
+            "correct": false
+        },
+        {
+            "text": "Token counts should instead be embedded in trace message strings and parsed out with KQL string functions at query time, because OpenTelemetry metrics cannot carry numeric values with dimensions.",
+            "correct": false
+        }
+    ],
+    "explanation": "The distro wires up the full OpenTelemetry **metrics** pipeline alongside traces and logs, so custom metrics are three small steps: get a **meter** from the global provider that `configure_azure_monitor()` installed; create **instruments** — a histogram for a distribution like tokens-per-request (yielding percentiles), a counter for monotonic counts like calls per model; and **record with attributes**, which become dimensions you can split, filter, and alert on. Everything exports to Application Insights on the standard interval and lands in `customMetrics`/`AppMetrics`, ready for workbooks, dashboards, and metric or log alerts.\n\n**Why not the other options:**\n- **Direct REST ingestion** — False premise: the distro's exporter handles metrics as a first-class signal. Hand-rolling REST calls would mean reimplementing batching, retry, and authentication that the SDK already provides.\n- **Parsing numbers out of trace messages** — Backwards on every axis: strings are not pre-aggregated (every request becomes a row to scan), KQL parsing is fragile and expensive at 4xx-million-request scale, sampling applied to traces would silently distort the numbers, and OpenTelemetry metrics *do* carry numeric values with dimensions — that is precisely what instruments and attributes are for.",
+    "category": "Secure, monitor, and troubleshoot Azure solutions"
+}

@@ -1,0 +1,24 @@
+{
+    "id": "ai200-s3-27-durable-fanout-fanin",
+    "question": "Pellcarrow Legal must process each uploaded contract by summarizing its ~500 sections **in parallel** on serverless compute, then combining the section summaries into one document summary **exactly once, only after all sections finish**. The workflow must survive process recycles and host restarts without losing progress.\n\nWhat should you implement?",
+    "options": [
+        {
+            "text": "A Durable Functions **fan-out/fan-in** orchestration: the orchestrator schedules an activity per section with `tasks = [context.call_activity(\"summarize_section\", s) for s in sections]`, awaits `results = yield context.task_all(tasks)`, then calls the aggregation activity with the results.",
+            "correct": true
+        },
+        {
+            "text": "An HTTP-triggered function that runs `asyncio.gather` over 500 coroutines, each summarizing one section, and aggregates the results before returning.",
+            "correct": false
+        },
+        {
+            "text": "A queue-triggered function per section that increments a counter blob when done; a timer-triggered function polls the counter and runs the aggregation when it reaches 500.",
+            "correct": false
+        },
+        {
+            "text": "A Durable Functions orchestration that calls `yield context.call_activity(\"summarize_section\", s)` for each section in a loop, then aggregates.",
+            "correct": false
+        }
+    ],
+    "explanation": "This is the textbook **fan-out/fan-in** pattern, and Durable Functions implements it with checkpointed state: scheduling all activity tasks *without* yielding fans out to as many parallel workers as the platform scales to; `yield context.task_all(tasks)` fans back in, resuming the orchestrator exactly once when the last activity completes. Because the orchestrator's progress is persisted in storage after each event, host restarts and process recycles replay it to its previous position — completed sections are never re-executed and the aggregation still runs exactly once.\n\n**Why not the other options:**\n- **`asyncio.gather` in one HTTP function** — All 500 summaries run inside a single function invocation: one process recycle loses everything, the whole workload is capped by one instance's resources rather than fanning out across the plan, and long contracts collide with the function execution timeout.\n- **Queue + counter blob + polling timer** — A hand-rolled orchestrator with classic distributed-state bugs: concurrent counter increments race unless you build ETag-based concurrency control, a poisoned section message stalls the count forever, and the timer can fire twice around the threshold and aggregate twice. Durable Functions exists to absorb exactly this bookkeeping.\n- **`yield` inside the loop** — Yielding each `call_activity` immediately makes the orchestration **sequential**: section 2 starts only after section 1 finishes. It is durable but processes 500 sections one at a time, defeating the parallelism requirement.",
+    "category": "Connect to and consume Azure services"
+}

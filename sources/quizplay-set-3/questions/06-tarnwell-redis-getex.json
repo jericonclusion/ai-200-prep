@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-06-tarnwell-redis-getex",
+    "question": "You must implement the Tarnwell caching requirement in Azure Managed Redis: every read of a cached concierge answer must also reset that entry's remaining lifetime to 1 hour, in a **single round trip**, while unread entries still expire on their own.\n\nWhich command should the Python service use on the read path?",
+    "options": [
+        {
+            "text": "GETEX answer:<question-hash> EX 3600",
+            "correct": true
+        },
+        {
+            "text": "GET answer:<question-hash>, and rely on the 1-hour expiration set when the entry was written.",
+            "correct": false
+        },
+        {
+            "text": "PERSIST answer:<question-hash> followed by GET answer:<question-hash>.",
+            "correct": false
+        },
+        {
+            "text": "TTL answer:<question-hash>, then GET the key if the returned TTL is greater than zero.",
+            "correct": false
+        }
+    ],
+    "explanation": "`GETEX` retrieves a key's value **and atomically updates its expiration in the same command** — `GETEX answer:<hash> EX 3600` returns the cached answer and resets the TTL to 3,600 seconds. That produces exactly the required *sliding expiration*: popular answers are refreshed on every read and stay warm, while entries nobody reads keep their last TTL and expire naturally. One command, one round trip.\n\n**Why not the other options:**\n- **Plain `GET`** — Reading with `GET` does not touch the TTL, so an answer written once always dies 1 hour after the *write*, no matter how popular it is. That is absolute expiration, not the required sliding behavior.\n- **`PERSIST` + `GET`** — `PERSIST` *removes* the expiration entirely, so entries never expire again — violating \"unread entries must still expire\" — and it is two round trips (or needs a pipeline) instead of one.\n- **`TTL` + conditional `GET`** — `TTL` only *inspects* the remaining lifetime; it never extends it. This adds a round trip, still lets hot entries expire mid-popularity, and solves nothing.",
+    "category": "Develop AI solutions by using Azure data management services",
+    "caseStudy": "scenarios/case_study_tarnwell_hospitality.json"
+}

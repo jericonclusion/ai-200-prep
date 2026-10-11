@@ -1,0 +1,1495 @@
+{
+  "ai200-s3-01-stellmarsh-workload-profile": {
+    "reason": "Clarified that adding a serverless GPU profile depends on regional support and quota; dedicated GPU profiles have different creation constraints.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/gpu-serverless-overview",
+      "prompt": "You must host the new Stellmarsh turbine-anomaly model, which requires GPU compute, inside the existing `stell-env` Container Apps environment. The team will not create or operate a Kubernetes cluster.\n\nWhat should you do?\nAssume serverless GPUs are supported in the environment region and the subscription has sufficient quota.",
+      "explanation": "Use a supported serverless GPU workload profile and assign the application to it. Increasing CPU allocation cannot provide a GPU. Check supported regions, quotas and replica sizing first. Dedicated GPU profiles can require a new environment; they are not interchangeable with serverless GPU profiles.",
+      "caseData": {
+        "Company Overview": "**Stellmarsh Aviation** provides predictive-maintenance analytics for regional airlines. Its Python services analyze engine-sensor telemetry and predict component failures before they occur.\n\n**Current Environment:**\n- All container images are built in CI and stored in the Azure Container Registry `stellmarshacr`.\n- Real-time inference APIs run in an **Azure Container Apps** environment named `stell-env`, which has workload profiles enabled. All apps currently run on the Consumption profile.\n- A nightly fleet-wide batch scorer runs as a Deployment on an existing **Azure Kubernetes Service** cluster named `stell-batch`.\n- Trained model weights are versioned and stored in an **Azure Blob Storage** container named `models`. The current turbine-anomaly model is approximately **8 GB**.",
+        "Requirements": "**Inference Requirements:**\n- A new turbine-anomaly detection model requires **GPU compute**. It must run inside the existing `stell-env` environment; the team will not create or operate a Kubernetes cluster for it.\n- The inference API container image must stay small: the 8 GB model weights must **not** be baked into the image, must be fully present on a local volume **before** the API container starts accepting traffic, and a new model version must be deployable without rebuilding the API image.\n\n**Batch Scoring Requirements:**\n- The nightly scorer on `stell-batch` is currently unhealthy: its pods restart repeatedly and `kubectl get pods` shows `CrashLoopBackOff`. Each container exits roughly 20 seconds after starting. Engineers need to see the output the crashed container produced before it exited.\n\n**General:**\n- All services authenticate to Azure resources with managed identities; no keys or passwords in images or manifests.",
+        "Review notes": "Assume supported serverless GPU region/quota, appropriately sized shared storage, and a supported download authentication method. Init-container managed identity availability depends on the workload profile. Roll out a pinned model version to new replicas."
+      }
+    }
+  },
+  "ai200-s3-02-stellmarsh-init-container": {
+    "reason": "Removed the blanket claim that init containers can always use managed identity; clarified model rollout.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/containers",
+      "prompt": "You must satisfy the Stellmarsh model-loading requirement: the 8 GB turbine-anomaly weights must not be baked into the API image, must be fully present on a local volume **before** the API container starts accepting traffic, and a new model version must be deployable without rebuilding the API image.\n\nHow should you configure the container app?\nAssume the download credentials and a sufficiently sized shared volume are configured for the chosen workload profile.",
+      "explanation": "An init container finishes downloading a pinned model version before the application container starts; both mount the same volume. Roll out a new model-version setting/revision to initialize fresh replicas. Updating a blob alone does not refresh running replicas. Managed identity access from init containers depends on the environment/profile; it is not supported in consumption-only or dedicated-profile environments. Verify volume capacity for the 8 GB model.",
+      "caseData": {
+        "Company Overview": "**Stellmarsh Aviation** provides predictive-maintenance analytics for regional airlines. Its Python services analyze engine-sensor telemetry and predict component failures before they occur.\n\n**Current Environment:**\n- All container images are built in CI and stored in the Azure Container Registry `stellmarshacr`.\n- Real-time inference APIs run in an **Azure Container Apps** environment named `stell-env`, which has workload profiles enabled. All apps currently run on the Consumption profile.\n- A nightly fleet-wide batch scorer runs as a Deployment on an existing **Azure Kubernetes Service** cluster named `stell-batch`.\n- Trained model weights are versioned and stored in an **Azure Blob Storage** container named `models`. The current turbine-anomaly model is approximately **8 GB**.",
+        "Requirements": "**Inference Requirements:**\n- A new turbine-anomaly detection model requires **GPU compute**. It must run inside the existing `stell-env` environment; the team will not create or operate a Kubernetes cluster for it.\n- The inference API container image must stay small: the 8 GB model weights must **not** be baked into the image, must be fully present on a local volume **before** the API container starts accepting traffic, and a new model version must be deployable without rebuilding the API image.\n\n**Batch Scoring Requirements:**\n- The nightly scorer on `stell-batch` is currently unhealthy: its pods restart repeatedly and `kubectl get pods` shows `CrashLoopBackOff`. Each container exits roughly 20 seconds after starting. Engineers need to see the output the crashed container produced before it exited.\n\n**General:**\n- All services authenticate to Azure resources with managed identities; no keys or passwords in images or manifests.",
+        "Review notes": "Assume supported serverless GPU region/quota, appropriately sized shared storage, and a supported download authentication method. Init-container managed identity availability depends on the workload profile. Roll out a pinned model version to new replicas."
+      }
+    }
+  },
+  "ai200-s3-03-stellmarsh-aks-crashloop": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_logs/",
+      "caseData": {
+        "Company Overview": "**Stellmarsh Aviation** provides predictive-maintenance analytics for regional airlines. Its Python services analyze engine-sensor telemetry and predict component failures before they occur.\n\n**Current Environment:**\n- All container images are built in CI and stored in the Azure Container Registry `stellmarshacr`.\n- Real-time inference APIs run in an **Azure Container Apps** environment named `stell-env`, which has workload profiles enabled. All apps currently run on the Consumption profile.\n- A nightly fleet-wide batch scorer runs as a Deployment on an existing **Azure Kubernetes Service** cluster named `stell-batch`.\n- Trained model weights are versioned and stored in an **Azure Blob Storage** container named `models`. The current turbine-anomaly model is approximately **8 GB**.",
+        "Requirements": "**Inference Requirements:**\n- A new turbine-anomaly detection model requires **GPU compute**. It must run inside the existing `stell-env` environment; the team will not create or operate a Kubernetes cluster for it.\n- The inference API container image must stay small: the 8 GB model weights must **not** be baked into the image, must be fully present on a local volume **before** the API container starts accepting traffic, and a new model version must be deployable without rebuilding the API image.\n\n**Batch Scoring Requirements:**\n- The nightly scorer on `stell-batch` is currently unhealthy: its pods restart repeatedly and `kubectl get pods` shows `CrashLoopBackOff`. Each container exits roughly 20 seconds after starting. Engineers need to see the output the crashed container produced before it exited.\n\n**General:**\n- All services authenticate to Azure resources with managed identities; no keys or passwords in images or manifests.",
+        "Review notes": "Assume supported serverless GPU region/quota, appropriately sized shared storage, and a supported download authentication method. Init-container managed identity availability depends on the workload profile. Roll out a pinned model version to new replicas."
+      }
+    }
+  },
+  "ai200-s3-04-tarnwell-cosmos-ttl": {
+    "reason": "Scoped spare-RU TTL deletion behavior to provisioned throughput and excluded per-item overrides.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/time-to-live",
+      "prompt": "You must implement the Tarnwell retention requirement: every document in the `chat-sessions` container must be deleted automatically 30 days after it was last updated, with no cleanup job to build or operate.\n\nWhat should you do?\nAssume provisioned throughput and no item-level TTL overrides.",
+      "explanation": "Enable the container TTL and set its default to 2592000 seconds. Expiry is relative to the last modification timestamp. Expired items stop appearing in queries; physical deletion runs in the background. Spare RUs are used for TTL deletion under provisioned throughput; serverless deletion is billed. Item-level TTL values can override the default.",
+      "caseData": {
+        "Company Overview": "**Tarnwell Hospitality** operates a booking platform for boutique hotels. An AI concierge answers guest questions about properties, availability, and local activities. The back end is a set of Python services.\n\n**Current Environment:**\n- **Azure Cosmos DB for NoSQL** hosts the `concierge` database with two containers:\n  - `chat-sessions` — concierge conversation transcripts, partitioned on `/sessionId`.\n  - `reviews` — guest reviews, partitioned on `/hotelId`. Each document has `hotelId`, `rating` (number), and `stayDate` (ISO 8601 string) properties. The container uses the default indexing policy.\n- **Azure Managed Redis** caches rendered concierge answers keyed by a hash of the normalized question. Answers are written with a 1-hour expiration.\n- Embeddings for review search are produced by an external embedding model.",
+        "Requirements": "**Data Retention Requirements:**\n- Privacy policy: a chat-session document must be deleted automatically **30 days after it was last updated**. The team must not build or operate any cleanup job, and deletions must not consume RUs reserved for user traffic beyond what the platform manages itself.\n\n**Review Browsing Requirements:**\n- The hotel detail page runs this query, which currently fails:\n\n```sql\nSELECT * FROM c\nWHERE c.hotelId = @hotelId\nORDER BY c.rating DESC, c.stayDate DESC\n```\n\n- The query must run as-is, sorted by the service, with low RU cost.\n\n**Caching Requirements:**\n- Frequently asked questions must stay cached as long as guests keep asking them: every cache **read** must extend the entry's remaining lifetime back to 1 hour, in a single round trip. Entries nobody reads must still expire on their own.",
+        "Review notes": "Assume provisioned Cosmos DB throughput with no per-item TTL overrides. Measure composite-index request charges; the sort index alone does not guarantee a fixed RU cost."
+      }
+    }
+  },
+  "ai200-s3-05-tarnwell-cosmos-composite-index": {
+    "reason": "Clarified required sorting index versus measured RU optimization.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/index-policy",
+      "explanation": "A multi-property ORDER BY requires a composite index matching the ordered paths and directions. The (/rating DESC, /stayDate DESC) index supports this query. Measure request charges and index metrics; a matching sort index does not by itself guarantee a particular RU cost for the filter.",
+      "caseData": {
+        "Company Overview": "**Tarnwell Hospitality** operates a booking platform for boutique hotels. An AI concierge answers guest questions about properties, availability, and local activities. The back end is a set of Python services.\n\n**Current Environment:**\n- **Azure Cosmos DB for NoSQL** hosts the `concierge` database with two containers:\n  - `chat-sessions` — concierge conversation transcripts, partitioned on `/sessionId`.\n  - `reviews` — guest reviews, partitioned on `/hotelId`. Each document has `hotelId`, `rating` (number), and `stayDate` (ISO 8601 string) properties. The container uses the default indexing policy.\n- **Azure Managed Redis** caches rendered concierge answers keyed by a hash of the normalized question. Answers are written with a 1-hour expiration.\n- Embeddings for review search are produced by an external embedding model.",
+        "Requirements": "**Data Retention Requirements:**\n- Privacy policy: a chat-session document must be deleted automatically **30 days after it was last updated**. The team must not build or operate any cleanup job, and deletions must not consume RUs reserved for user traffic beyond what the platform manages itself.\n\n**Review Browsing Requirements:**\n- The hotel detail page runs this query, which currently fails:\n\n```sql\nSELECT * FROM c\nWHERE c.hotelId = @hotelId\nORDER BY c.rating DESC, c.stayDate DESC\n```\n\n- The query must run as-is, sorted by the service, with low RU cost.\n\n**Caching Requirements:**\n- Frequently asked questions must stay cached as long as guests keep asking them: every cache **read** must extend the entry's remaining lifetime back to 1 hour, in a single round trip. Entries nobody reads must still expire on their own.",
+        "Review notes": "Assume provisioned Cosmos DB throughput with no per-item TTL overrides. Measure composite-index request charges; the sort index alone does not guarantee a fixed RU cost."
+      }
+    }
+  },
+  "ai200-s3-06-tarnwell-redis-getex": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://redis.io/docs/latest/commands/getex/",
+      "caseData": {
+        "Company Overview": "**Tarnwell Hospitality** operates a booking platform for boutique hotels. An AI concierge answers guest questions about properties, availability, and local activities. The back end is a set of Python services.\n\n**Current Environment:**\n- **Azure Cosmos DB for NoSQL** hosts the `concierge` database with two containers:\n  - `chat-sessions` — concierge conversation transcripts, partitioned on `/sessionId`.\n  - `reviews` — guest reviews, partitioned on `/hotelId`. Each document has `hotelId`, `rating` (number), and `stayDate` (ISO 8601 string) properties. The container uses the default indexing policy.\n- **Azure Managed Redis** caches rendered concierge answers keyed by a hash of the normalized question. Answers are written with a 1-hour expiration.\n- Embeddings for review search are produced by an external embedding model.",
+        "Requirements": "**Data Retention Requirements:**\n- Privacy policy: a chat-session document must be deleted automatically **30 days after it was last updated**. The team must not build or operate any cleanup job, and deletions must not consume RUs reserved for user traffic beyond what the platform manages itself.\n\n**Review Browsing Requirements:**\n- The hotel detail page runs this query, which currently fails:\n\n```sql\nSELECT * FROM c\nWHERE c.hotelId = @hotelId\nORDER BY c.rating DESC, c.stayDate DESC\n```\n\n- The query must run as-is, sorted by the service, with low RU cost.\n\n**Caching Requirements:**\n- Frequently asked questions must stay cached as long as guests keep asking them: every cache **read** must extend the entry's remaining lifetime back to 1 hour, in a single round trip. Entries nobody reads must still expire on their own.",
+        "Review notes": "Assume provisioned Cosmos DB throughput with no per-item TTL overrides. Measure composite-index request charges; the sort index alone does not guarantee a fixed RU cost."
+      }
+    }
+  },
+  "ai200-s3-07-polwarren-servicebus-defer": {
+    "reason": "Deferral neither suspends TTL nor guarantees exactly-once business processing.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-deferral",
+      "prompt": "A clearance command arrives before its vessel manifest. It must be set aside without blocking other vessels, then retrieved individually without resending. Assume its TTL exceeds the expected wait. What should the worker do?",
+      "explanation": "Defer the message and durably retain its sequence number. Retrieve it using receive_deferred_messages, process idempotently, and complete it. Deferred messages stay in the main entity and ordinary receives skip them. Expiration is checked when a deferred receive is attempted; deferral does not extend TTL. Failures can still cause repeated processing.",
+      "caseData": {
+        "Company Overview": "**Polwarren Shipping** operates container-port terminals. Its Python services coordinate vessel arrivals, customs clearance, and yard planning.\n\n**Current Environment:**\n- Customs-clearance commands for arriving vessels flow through an **Azure Service Bus** queue named `clearance-commands`. Workers receive in PEEK_LOCK mode.\n- Vessel status changes are published to an **Azure Event Grid** custom topic named `pol-vessel-events`. A customs-broker partner subscribes with an HTTPS webhook.\n- Customs declaration PDFs are uploaded by shipping agents to the **Azure Blob Storage** container `customs-inbound`.\n- Document processing runs on **Azure Functions** (Python v2 programming model).",
+        "Requirements": "**Clearance Processing Requirements:**\n- A clearance command sometimes arrives **before** the vessel's cargo manifest has been registered. Such a command cannot be processed yet, but it must not be lost, must not block other vessels' commands, and must be retrievable **individually and exactly** once its manifest arrives — without re-sending it or letting it expire.\n\n**Partner Webhook Requirements:**\n- The customs broker's gateway rate-limits aggressively. If the webhook is down, Event Grid must stop retrying a given event after **at most 10 attempts** and must consider an event expired **1 hour** after publication. Undeliverable events are already captured by an existing dead-letter destination.\n\n**Document Processing Requirements:**\n- When an agent uploads a PDF to `customs-inbound`, a function must begin processing it **within a few seconds**. The current polling-based blob trigger sometimes takes several minutes to fire and scans the container continuously.\n\n**General:**\n- All services authenticate with managed identities.",
+        "Review notes": "Deferred commands must be received before their configured TTL expires. Use idempotent processing; neither Service Bus deferral nor Event Grid retries promise exactly-once business effects."
+      }
+    }
+  },
+  "ai200-s3-08-polwarren-eventgrid-retry": {
+    "reason": "Removed guaranteed dead-letter persistence and clarified early terminal failures.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/event-grid/delivery-and-retry",
+      "explanation": "Set max-delivery-attempts to 10 and event-ttl to 60 minutes on the Event Grid subscription. Retry processing stops at the first reached limit. Some response codes end delivery without ordinary retries. Configure and authorize the dead-letter destination and monitor dead-letter failures; persistence is not an unconditional guarantee.",
+      "caseData": {
+        "Company Overview": "**Polwarren Shipping** operates container-port terminals. Its Python services coordinate vessel arrivals, customs clearance, and yard planning.\n\n**Current Environment:**\n- Customs-clearance commands for arriving vessels flow through an **Azure Service Bus** queue named `clearance-commands`. Workers receive in PEEK_LOCK mode.\n- Vessel status changes are published to an **Azure Event Grid** custom topic named `pol-vessel-events`. A customs-broker partner subscribes with an HTTPS webhook.\n- Customs declaration PDFs are uploaded by shipping agents to the **Azure Blob Storage** container `customs-inbound`.\n- Document processing runs on **Azure Functions** (Python v2 programming model).",
+        "Requirements": "**Clearance Processing Requirements:**\n- A clearance command sometimes arrives **before** the vessel's cargo manifest has been registered. Such a command cannot be processed yet, but it must not be lost, must not block other vessels' commands, and must be retrievable **individually and exactly** once its manifest arrives — without re-sending it or letting it expire.\n\n**Partner Webhook Requirements:**\n- The customs broker's gateway rate-limits aggressively. If the webhook is down, Event Grid must stop retrying a given event after **at most 10 attempts** and must consider an event expired **1 hour** after publication. Undeliverable events are already captured by an existing dead-letter destination.\n\n**Document Processing Requirements:**\n- When an agent uploads a PDF to `customs-inbound`, a function must begin processing it **within a few seconds**. The current polling-based blob trigger sometimes takes several minutes to fire and scans the container continuously.\n\n**General:**\n- All services authenticate with managed identities.",
+        "Review notes": "Deferred commands must be received before their configured TTL expires. Use idempotent processing; neither Service Bus deferral nor Event Grid retries promise exactly-once business effects."
+      }
+    }
+  },
+  "ai200-s3-09-polwarren-blob-eventgrid-trigger": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-blob-trigger",
+      "caseData": {
+        "Company Overview": "**Polwarren Shipping** operates container-port terminals. Its Python services coordinate vessel arrivals, customs clearance, and yard planning.\n\n**Current Environment:**\n- Customs-clearance commands for arriving vessels flow through an **Azure Service Bus** queue named `clearance-commands`. Workers receive in PEEK_LOCK mode.\n- Vessel status changes are published to an **Azure Event Grid** custom topic named `pol-vessel-events`. A customs-broker partner subscribes with an HTTPS webhook.\n- Customs declaration PDFs are uploaded by shipping agents to the **Azure Blob Storage** container `customs-inbound`.\n- Document processing runs on **Azure Functions** (Python v2 programming model).",
+        "Requirements": "**Clearance Processing Requirements:**\n- A clearance command sometimes arrives **before** the vessel's cargo manifest has been registered. Such a command cannot be processed yet, but it must not be lost, must not block other vessels' commands, and must be retrievable **individually and exactly** once its manifest arrives — without re-sending it or letting it expire.\n\n**Partner Webhook Requirements:**\n- The customs broker's gateway rate-limits aggressively. If the webhook is down, Event Grid must stop retrying a given event after **at most 10 attempts** and must consider an event expired **1 hour** after publication. Undeliverable events are already captured by an existing dead-letter destination.\n\n**Document Processing Requirements:**\n- When an agent uploads a PDF to `customs-inbound`, a function must begin processing it **within a few seconds**. The current polling-based blob trigger sometimes takes several minutes to fire and scans the container continuously.\n\n**General:**\n- All services authenticate with managed identities.",
+        "Review notes": "Deferred commands must be received before their configured TTL expires. Use idempotent processing; neither Service Bus deferral nor Event Grid retries promise exactly-once business effects."
+      }
+    }
+  },
+  "ai200-s3-10-gantrell-appconfig-snapshot": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/azure-app-configuration/concept-snapshots",
+      "caseData": {
+        "Company Overview": "**Gantrell Property Group** runs an AI-assisted property-valuation platform. A Python scoring service produces automated valuations; every valuation run emits structured telemetry.\n\n**Current Environment:**\n- Application settings and model-tuning parameters (about 40 related keys such as `Valuation:ModelVersion`, `Valuation:ComparableRadiusKm`, `Valuation:ConfidenceFloor`) live in **Azure App Configuration**. The keys are tuned together: a change to one usually requires coordinated changes to several others.\n- All services are instrumented with the **Azure Monitor OpenTelemetry distro** (`azure-monitor-opentelemetry`) and send telemetry to a workspace-based **Application Insights** resource.\n- The valuation service logs one structured trace per completed valuation to `AppTraces`, with the property identifier in the `Properties` dynamic column (`Properties.propertyId`) alongside the valuation status.",
+        "Requirements": "**Configuration Requirements:**\n- A release must promote **exactly** the set of App Configuration key-values that was tested in staging — all 40 keys as one immutable, named unit. Rolling back must restore exactly the previous unit. Individual keys continuing to change in the store must not affect what already-released instances load.\n\n**Telemetry Cost Requirements:**\n- The platform now handles ~40 million requests per day and Application Insights ingestion cost has become unacceptable. Ingested trace volume must be cut to roughly **10%**, while request **counts and failure rates shown in Application Insights experiences must remain statistically accurate**, and sampled requests must keep their full end-to-end traces.\n\n**Operations Requirements:**\n- An operations dashboard must show, for **each property**, only the **most recent** valuation trace row (all of its columns), derived from `AppTraces`.",
+        "Review notes": "Sampling yields statistical estimates and needs propagated trace context. Use sampling weights for represented request counts. An immutable configuration snapshot does not freeze the contents behind a versionless Key Vault reference."
+      }
+    }
+  },
+  "ai200-s3-11-gantrell-sampling-ratio": {
+    "reason": "Sampling preserves correlated decisions only with correctly propagated context; counts are estimates.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-sampling",
+      "explanation": "Configure the Azure Monitor fixed-rate sampler with sampling_ratio=0.1 and propagate trace context across instrumented services. This targets approximately 10% of traces, not exactly 10% of all telemetry or cost. Sample weights support estimated counts (for example sum(ItemCount)); plain count() on sampled rows does not reconstruct request totals. Rare failures can be missed and inconsistent instrumentation can leave incomplete traces.",
+      "caseData": {
+        "Company Overview": "**Gantrell Property Group** runs an AI-assisted property-valuation platform. A Python scoring service produces automated valuations; every valuation run emits structured telemetry.\n\n**Current Environment:**\n- Application settings and model-tuning parameters (about 40 related keys such as `Valuation:ModelVersion`, `Valuation:ComparableRadiusKm`, `Valuation:ConfidenceFloor`) live in **Azure App Configuration**. The keys are tuned together: a change to one usually requires coordinated changes to several others.\n- All services are instrumented with the **Azure Monitor OpenTelemetry distro** (`azure-monitor-opentelemetry`) and send telemetry to a workspace-based **Application Insights** resource.\n- The valuation service logs one structured trace per completed valuation to `AppTraces`, with the property identifier in the `Properties` dynamic column (`Properties.propertyId`) alongside the valuation status.",
+        "Requirements": "**Configuration Requirements:**\n- A release must promote **exactly** the set of App Configuration key-values that was tested in staging — all 40 keys as one immutable, named unit. Rolling back must restore exactly the previous unit. Individual keys continuing to change in the store must not affect what already-released instances load.\n\n**Telemetry Cost Requirements:**\n- The platform now handles ~40 million requests per day and Application Insights ingestion cost has become unacceptable. Ingested trace volume must be cut to roughly **10%**, while request **counts and failure rates shown in Application Insights experiences must remain statistically accurate**, and sampled requests must keep their full end-to-end traces.\n\n**Operations Requirements:**\n- An operations dashboard must show, for **each property**, only the **most recent** valuation trace row (all of its columns), derived from `AppTraces`.",
+        "Review notes": "Sampling yields statistical estimates and needs propagated trace context. Use sampling weights for represented request counts. An immutable configuration snapshot does not freeze the contents behind a versionless Key Vault reference."
+      }
+    }
+  },
+  "ai200-s3-12-gantrell-kql-argmax": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/kusto/query/arg-max-aggregation-function",
+      "caseData": {
+        "Company Overview": "**Gantrell Property Group** runs an AI-assisted property-valuation platform. A Python scoring service produces automated valuations; every valuation run emits structured telemetry.\n\n**Current Environment:**\n- Application settings and model-tuning parameters (about 40 related keys such as `Valuation:ModelVersion`, `Valuation:ComparableRadiusKm`, `Valuation:ConfidenceFloor`) live in **Azure App Configuration**. The keys are tuned together: a change to one usually requires coordinated changes to several others.\n- All services are instrumented with the **Azure Monitor OpenTelemetry distro** (`azure-monitor-opentelemetry`) and send telemetry to a workspace-based **Application Insights** resource.\n- The valuation service logs one structured trace per completed valuation to `AppTraces`, with the property identifier in the `Properties` dynamic column (`Properties.propertyId`) alongside the valuation status.",
+        "Requirements": "**Configuration Requirements:**\n- A release must promote **exactly** the set of App Configuration key-values that was tested in staging — all 40 keys as one immutable, named unit. Rolling back must restore exactly the previous unit. Individual keys continuing to change in the store must not affect what already-released instances load.\n\n**Telemetry Cost Requirements:**\n- The platform now handles ~40 million requests per day and Application Insights ingestion cost has become unacceptable. Ingested trace volume must be cut to roughly **10%**, while request **counts and failure rates shown in Application Insights experiences must remain statistically accurate**, and sampled requests must keep their full end-to-end traces.\n\n**Operations Requirements:**\n- An operations dashboard must show, for **each property**, only the **most recent** valuation trace row (all of its columns), derived from `AppTraces`.",
+        "Review notes": "Sampling yields statistical estimates and needs propagated trace context. Use sampling weights for represented request counts. An immutable configuration snapshot does not freeze the contents behind a versionless Key Vault reference."
+      }
+    }
+  },
+  "ai200-s3-13-acr-import-image": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-import-images"
+    }
+  },
+  "ai200-s3-14-aks-oomkilled": {
+    "reason": "OOMKilled can also reflect node memory pressure; the example value is not a universal fix.",
+    "changes": {
+      "source": "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+      "explanation": "Inspect the terminated container, memory working set and node events. For the described 2 GiB limit bottleneck, adjust requests and limits to the measured working set and ensure node capacity, or reduce memory use. Exit 137 alone only identifies SIGKILL; OOMKilled plus the resource evidence is needed to diagnose memory exhaustion."
+    }
+  },
+  "ai200-s3-15-aca-exec-console": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/container-console"
+    }
+  },
+  "ai200-s3-16-ordering-dockerfile-cache": {
+    "reason": "Made the otherwise optional position of CMD explicit for deterministic grading.",
+    "changes": {
+      "source": "https://docs.docker.com/build/cache/optimize/",
+      "prompt": "Caldermere Insurance builds a Python FastAPI inference image in CI on every commit. Dependencies in `requirements.txt` change rarely; application source changes on almost every build. You must order the Dockerfile instructions so that a source-only change reuses the cached dependency layer instead of re-running `pip install`.\n\nPlace the instructions in the correct order.\nUse the project convention that the startup CMD is the final instruction."
+    }
+  },
+  "ai200-s3-17-multi-image-size": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://docs.docker.com/build/building/best-practices/"
+    }
+  },
+  "ai200-s3-18-cosmos-patch-item": {
+    "reason": "Patch does not guarantee lower RU cost and the response may still include the document.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/partial-document-update-faq",
+      "prompt": "A service appends a turn to an existing messages array and increments tokensUsed in one Cosmos DB item. Concurrent callers must avoid a client-side read/replace race, and the update should send only changed fields. Which operation should it use?",
+      "explanation": "patch_item applies the add and incr operations atomically to one item, without a preliminary client read or resending the full item as the update payload. Up to 10 patch operations are allowed. Patch does not promise a significant RU reduction; measure request charges. Response-body behavior depends on SDK options, and cross-region array conflicts still need consideration."
+    }
+  },
+  "ai200-s3-19-cosmos-autoscale": {
+    "reason": "Autoscale cannot solve demand above Tmax and migration does not set an arbitrary maximum by itself.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/provision-throughput-autoscale",
+      "prompt": "A Cosmos DB container has variable demand below 40000 RU/s, with quiet periods below 4000 RU/s. You want the service to adjust provisioned throughput automatically while retaining a 40000 RU/s ceiling. What should you configure?",
+      "explanation": "Autoscale operates between 0.1 × Tmax and Tmax. Migrate the throughput type and separately verify or update the maximum. It does not remove hot-partition limits or prevent 429 responses above available capacity. Billing is based on the highest scaled throughput per hour, with per-partition/region behavior depending on dynamic autoscale settings.",
+      "options": [
+        "Migrate to autoscale, then configure and verify the autoscale maximum of 40000 RU/s; it scales between 4000 and 40000 RU/s.",
+        "Keep manual throughput and run a scheduled job that raises provisioned RU/s every morning and lowers it every evening.",
+        "Recreate the account in serverless mode so the container has no provisioned throughput at all.",
+        "Keep 4,000 RU/s provisioned and configure the SDK's retry policy to absorb 429s during peaks."
+      ]
+    }
+  },
+  "ai200-s3-20-blob-lifecycle-tiers": {
+    "reason": "Clarified retention origin and that lifecycle policies do not enforce immutable retention.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview",
+      "prompt": "PDFs are read frequently for the first 90 days after their last modification and rarely thereafter. Automatically move them to cool at day 90, archive at day 180, and delete after the required five-year retention period has elapsed. Which storage feature handles tiering and eligible deletion?",
+      "explanation": "A Blob Storage lifecycle policy can filter raw-docs blobs and apply age-based cool, archive and delete actions. Cool remains online; archive requires rehydration. Align age conditions with the actual retention start and any legal holds. Lifecycle management is not immutable WORM protection, and five calendar years should not blindly be equated to 1825 days."
+    }
+  },
+  "ai200-s3-21-pgvector-operator-mismatch": {
+    "reason": "An index-compatible operator makes HNSW eligible; the planner may still choose a sequential scan.",
+    "changes": {
+      "source": "https://github.com/pgvector/pgvector",
+      "explanation": "Use <=> for cosine distance with vector_cosine_ops. <-> is L2 and <#> is negative inner product, so they do not match that index. EXPLAIN confirms the plan: table size, filters and cost estimates can still favor a sequential scan even when the operator matches. For normalized vectors rankings may coincide, but the operator class must still match for index use."
+    }
+  },
+  "ai200-s3-22-redis-token-counter": {
+    "reason": "Separated atomic increments from strict quota admission, retries and expiry initialization.",
+    "changes": {
+      "source": "https://redis.io/docs/latest/commands/incrby/",
+      "prompt": "Twelve API instances must record completed token usage without losing concurrent increments. Store a separate daily total per user and automatically clean up old totals in Azure Managed Redis. This question concerns accounting, not strict admission control. What should they do?",
+      "explanation": "Use a per-user, per-day key and atomic INCRBY. Set the TTL safely, for example with a transaction or script that also handles initialization. Reads use GET. INCRBY does not deduplicate retried requests, and a separate GET followed by a write cannot enforce a strict concurrent budget; that needs an atomic check/reservation and an idempotency strategy."
+    }
+  },
+  "ai200-s3-23-multi-cosmos-chat-model": {
+    "reason": "Removed an unbounded write-performance guarantee.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview",
+      "prompt": "You are designing the Azure Cosmos DB for NoSQL data model for an AI assistant. Conversations can run to thousands of turns; some turns include large tool outputs (multi-megabyte JSON or file content). The dominant query loads one conversation's recent turns. Avoid rewriting one ever-growing conversation item.\n\nWhich **three** design decisions should you make? (Select three.)",
+      "explanation": "Use a bounded item per turn, a conversation-based partition key for this access pattern, and Blob references for bulk payloads. Cosmos DB items have a 2 MB limit. Monitor hot logical partitions and storage limits; this design does not guarantee constant latency or unlimited growth for a single conversation. Partition or bucket further when measurements require it."
+    }
+  },
+  "ai200-s3-24-matching-redis-structures": {
+    "reason": "Adapted the matching orientation so all four targets are answerable and the fifth source remains a distractor.",
+    "changes": {
+      "source": "https://redis.io/docs/latest/develop/data-types/",
+      "prompt": "For each Redis data structure, select the application requirement it best satisfies. One requirement is unused.",
+      "explanation": "Hash fits independently editable fields; Sorted set fits score-based ranking; List supports a simple FIFO backlog; Stream supports append-only entries, consumer groups and acknowledgements. The unused requirement is a single cached string with SET ... EX. A pop alone does not provide reliable job acknowledgement, and sorted-set range retrieval is O(log N + M), including returned members."
+    }
+  },
+  "ai200-s3-25-servicebus-receive-mode": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-transfers-locks-settlement"
+    }
+  },
+  "ai200-s3-26-eventhubs-consumer-groups": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-features"
+    }
+  },
+  "ai200-s3-27-durable-fanout-fanin": {
+    "reason": "Durable activity execution is at least once, so side effects need idempotency.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/durable-task/common/programming-model-overview",
+      "prompt": "Process approximately 500 contract sections in parallel, then aggregate their summaries after all activities complete. The workflow must recover after host restarts. Which Durable Functions pattern should you use?",
+      "explanation": "Fan-out/fan-in schedules section activities and waits for context.task_all before scheduling aggregation. Durable state supports replay and recovery. Activities have at-least-once execution, so both summarization side effects and final writes must be idempotent. Use a stable contract/result key rather than assuming exactly-once execution."
+    }
+  },
+  "ai200-s3-28-apim-rate-limit": {
+    "reason": "APIM distributed rate-limit enforcement is approximate.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/api-management/rate-limit-policy",
+      "prompt": "Partners call an inference API through Azure API Management, each with its own APIM subscription. GPU capacity behind the API is limited, so each partner subscription should be throttled at approximately **100 calls per minute**, with excess calls rejected as `429 Too Many Requests` — and the backend service must not be modified.\n\nWhat should you do?",
+      "explanation": "Apply the inbound rate-limit policy with calls=100 and renewal-period=60 to limit calls per subscription and return 429 on excess calls. Distributed counters can permit some overrun; this is not an exact global admission guarantee. Use rate-limit-by-key when the quota key differs from the subscription."
+    }
+  },
+  "ai200-s3-29-ordering-eventhubs-checkpoint": {
+    "reason": "Combined independent prerequisites so grading does not impose an arbitrary order.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/event-hubs/event-processor-balance-partition-load",
+      "explanation": "The consumer group and checkpoint container are independent prerequisites and may be created in either order. Construct the client with both, process before checkpointing, then verify scaled-out consumers share ownership. A crash after processing but before checkpointing can replay an event, so processing must be idempotent.",
+      "options": [
+        "Create both prerequisites: a dedicated consumer group and a blob container for checkpoint/ownership data.",
+        "Construct a BlobCheckpointStore and EventHubConsumerClient with that consumer group and checkpoint store.",
+        "Start receiving; process each event successfully before updating its checkpoint.",
+        "Add identical consumers in the same group and verify partition load balancing."
+      ],
+      "answer": [
+        "Create both prerequisites: a dedicated consumer group and a blob container for checkpoint/ownership data.",
+        "Construct a BlobCheckpointStore and EventHubConsumerClient with that consumer group and checkpoint store.",
+        "Start receiving; process each event successfully before updating its checkpoint.",
+        "Add identical consumers in the same group and verify partition load balancing."
+      ]
+    }
+  },
+  "ai200-s3-30-servicebus-message-batch": {
+    "reason": "Included retrying the message that did not fit, final flush and single-message overflow.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/python/api/azure-servicebus/azure.servicebus.servicebusmessagebatch?view=azure-python",
+      "explanation": "Fill a ServiceBusMessageBatch with add_message. When it is full, send it, create another, and retry the message that did not fit. Flush the final nonempty batch. If one message cannot fit an empty batch, handle it explicitly rather than repeatedly creating empty batches. Measure throughput; no fixed speedup is guaranteed."
+    }
+  },
+  "ai200-s3-31-user-assigned-identity": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/managed-identity"
+    }
+  },
+  "ai200-s3-32-keyvault-cryptography-client": {
+    "reason": "Restricted the non-exportability requirement to private key material; public-key operations can be local.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/python/api/azure-keyvault-keys/azure.keyvault.keys.crypto.cryptographyclient?view=azure-python",
+      "prompt": "A service uses a Key Vault RSA key to encrypt short identifiers and decrypt them later. The private key must remain in Key Vault; access to the public key is permitted. Which SDK client should it use?",
+      "explanation": "Use CryptographyClient for the Key Vault key. Decryption uses the private key in the service; the client can perform public-key encryption locally. Do not claim all key material stays outside application memory. RSA only handles small payloads; use envelope encryption for larger data, and treat plaintext and ciphertext as sensitive."
+    }
+  },
+  "ai200-s3-33-appinsights-availability-test": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability"
+    }
+  },
+  "ai200-s3-34-multi-otel-custom-metrics": {
+    "reason": "Removed unsupported histogram-percentile and automatic dimensional-alert guarantees.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-add-modify",
+      "prompt": "A Python service uses configure_azure_monitor(). It needs custom token-usage and call-count metrics with model attributes. Which three statements describe the OpenTelemetry metrics pipeline?",
+      "explanation": "Obtain a meter, create instruments, and record values with attributes. The distro exports custom metrics to Application Insights for analysis in customMetrics/AppMetrics. Exported histogram aggregates do not automatically preserve arbitrary percentiles. Dimensional metric alerts may require enabling dimensions, and high-cardinality tenant identifiers should be avoided or bounded."
+    }
+  },
+  "ai200-s3-35-kql-dcount-daily": {
+    "reason": "Answer and explanation reviewed against the linked product documentation.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/kusto/query/dcount-aggregation-function"
+    }
+  },
+  "ai200-s3-36-functions-keyvault-reference": {
+    "reason": "Resolved values exist in application memory; versionless references can refresh after a delay.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/app-service/app-service-key-vault-references",
+      "prompt": "An Azure Functions app reads a third-party translation API key with `os.environ[\"TRANSLATE_API_KEY\"]`. Security now requires the key's value to be managed in Azure Key Vault instead of stored as a literal app setting and to be rotatable centrally — **without changing the application code**, which must keep reading the environment variable.\n\nWhat should you do?",
+      "explanation": "Enable managed identity, grant secret-read permission, and use a versionless Key Vault reference in the app setting. The platform resolves the secret into the environment variable, so the value is present in application memory. References normally refresh within 24 hours; force a reference refresh when needed. Updating a secret does not rotate the credential at its issuing service by itself."
+    }
+  },
+  "suralmk:cont-001": {
+    "reason": "Corrected the invalid scaler identifier.",
+    "changes": {
+      "prompt": "An Azure Container App worker must scale from zero using Service Bus queue depth. Which custom scale-rule type should it use?",
+      "explanation": "The KEDA Service Bus scaler type is azure-servicebus. Configure queue metadata, authentication, and minReplicas=0. A hyphen between service and bus is not the scaler name.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/scale-app",
+      "options": [
+        "azure-servicebus",
+        "azure-service-bus",
+        "azure-queue-storage",
+        "azure-blob"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:cont-003": {
+    "reason": "GPU requests count devices rather than directly reserving GPU VRAM.",
+    "changes": {
+      "prompt": "An AKS pod needs one NVIDIA GPU device. Which manifest area declares the device resource?",
+      "explanation": "With the NVIDIA device plugin installed, request GPUs as extended resources in limits. Requests may be omitted or must equal limits. GPU VRAM is a hardware/property choice, not ordinary resources.requests.memory.",
+      "source": "https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/",
+      "options": [
+        "spec.nodeSelector targeting GPU node SKUs",
+        "resources.limits with nvidia.com/gpu: 1 (requests, if specified, must match)",
+        "spec.affinity rules for GPU node placement",
+        "spec.tolerations allowing GPU node taints"
+      ]
+    }
+  },
+  "suralmk:cont-004": {
+    "reason": "Distinguished live log streams from historical Log Analytics queries.",
+    "changes": {
+      "explanation": "az containerapp logs show retrieves container console or platform system log streams; choose --type and replica/container as appropriate. Query historical workspace data separately with Log Analytics/KQL.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/log-streaming"
+    }
+  },
+  "suralmk:cont-005": {
+    "reason": "A process exit is handled by restartPolicy; liveness probes detect an unresponsive running process.",
+    "changes": {
+      "prompt": "An AKS Deployment container remains running but its health endpoint fails because the process is deadlocked. Which probe should trigger a restart after repeated failures?",
+      "explanation": "A liveness probe detects unhealthy running containers. A normal process crash is handled by the Pod restart policy; liveness is not required merely to restart an exited Deployment container.",
+      "source": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/"
+    }
+  },
+  "suralmk:cont-008": {
+    "reason": "Scoped the HPA setting to KEDA on AKS rather than an unsupported Container Apps field.",
+    "changes": {
+      "prompt": "In a KEDA ScaledObject on AKS, which HPA behavior setting reduces scale-down flapping?",
+      "explanation": "The HPA scale-down stabilization window considers recent recommendations. Do not assume arbitrary ScaledObject/HPA fields can be pasted into an Azure Container Apps custom scaler.",
+      "source": "https://keda.sh/docs/2.18/reference/scaledobject-spec/",
+      "options": [
+        "advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.stabilizationWindowSeconds",
+        "metadata.queueName",
+        "spec.pollingInterval as a CPU averaging window",
+        "resources.requests.cpu as a time interval"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:cont-009": {
+    "reason": "App Configuration is a key-value store, not an arbitrary large-file mount.",
+    "changes": {
+      "prompt": "An App Service container needs centrally managed, non-secret key-value settings and feature flags that can refresh without rebuilding the image. Which service fits?",
+      "explanation": "Use Azure App Configuration with a provider and explicit refresh integration. Store large configuration files in appropriate object/file storage; an App Configuration key-value has a size limit.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-app-configuration/overview"
+    }
+  },
+  "suralmk:cont-105": {
+    "reason": "Scoped AcrPull to classic registry RBAC.",
+    "changes": {
+      "prompt": "Your organization requires that container images deployed to App Service can only be pulled using a managed identity rather than admin credentials stored on the registry. Which configuration satisfies this?\nAssume the registry uses classic RBAC permissions, not RBAC + ABAC repository permissions.",
+      "explanation": "Grant AcrPull to the web app identity on a classic RBAC registry and enable managed-identity registry authentication in App Service. ABAC-enabled registries require repository roles such as Container Registry Repository Reader.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-rbac-built-in-roles-overview"
+    }
+  },
+  "suralmk:cont-115": {
+    "reason": "Explicitly included internal ingress, routing and DNS in the network design.",
+    "changes": {
+      "explanation": "A custom VNet alone is insufficient. Use an internal environment/no public ingress, supported workload-profile routing, DNS and required platform dependencies, with UDRs and firewall/NVA policy for egress.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/networking",
+      "options": [
+        "Use an internal workload-profiles environment in a custom VNet with supported UDRs routing egress through the NVA",
+        "Default Consumption environment without a VNet",
+        "Public FQDN environment with IP allowlists only",
+        "AKS cluster deployed with no network policies"
+      ]
+    }
+  },
+  "suralmk:cont-121": {
+    "reason": "Replaced deprecated Content Trust guidance.",
+    "changes": {
+      "prompt": "A new ACR-based delivery pipeline must sign images and verify trust before deployment. Which current approach should it adopt?",
+      "explanation": "Docker Content Trust is deprecated and cannot be newly enabled on registries after May 31, 2026. Use Notation and an actual enforcement point; ACR storage alone does not prevent deployment of unsigned images.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-content-trust-deprecation",
+      "options": [
+        "Use Notary Project/Notation signing and enforce verification in the pipeline or a supported admission controller",
+        "Enable Docker Content Trust on every new registry",
+        "Assume tags are cryptographic signatures",
+        "Rely on AcrPull to validate the publisher signature"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:data-007": {
+    "reason": "Corrected TTL versus sliding-expiration semantics.",
+    "changes": {
+      "prompt": "A cached string should expire after 30 minutes without a read. Which read operation implements sliding expiration atomically?",
+      "explanation": "An ordinary GET does not reset the TTL. GETEX reads a string and renews its expiry in one operation. Absolute expiration and sliding expiration are different.",
+      "source": "https://redis.io/docs/latest/commands/getex/",
+      "options": [
+        "GETEX cache:key EX 1800",
+        "GET cache:key with an unchanged TTL",
+        "SET cache:key value without an expiry",
+        "PERSIST cache:key"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:data-005": {
+    "reason": "Lease coordination does not eliminate replay.",
+    "changes": {
+      "explanation": "The lease container records ownership and checkpoints for change feed processor instances. Coordination divides work across instances, but delivery is at least once and failures can replay already processed changes. Make handlers idempotent.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/change-feed-processor"
+    }
+  },
+  "suralmk:data-006": {
+    "reason": "Changed a write-cost optimization that was incorrectly presented as a vector-query guarantee.",
+    "changes": {
+      "prompt": "A Cosmos DB container indexes a large raw payload that the application never filters or sorts on. How can write RU cost and index size be reduced?",
+      "explanation": "Index maintenance affects writes. Exclude unused scalar paths while retaining paths needed by queries; vector policy/index configuration is separate. Measure query RU and recall instead of assuming every exclusion improves vector query cost.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/index-policy",
+      "options": [
+        "Exclude unused payload paths while keeping scalar filter/sort indexes and a suitable separate vector index",
+        "Remove every index used by filters",
+        "Index only vectors and remove all metadata indexes regardless of queries",
+        "Set strong consistency to disable index maintenance"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:data-014": {
+    "reason": "Limited all-versions change feed history to supported retention and SDK capability.",
+    "changes": {
+      "prompt": "With continuous backup enabled and a supported client/API, which Cosmos DB change feed mode includes intermediate versions and deletes within the available backup retention window?",
+      "explanation": "All versions and deletes mode includes changes within the continuous-backup retention window. It is not unlimited history. Verify feature availability and the supported client/SDK version, rather than assuming every Python change-feed API supports it.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/change-feed-modes"
+    }
+  },
+  "suralmk:data-103": {
+    "reason": "Corrected the claim that unused indexes drive point-read RU cost.",
+    "changes": {
+      "prompt": "Cosmos DB writes are expensive because the default indexing policy indexes a large payload that no query uses. Which change can reduce index-maintenance RU cost?",
+      "explanation": "Unused indexes increase write work. Point reads use id and partition key and do not query the index; an indexing policy is not the explanation for expensive point reads.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/optimize-cost-reads-writes",
+      "options": [
+        "Exclude unused properties from scalar indexing",
+        "Add more unused indexed paths",
+        "Use cross-partition scans instead of point reads",
+        "Raise the consistency level to strong"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:data-106": {
+    "reason": "Specified the weakest consistency guarantee instead of conflating eventual and session.",
+    "changes": {
+      "prompt": "A Cosmos DB application accepts stale reads and requires no read-your-own-writes or ordering guarantees. Which weakest consistency level meets that requirement?",
+      "explanation": "Eventual is the weakest consistency model. Session adds session-token guarantees. Read latency and availability depend on topology and workload; choosing a weaker level is not an unconditional latency guarantee.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels",
+      "options": [
+        "Eventual consistency",
+        "Strong consistency across all regions",
+        "Bounded Staleness with zero staleness",
+        "No latency trade-off exists in Cosmos DB"
+      ]
+    }
+  },
+  "suralmk:data-119": {
+    "reason": "Reprocessing is normal under at-least-once delivery; checkpoint tuning alone is not a correctness fix.",
+    "changes": {
+      "explanation": "A crash between processing and checkpoint persistence can replay changes. Use idempotent writes or deduplication and checkpoint after success. Tuning checkpoint frequency changes replay volume but cannot guarantee exactly-once execution.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/change-feed-processor",
+      "options": [
+        "Make processing idempotent and persist checkpoints only after successful work",
+        "Change feed is at-most-once; Cosmos has a bug",
+        "Partition key design alone caused reprocessing",
+        "Lower consistency to Eventual to stop duplicates"
+      ]
+    }
+  },
+  "suralmk:data-124": {
+    "reason": "Clarified policy plus indexed retrieval rather than forbidding storage before an index exists.",
+    "changes": {
+      "prompt": "You are creating a Cosmos DB container for indexed similarity search over embeddings. Which vector configuration should you define?",
+      "explanation": "Define a vectorEmbeddingPolicy with path, dimensions, type and metric, plus an appropriate vectorIndexes entry. JSON arrays can be stored without a vector index, but efficient indexed vector retrieval needs the correct policies. Supported changes to existing policies depend on current service capabilities.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/vector-search"
+    }
+  },
+  "suralmk:svc-001": {
+    "reason": "Replaced a nonexistent Python binding setting.",
+    "changes": {
+      "prompt": "A Python Azure Function must process a large blob in chunks without loading the entire payload into memory. Which approach provides explicit chunked reads?",
+      "explanation": "BlobClient provides a StorageStreamDownloader with chunks(). dataType: stream is not a valid generic Python blob binding setting. Select the supported SDK binding/runtime or construct the storage client explicitly.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-blob-trigger",
+      "options": [
+        "Use BlobClient.download_blob().chunks(), with SDK-type binding support or a BlobClient created in code",
+        "Set dataType to stream in function.json",
+        "Call readall() before processing",
+        "Convert the whole blob to a base64 string"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:svc-010": {
+    "reason": "Corrected Standard message size and Premium protocol/entity limits.",
+    "changes": {
+      "prompt": "A Service Bus message exceeds the Standard tier 256 KB limit. Which tier supports a configurable larger single-message limit over AMQP?",
+      "explanation": "Standard supports messages up to 256 KB. Premium supports configurable single-message sizes up to 100 MB over AMQP; the entity default is 1 MB. Batch and protocol limits differ. A claim-check pattern using Blob Storage is another design when appropriate.",
+      "source": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quotas"
+    }
+  },
+  "suralmk:svc-109": {
+    "reason": "App Configuration providers are not native Functions input bindings.",
+    "changes": {
+      "prompt": "An HTTP-triggered Python Function needs centrally managed configuration at startup. How should its application code load Azure App Configuration values?",
+      "explanation": "Load configuration with the App Configuration Python provider and appropriate credentials. This populates an application configuration object; it does not create a native App Configuration input-binding parameter.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-app-configuration/reference-python-provider"
+    }
+  },
+  "suralmk:svc-112": {
+    "reason": "Distinguished Functions Core Tools from Azure CLI.",
+    "changes": {
+      "prompt": "Which Azure Functions Core Tools command publishes local code to an existing Function App?",
+      "explanation": "func azure functionapp publish belongs to Azure Functions Core Tools. The az command family belongs to Azure CLI.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local"
+    }
+  },
+  "suralmk:sec-002": {
+    "reason": "Matched request latency to the requests telemetry table.",
+    "changes": {
+      "prompt": "In the Application Insights query schema, how do you calculate incoming request duration p95 in five-minute bins?",
+      "explanation": "Use requests for incoming server requests and dependencies for outgoing calls. In workspace schema, use AppRequests, DurationMs and TimeGenerated instead.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/apprequests",
+      "options": [
+        "requests | summarize p95=percentile(duration, 95) by bin(timestamp, 5m)",
+        "dependencies | summarize percentile_95(duration) by bin(timestamp, 5m)",
+        "dependencies | summarize avg(duration), p95() by bin(timestamp, 5m)",
+        "dependencies | summarize percentiles(duration, 0.95) by bin(timestamp, 5m)"
+      ]
+    }
+  },
+  "suralmk:sec-003": {
+    "reason": "Key Vault emits the lifecycle events; Event Grid routes them.",
+    "changes": {
+      "prompt": "Which Azure event-routing service delivers Key Vault SecretNearExpiry events to a rotation handler?",
+      "explanation": "Key Vault publishes lifecycle events and Event Grid routes them. A Function or other handler can rotate a secret and its backing credential.",
+      "source": "https://learn.microsoft.com/en-us/azure/key-vault/general/event-grid-overview"
+    }
+  },
+  "suralmk:sec-010": {
+    "reason": "Python refresh must be driven by the application.",
+    "changes": {
+      "explanation": "Configure refresh_on (for example a sentinel key), a refresh interval, and call provider.refresh() from the application. The Python provider does not autonomously run a background watcher. Update the sentinel after the related key values.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-app-configuration/enable-dynamic-configuration-python"
+    }
+  },
+  "suralmk:sec-102": {
+    "reason": "Secret rotation requires application automation; key rotation policies do not rotate arbitrary secrets.",
+    "changes": {
+      "explanation": "Key Vault has built-in key rotation policies, but arbitrary database/API secrets need automation that updates both the issuing system and Key Vault. Versionless app references/provider refresh then load the new version, with refresh latency to consider.",
+      "source": "https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation",
+      "options": [
+        "Use scheduled or near-expiry-triggered automation to rotate the backing credential and store a new secret version; refresh versionless references",
+        "Manual yearly secret update in a maintenance window",
+        "Plain env var secret baked into the container image",
+        "Versioning disabled so only one secret value exists"
+      ]
+    }
+  },
+  "suralmk:sec-113": {
+    "reason": "A fixed threshold is not automatic anomaly detection.",
+    "changes": {
+      "prompt": "You need a notification when server-side exception counts exceed a configured operational threshold. What should you configure?",
+      "explanation": "Use a supported metric or log alert rule with a threshold and an action group. Automatic anomaly detection is a separate capability such as supported dynamic thresholds or Smart Detection; a static threshold alone is not an anomaly model.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-overview"
+    }
+  },
+  "suralmk:sec-121": {
+    "reason": "Corrected Log Analytics workspace table column names.",
+    "changes": {
+      "explanation": "Workspace tables use DurationMs and OperationId with those exact names. Application Insights table names such as requests use duration and operation_Id instead. OperationId correlates the overall trace; ParentId/Id can narrow exact parent-child relationships.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/apprequests",
+      "options": [
+        "AppRequests | where DurationMs > 1000 | join kind=inner AppDependencies on OperationId",
+        "AppRequests | union AppDependencies | project name, duration, operation_Id, timestamp",
+        "AppRequests | distinct operation_Id | project operation_Id without dependency rows",
+        "AppDependencies | summarize count() by type | order by count_ desc"
+      ]
+    }
+  },
+  "suralmk:adv-001": {
+    "reason": "Defender scanning after push does not automatically block pulls until a scan passes.",
+    "changes": {
+      "prompt": "An ACR pipeline must rebuild an image after its base image changes and assess the resulting registry image for vulnerabilities. What should be configured?",
+      "explanation": "Use an ACR Task base-image trigger and Defender for Cloud vulnerability assessment. Scanning is asynchronous and does not itself quarantine images or block deployment. If promotion must wait for a pass, implement a separate verified promotion/admission gate.",
+      "source": "https://learn.microsoft.com/en-us/azure/defender-for-cloud/agentless-vulnerability-assessment-azure"
+    }
+  },
+  "suralmk:adv-002": {
+    "reason": "Added secret refresh timing and runtime exposure.",
+    "changes": {
+      "explanation": "Managed identity and versionless Key Vault references keep literal secret values out of persisted app settings. The resolved value is available to the app at runtime. Refresh can take up to 24 hours unless forced; rotation automation must also update the backing credential.",
+      "source": "https://learn.microsoft.com/en-us/azure/app-service/app-service-key-vault-references"
+    }
+  },
+  "suralmk:adv-003": {
+    "reason": "Container Apps scale rules use identity/auth configuration, not a user-deployed TriggerAuthentication resource.",
+    "changes": {
+      "explanation": "In Container Apps, configure the scale rule identity and Service Bus namespace/queue metadata. Grant the identity appropriate access. Kubernetes TriggerAuthentication is a KEDA resource for Kubernetes; it is not deployed directly into the managed Container Apps API.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/scale-app",
+      "options": [
+        "Configure an azure-servicebus custom scale rule with a managed identity granted Service Bus Data Receiver and minReplicas=0",
+        "A CPU utilization scale rule with minReplicas set to 1, storing the Service Bus connection string directly in a Container App environment variable value",
+        "A KEDA cron scale rule that increases replica count during business hours only, ignoring actual Service Bus queue depth when scaling decisions run",
+        "An HTTP scale rule targeting the Service Bus REST management endpoint, with the connection string placed in the scale rule metadata fields"
+      ]
+    }
+  },
+  "suralmk:adv-013": {
+    "reason": "effective_cache_size is a planner estimate, not allocated RAM.",
+    "changes": {
+      "explanation": "Add sufficient RAM for the workload and measure buffer/OS-cache effectiveness. shared_buffers allocates shared database buffers; effective_cache_size is an optimizer estimate of available caching, not an allocation and not a promise the index stays resident.",
+      "source": "https://www.postgresql.org/docs/current/runtime-config-query.html"
+    }
+  },
+  "suralmk:adv-014": {
+    "reason": "Same-query metadata filters do not guarantee ANN top-k recall.",
+    "changes": {
+      "explanation": "Put the authorized tenant predicate in the SQL query with vector ORDER BY and LIMIT. With an approximate index, filtering can still occur after candidate retrieval and return fewer than k rows. Consider iterative scans, higher search effort, partial indexes/partitioning, or exact search for small subsets; measure recall.",
+      "source": "https://github.com/pgvector/pgvector"
+    }
+  },
+  "suralmk:adv-019": {
+    "reason": "Correlation filters can match multiple equality properties.",
+    "changes": {
+      "explanation": "SQL filters support Boolean expressions. Correlation filters efficiently match CorrelationId and can combine multiple equality properties. They are not restricted to a single property. Remove an existing default true rule when it would bypass the intended filtering.",
+      "source": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/topic-filters"
+    }
+  },
+  "suralmk:adv-021": {
+    "reason": "Consumption default timeout is five minutes; ten minutes is its configurable maximum.",
+    "changes": {
+      "prompt": "An AI orchestration function needs to call a database only reachable via VNET integration, must avoid cold-start delays for latency-sensitive requests, and occasionally runs single invocations longer than the 10-minute maximum execution limit on the Consumption plan.\n\nWhich hosting plan should you choose?",
+      "explanation": "Premium supports VNet integration and prewarmed capacity with configurable longer execution timeouts. Classic Consumption defaults to five minutes and has a ten-minute maximum. HTTP response limits and platform restarts still apply independently.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale"
+    }
+  },
+  "suralmk:adv-026": {
+    "reason": "A sentinel pattern needs application-driven refresh.",
+    "changes": {
+      "explanation": "Monitor a sentinel key, update it after the configuration batch, and invoke provider refresh from the application. The provider throttles checks to the configured interval and reloads selected settings when the sentinel changes. Python does not automatically start a polling thread.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-app-configuration/enable-dynamic-configuration-python"
+    }
+  },
+  "suralmk:adv-027": {
+    "reason": "Interoperable tracing does not require every service to use the same SDK.",
+    "changes": {
+      "explanation": "Preserve trace IDs and parent relationships across boundaries and ensure the spans reach the backend. OpenTelemetry is a suitable implementation, but compatible instrumentation can also participate. An uninstrumented external API will not supply internal spans.",
+      "source": "https://opentelemetry.io/docs/concepts/context-propagation/",
+      "options": [
+        "Each service writes independent local log files, and Application Insights stitches those files into one trace by matching timestamps",
+        "Instrument the participating services, propagate compatible W3C trace context, and export correlated telemetry to the monitored backend",
+        "Only the entry-point service needs OpenTelemetry; Azure automatically instruments downstream Functions and Container Apps into the same trace",
+        "All participating services must be deployed in the same Azure region and resource group for Application Insights to correlate parent and child spans correctly"
+      ]
+    }
+  },
+  "suralmk:adv-029": {
+    "reason": "Replaced nonexistent secret rotation policies with a rotation handler.",
+    "changes": {
+      "explanation": "Built-in rotation policies apply to keys. Arbitrary secrets require custom or service-specific rotation logic. Update the credential at its issuing system, store the new version, and ensure clients refresh safely.",
+      "source": "https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation",
+      "options": [
+        "A shared calendar reminder for operators to rotate the secret manually, because Key Vault has no native rotation policy or Event Grid hooks",
+        "Set secret expiry and route Key Vault near-expiry events through Event Grid to a Function that rotates the backing credential and writes a new secret version",
+        "A Logic App that polls each secret value daily, compares it to a cached copy in storage, and alerts only after detecting that a rotation has already occurred",
+        "Move the secret into App Configuration feature flags, because only App Configuration emits native rotation notifications that Functions can subscribe to"
+      ]
+    }
+  },
+  "suralmk:sdk-010": {
+    "reason": "Corrected the SDK object that owns upload_blob/download_blob.",
+    "changes": {
+      "explanation": "BlobClient represents one blob and exposes upload_blob/download_blob. BlobServiceClient manages the account-level service and creates container/blob clients.",
+      "source": "https://learn.microsoft.com/en-us/python/api/azure-storage-blob/azure.storage.blob.blobclient?view=azure-python",
+      "options": [
+        "BlobClient from azure-storage-blob; obtain it directly or with BlobServiceClient.get_blob_client()",
+        "QueueClient from azure-storage-queue for enqueue and dequeue messages",
+        "ShareClient from azure-storage-file-share for upload_file/download_file",
+        "DataLakeServiceClient from azure-storage-file-datalake for filesystem ops"
+      ]
+    }
+  },
+  "suralmk:sdk-018": {
+    "reason": "Distinguished Azure CLI authentication from the Docker push command.",
+    "changes": {
+      "prompt": "Which command sequence authenticates Docker and pushes an already tagged image to a classic ACR login server?",
+      "explanation": "az acr login authenticates the local Docker client, then docker push uploads the image. Use the registry loginServer property rather than assuming its DNS name.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-get-started-docker-cli"
+    }
+  },
+  "suralmk:sdk-022": {
+    "reason": "App configuration does not list running replicas.",
+    "changes": {
+      "prompt": "Which command returns the declared configuration of an existing Container App, including its configured container template?",
+      "explanation": "az containerapp show returns the resource configuration. Use revision/replica list commands to enumerate runtime instances; a template entry is not proof a container is running.",
+      "source": "https://learn.microsoft.com/en-us/cli/azure/containerapp?view=azure-cli-latest#az-containerapp-show"
+    }
+  },
+  "suralmk:sdk-023": {
+    "reason": "Restricted log tail to supported hosting and enabled logs.",
+    "changes": {
+      "prompt": "For an App Service-hosted Function App with supported log streaming and filesystem application logging enabled, which Azure CLI command tails the live log stream?",
+      "explanation": "az webapp log tail can stream supported App Service logs. This is not a universal history API for all Function hosting plans; use Application Insights/Log Analytics for retained execution telemetry.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-functions/streaming-logs"
+    }
+  },
+  "suralmk:sdk-031": {
+    "reason": "Corrected the scaler auth parameter and included required metadata.",
+    "changes": {
+      "explanation": "For secret authentication, trigger parameter connection maps to a preconfigured Container Apps secret named sb-connection. Set the Service Bus queue/namespace metadata and messageCount target. For managed identity, use supported scale-rule identity configuration.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/scale-app",
+      "options": [
+        "az containerapp update --name myApp --resource-group myRG --scale-rule-name queue-rule --scale-rule-type azure-servicebus --scale-rule-metadata queueName=myqueue namespace=mynamespace messageCount=5 --scale-rule-auth connection=sb-connection",
+        "az containerapp revision copy --name myApp --resource-group myRG --from-revision myApp--0001 --scale-min-replicas 1 --scale-max-replicas 5 --image myregistry.azurecr.io/myapp:v2",
+        "az monitor autoscale create --resource <appResourceId> --name queueAutoscale --min-count 1 --max-count 5 --condition \"avg Percentage CPU > 70\" --resource-group myRG",
+        "az aks nodepool update --resource-group myRG --cluster-name myCluster --name nodepool1 --enable-cluster-autoscaler --min-count 1 --max-count 5 --update-cluster-autoscaler"
+      ]
+    }
+  },
+  "suralmk:sdk-034": {
+    "reason": "Listing secret names does not list their versions.",
+    "changes": {
+      "prompt": "Which Azure CLI command enumerates current Key Vault secret names and enabled metadata, without returning values or every version?",
+      "explanation": "secret list returns secret metadata, not all versions. To enumerate versions of one secret, use az keyvault secret list-versions --vault-name myVault --name mySecret.",
+      "source": "https://learn.microsoft.com/en-us/cli/azure/keyvault/secret?view=azure-cli-latest"
+    }
+  },
+  "suralmk:sdk-035": {
+    "reason": "HTTPS-only redirects HTTP traffic rather than guaranteeing rejection.",
+    "changes": {
+      "prompt": "Which command enables the App Service HTTPS-only setting, causing HTTP requests to be redirected to HTTPS?",
+      "explanation": "HTTPS-only redirects HTTP requests to HTTPS. Configure minimum TLS separately through site configuration. Do not confuse redirect behavior with an HTTP deny rule.",
+      "source": "https://learn.microsoft.com/en-us/azure/app-service/configure-ssl-bindings",
+      "options": [
+        "az webapp update --name myApp --resource-group myRG --https-only true",
+        "az webapp config set --name myApp --resource-group myRG --http20-enabled true --ftps-state Disabled",
+        "az webapp config ssl bind --name myApp --resource-group myRG --certificate-thumbprint <tp> --ssl-type SNI",
+        "az webapp config access-restriction add --name myApp --resource-group myRG --rule-name HttpsOnly --priority 100"
+      ]
+    }
+  },
+  "suralmk:sdk-036": {
+    "reason": "Creating a private endpoint does not disable public access.",
+    "changes": {
+      "prompt": "Which command creates a private endpoint to a PostgreSQL flexible server that supports Private Link?",
+      "explanation": "The command creates the endpoint connection. Configure private DNS and approve the connection as needed. Separately disable public network access; endpoint creation alone does not disable it.",
+      "source": "https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-networking-private-link"
+    }
+  },
+  "suralmk:sdk-039": {
+    "reason": "The original projection omitted rollout health.",
+    "changes": {
+      "explanation": "Inspect revision provisioning and health as well as active state. An active revision is not by itself evidence of a successful rollout.",
+      "source": "https://learn.microsoft.com/en-us/cli/azure/containerapp/revision?view=azure-cli-latest",
+      "options": [
+        "az containerapp revision list --name myApp --resource-group myRG --all --query \"[].{name:name,active:properties.active,health:properties.healthState,provisioning:properties.provisioningState}\" -o table",
+        "az containerapp show --name myApp --resource-group myRG --query properties.provisioningState -o tsv",
+        "az group deployment list --resource-group myRG --query \"[].{name:name,state:properties.provisioningState}\" -o table",
+        "az acr repository show-tags --name myregistry --repository myapp --orderby time_desc --top 20 -o table"
+      ]
+    }
+  },
+  "suralmk:sdk-040": {
+    "reason": "Python Functions require Linux hosting and a supported runtime.",
+    "changes": {
+      "explanation": "Python Function Apps run on Linux. This illustrates classic Consumption creation where supported. Check current region, runtime and hosting support; evaluate Flex Consumption for new serverless Python apps.",
+      "source": "https://learn.microsoft.com/en-us/cli/azure/functionapp?view=azure-cli-latest#az-functionapp-create",
+      "options": [
+        "az functionapp create --name myFuncApp --resource-group myRG --consumption-plan-location eastus --runtime python --runtime-version 3.11 --os-type Linux --functions-version 4 --storage-account mystorage",
+        "az webapp create --name myFuncApp --resource-group myRG --plan myPlan --runtime \"python:3.11\" --deployment-local-git",
+        "az functionapp plan create --name myPlan --resource-group myRG --sku EP1 --is-linux --location eastus --min-instances 1",
+        "az functionapp deployment source config-zip --name myFuncApp --resource-group myRG --src ./app.zip --build-remote true"
+      ]
+    }
+  },
+  "suralmk:sdk-043": {
+    "reason": "Metric names depend on resource type.",
+    "changes": {
+      "prompt": "For an App Service Plan whose metric definitions include CpuPercentage, which command reads that platform metric?",
+      "explanation": "Use az monitor metrics list with the plan resource ID and CpuPercentage. List the metric definitions first for another resource type; CPU metric names are not universal.",
+      "source": "https://learn.microsoft.com/en-us/cli/azure/monitor/metrics?view=azure-cli-latest"
+    }
+  },
+  "suralmk:sdk-045": {
+    "reason": "Internal app ingress is scoped to the Container Apps environment, not the entire VNet.",
+    "changes": {
+      "prompt": "Which command restricts a Container App HTTP endpoint to callers within the same Container Apps environment?",
+      "explanation": "App ingress type internal restricts access to the same environment. To serve other reachable VNet clients privately, use an internal environment with app ingress external to the environment and appropriate DNS/routes.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/ingress-overview"
+    }
+  },
+  "suralmk:sdk-047": {
+    "reason": "Added a time filter and deterministic recent-first ordering.",
+    "changes": {
+      "explanation": "Filter the retained FunctionAppLogs table to the desired interval and level, then explicitly order by time. take 50 alone does not mean the most recent entries. Diagnostic settings must populate the table.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/functionapplogs",
+      "options": [
+        "az monitor log-analytics query --workspace <workspaceId> --analytics-query \"FunctionAppLogs | where TimeGenerated > ago(1h) and Level == 'Error' | top 50 by TimeGenerated desc\"",
+        "az functionapp log deployment show --name myFuncApp --resource-group myRG --slot production -o table",
+        "az webapp log download --name myFuncApp --resource-group myRG --log-file ./logs.zip --slot production",
+        "az monitor activity-log list --resource-group myRG --status Failed --offset 24h --max-events 50 -o table"
+      ]
+    }
+  },
+  "suralmk:sdk-049": {
+    "reason": "Made cross-partition intent explicit without assuming identical defaults in every SDK version.",
+    "changes": {
+      "explanation": "Use query_items with a parameterized vector query. enable_cross_partition_query=True explicitly permits cross-partition execution in SDK versions that expose the option. Provide partition_key for a scoped query, and check the documentation of the installed SDK.",
+      "source": "https://learn.microsoft.com/en-us/python/api/azure-cosmos/azure.cosmos.containerproxy?view=azure-python",
+      "options": [
+        "container.query_items(query=\"SELECT TOP 5 c.id, VectorDistance(c.embedding,@v) AS s FROM c ORDER BY VectorDistance(c.embedding,@v)\", parameters=[{\"name\":\"@v\",\"value\":qv}], enable_cross_partition_query=True)",
+        "container.read_item(item=item_id, partition_key=pk); then locally rank embeddings by cosine similarity and return the top-k nearest neighbors",
+        "container.upsert_item(body={\"id\":\"q\",\"embedding\":qv}); then container.query_items(query=\"SELECT TOP 5 c.id, c.embedding FROM c WHERE c.id != 'q'\")",
+        "container.scripts.execute_stored_procedure(sproc=\"vectorSearch\", params=[qv, 5], partition_key=part_key, enable_script_logging=True)"
+      ]
+    }
+  },
+  "suralmk:sdk-050": {
+    "reason": "Enabling the App Service endpoint does not alone create the ACR webhook.",
+    "changes": {
+      "prompt": "An ACR image-push webhook is already configured to call the App Service deployment endpoint. Which command enables container continuous deployment on the App Service side?",
+      "explanation": "Enable CD on App Service and configure the registry webhook for the image/tag. The CLI switch alone is not the whole end-to-end notification setup.",
+      "source": "https://learn.microsoft.com/en-us/azure/app-service/deploy-ci-cd-custom-container"
+    }
+  },
+  "suralmk:sdk-051": {
+    "reason": "Added the required resource-group context.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/cli/azure/cosmosdb/sql/container?view=azure-cli-latest",
+      "options": [
+        "az cosmosdb sql container create --resource-group myRG --account-name myaccount --database-name mydb --name mycontainer --partition-key-path /userId --throughput 400",
+        "az cosmosdb sql database create --account-name myaccount --resource-group myRG --name mydb --throughput 400",
+        "az cosmosdb sql container throughput update --account-name myaccount --database-name mydb --name mycontainer --throughput 400",
+        "az cosmosdb create --name myaccount --resource-group myRG --kind GlobalDocumentDB --locations regionName=eastus"
+      ]
+    }
+  },
+  "suralmk:sdk-055": {
+    "reason": "Distinguished current outbound addresses from possible future addresses.",
+    "changes": {
+      "prompt": "Which Azure CLI command retrieves the current outbound IP address set of an App Service?",
+      "explanation": "outboundIpAddresses gives the current set. possibleOutboundIpAddresses represents a broader possible set across scale/tier changes. Network integration, NAT and hosting choices can change egress behavior.",
+      "source": "https://learn.microsoft.com/en-us/azure/app-service/overview-inbound-outbound-ips"
+    }
+  },
+  "suralmk:sdk-056": {
+    "reason": "Completed the storage update command and stated service-endpoint prerequisites.",
+    "changes": {
+      "prompt": "Assume a subnet has the Microsoft.Storage service endpoint enabled. Which commands allow that subnet and the documented trusted-services bypass, while denying other public data-plane traffic?",
+      "explanation": "Set both the VNet rule and default-action Deny; configure the specific AzureServices bypass intentionally. Trusted services still need authorization. This is public-endpoint network filtering, not Private Link.",
+      "source": "https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security",
+      "options": [
+        "az storage account network-rule add --resource-group myRG --account-name mystorageacct --vnet-name myVnet --subnet mySubnet; az storage account update --resource-group myRG --name mystorageacct --default-action Deny --bypass AzureServices",
+        "az storage account update --resource-group myRG --name mystorageacct --default-action Allow --bypass AzureServices --public-network-access Enabled",
+        "az storage account update --resource-group myRG --name mystorageacct --public-network-access Enabled --sku Standard_LRS --access-tier Hot",
+        "az network nsg rule create --resource-group myRG --nsg-name myNSG --name AllowStorage --priority 200 --access Allow --direction Outbound --destination-port-ranges 443"
+      ]
+    }
+  },
+  "suralmk:sdk-057": {
+    "reason": "Corrected the App Service deployment-log command family.",
+    "changes": {
+      "explanation": "The deployment log history is available under az webapp log deployment list. It reports deployments visible to that mechanism; platform-specific delivery methods can have additional logs.",
+      "source": "https://learn.microsoft.com/en-us/cli/azure/webapp/log/deployment?view=azure-cli-latest",
+      "options": [
+        "az webapp log deployment list --name myApp --resource-group myRG -o table",
+        "az webapp show --name myApp --resource-group myRG --query state -o tsv",
+        "az webapp log deployment show --name myApp --resource-group myRG -o table",
+        "az group deployment list --resource-group myRG --query \"[].name\" -o tsv"
+      ]
+    }
+  },
+  "suralmk:sdk-061": {
+    "reason": "Identified the kubelet identity and excluded ABAC mode from attach-acr.",
+    "changes": {
+      "prompt": "An AKS cluster already uses managed identities. Its ACR uses classic RBAC Registry Permissions. Which command grants the kubelet identity pull access?",
+      "explanation": "attach-acr grants AcrPull to the kubelet managed identity. It does not use the control-plane identity for image pulls. For RBAC + ABAC registries, assign repository reader permissions explicitly instead.",
+      "source": "https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration",
+      "options": [
+        "az aks update --name myCluster --resource-group myRG --attach-acr myregistry",
+        "az aks update --name myCluster --resource-group myRG --api-server-authorized-ip-ranges 203.0.113.0/24",
+        "kubectl create secret docker-registry acr-secret --docker-server=myregistry.azurecr.io --docker-username=u --docker-password=p",
+        "az acr update --name myregistry --admin-enabled true; copy admin password into a K8s docker-registry secret"
+      ]
+    }
+  },
+  "suralmk:practice-001": {
+    "reason": "Corrected the multi-stage image-size answer.",
+    "changes": {
+      "prompt": "A multi-stage Dockerfile uses a full Python image for compiling wheels and a slim Python image for its final stage. Only wheels and application code are copied to the final stage. Would changing only the builder base to slim necessarily reduce the published final image?",
+      "explanation": "Intermediate stage layers are not automatically included in the final image. A slim builder can reduce build-stage footprint but does not inherently reduce a separately defined final runtime image. Inspect copied artifacts and runtime dependencies.",
+      "source": "https://docs.docker.com/build/building/multi-stage/",
+      "options": [
+        "No; final-image size depends on its own base and the artifacts copied into it",
+        "Yes; every builder layer is included in the final image",
+        "Yes; builder and runtime layers are always merged",
+        "No; multi-stage builds cannot omit build tools"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-002": {
+    "reason": "A commit-derived tag alone does not enforce immutability.",
+    "changes": {
+      "prompt": "CI tags an image with its Git commit SHA. How should production deployment ensure the exact image content is selected even if somebody later overwrites that tag?",
+      "explanation": "Tags, including Git-SHA tags, are mutable unless protected. A digest identifies content. Preserve build provenance and use repository/image write controls for release tags.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-image-tag-version",
+      "options": [
+        "Deploy the immutable image digest and protect release tags from overwrite",
+        "Assume any SHA-shaped tag is automatically immutable",
+        "Use latest without recording a digest",
+        "Rebuild the image independently in each region"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-003": {
+    "reason": "Scoped registry permission guidance to classic RBAC.",
+    "changes": {
+      "prompt": "You are deploying a container app that must pull its image from a private ACR without embedding registry credentials as secrets:\n```bicep\nresource containerApp 'Microsoft.App/containerApps@2024-03-01' = {\n  name: 'orders-api'\n  location: location\n  identity: {\n    type: 'UserAssigned'\n    userAssignedIdentities: {\n      '${uami.id}': {}\n    }\n  }\n  properties: {\n    configuration: {\n      registries: [\n        {\n          server: 'myregistry.azurecr.io'\n          identity: uami.id\n        }\n      ]\n    }\n    template: {\n      containers: [\n        {\n          name: 'orders-api'\n          image: 'myregistry.azurecr.io/orders-api:1.0'\n        }\n      ]\n    }\n  }\n}\n```\nDeployment fails with an image pull authorization error. What is missing?\nAssume classic registry RBAC, a valid image reference, and working network access.",
+      "explanation": "The user-assigned identity must be attached to the app, selected for registry authentication, and authorized to pull. AcrPull applies to classic RBAC registries. ABAC-enabled registries use repository roles instead.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/managed-identity-image-pull"
+    }
+  },
+  "suralmk:practice-005": {
+    "reason": "Corrected internal environment versus internal app ingress.",
+    "changes": {
+      "prompt": "A Container Apps environment has an internal load balancer. An API must be reachable from peered VNets with valid routes and private DNS, as well as from its own environment. Which app ingress setting fits?",
+      "explanation": "External app ingress means outside the environment. In an internal environment its endpoint remains private. App ingress external:false limits callers to the same environment, even if VNet connectivity exists.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/ingress-overview",
+      "options": [
+        "external: true on the app, within the internal environment",
+        "external: false on the app to allow every peered VNet",
+        "Disable ingress entirely",
+        "Make the environment public"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-008": {
+    "reason": "Removed the unsupported inference that default history limits are missing.",
+    "changes": {
+      "prompt": "A CronJob creates a new Job every night. Each Job has backoffLimit: 3 and restartPolicy: Never. A failed Job exhausts its retries. Will the next scheduled run receive a new retry budget?",
+      "explanation": "backoffLimit limits retries of one Job. History limits control how many finished Jobs are retained and are not a prerequisite for retrying the next scheduled Job.",
+      "source": "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/",
+      "options": [
+        "Yes; each scheduled execution creates a separate Job",
+        "No; a failed Job permanently disables the CronJob",
+        "No; backoffLimit counts failures for the lifetime of the cluster",
+        "Yes, but only if failedJobsHistoryLimit is zero"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-011": {
+    "reason": "Corrected static PV/PVC binding behavior.",
+    "changes": {
+      "prompt": "A static PersistentVolume is Available and matches a Pending claim in storage class, access modes and capacity. Must the claim set volumeName just because storageClassName is an empty string?",
+      "explanation": "An empty storage class opts out of dynamic provisioning, but matching static PVs can still bind. Inspect claim events, selectors, modes and capacity before deciding why a claim is Pending.",
+      "source": "https://kubernetes.io/docs/concepts/storage/persistent-volumes/",
+      "options": [
+        "No; compatible static volumes can bind automatically; volumeName explicitly selects one",
+        "Yes; every static claim must name a volume",
+        "Yes; an empty class forbids all static binding",
+        "No; an empty class enables dynamic provisioning"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-012": {
+    "reason": "Replaced a query using unsupported table columns.",
+    "changes": {
+      "prompt": "Container Insights collected KubePodInventory snapshots. Which query finds snapshots in the last day that report OOMKilled as the last container termination reason?",
+      "explanation": "ContainerLastStatus contains the last observed container state. Inventory is sampled and is not a complete event ledger, so corroborate it with pod events and node diagnostics. Do not invent Reason or RawJsonDescription columns in the wrong table.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/kubepodinventory",
+      "options": [
+        "KubePodInventory | where TimeGenerated > ago(24h) | where ContainerLastStatus has \"OOMKilled\" | summarize arg_max(TimeGenerated, *) by ClusterId, Namespace, Name, ContainerName",
+        "KubePodInventory | where Reason == \"OOMKilled\"",
+        "KubeEvents | where ContainerLastStatus == \"OOMKilled\"",
+        "KubePodInventory | where StatusCode == 137"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-013": {
+    "reason": "Added evidence instead of inferring an unseen missing handler.",
+    "changes": {
+      "prompt": "A Dapr subscription routes events to /events on an application listening on port 6001. Dapr logs show an HTTP 404 from that route. What should you check first?",
+      "explanation": "For HTTP pub/sub delivery, Dapr calls the configured application route. A confirmed 404 provides evidence for route diagnosis; a subscription manifest alone cannot prove the handler is missing.",
+      "source": "https://docs.dapr.io/developing-applications/building-blocks/pubsub/howto-publish-subscribe/",
+      "options": [
+        "Implement or correct POST /events in the receiving application on port 6001",
+        "Increase the ACR image retention period",
+        "Change the pub/sub topic into a Key Vault secret",
+        "Remove the HTTP route because Dapr never calls application handlers"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-015": {
+    "reason": "Removed an impossible missing/overridden immutable namespace-label diagnosis.",
+    "changes": {
+      "prompt": "A NetworkPolicy is intended to allow the frontend namespace to reach backend pods on TCP 8080. Which built-in namespace label can namespaceSelector match?",
+      "explanation": "Kubernetes populates the immutable namespace-name label. Also verify pod selectors, ports, DNS, other policies and CNI enforcement. Do not presume this built-in label is missing or overridden.",
+      "source": "https://kubernetes.io/docs/concepts/services-networking/network-policies/",
+      "options": [
+        "kubernetes.io/metadata.name: frontend",
+        "app.kubernetes.io/pod-name: frontend",
+        "kubernetes.io/hostname: frontend",
+        "node-role.kubernetes.io/frontend: true"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-020": {
+    "reason": "Used the documented ETag replacement path instead of assuming Python Patch If-Match support.",
+    "changes": {
+      "prompt": "A Cosmos DB item must be replaced only if it has not changed since a previous read. Which Python SDK call implements optimistic concurrency?",
+      "explanation": "Read the item and retain _etag, import MatchConditions from azure.core, then condition the replacement on that version. A conflicting update produces 412. Do not assume every SDK patch version supports the same ETag parameters; use its documented conditional-patch features.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/database-transactions-optimistic-concurrency",
+      "options": [
+        "container.replace_item(item=item[\"id\"], body=updated, etag=item[\"_etag\"], match_condition=MatchConditions.IfNotModified)",
+        "container.upsert_item(body=updated)",
+        "container.replace_item(item=item[\"id\"], body=updated) without a condition",
+        "container.read_item(item=item[\"id\"], partition_key=pk) without a conditional write"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-022": {
+    "reason": "Clarified composite-index optimization and query rewriting.",
+    "changes": {
+      "prompt": "A Cosmos DB query filters on status and sorts by shippedDate. Which optimization should you evaluate to combine the filter and sort efficiently?",
+      "explanation": "A single-property ORDER BY can run with a range index. A suitable composite index can improve equality-filter-plus-sort queries; the documented pattern may require including equality-filtered properties first in ORDER BY. Verify index metrics and request charges.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/index-policy",
+      "options": [
+        "Add a suitable composite index and evaluate rewriting ORDER BY to include the equality-filtered status before shippedDate",
+        "Assume every one-field ORDER BY requires a composite index to execute",
+        "Remove all indexes and keep the same latency target",
+        "Increase TTL to sort records"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-024": {
+    "reason": "Corrected the false requirement for explicit ASC.",
+    "changes": {
+      "prompt": "In Cosmos DB for NoSQL, SELECT TOP 5 c.id FROM c ORDER BY VectorDistance(c.embedding, @v) omits ASC. Assuming valid policies, vectors and parameters, what does that omission mean?",
+      "explanation": "ORDER BY defaults to ascending. Explicit ASC can improve readability but its omission is not a vector-query syntax error.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/query/order-by",
+      "options": [
+        "Ascending order is the default, so nearest distances are returned first",
+        "VectorDistance always requires an explicit ASC token",
+        "The query defaults to descending distance",
+        "The missing ASC forces a cross-partition security bypass"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-027": {
+    "reason": "Removed an unused/nonportable SDK import; preserved same-partition batch requirement.",
+    "changes": {
+      "prompt": "You perform a transactional batch operation to insert an order and update inventory atomically within the same partition:\n```python\n\nbatch_operations = [\n    (\"create\", (order_item,)),\n    (\"replace\", (\"inventory-sku123\", updated_inventory_item))\n]\nbatch_response = container.execute_item_batch(\n    batch_operations=batch_operations,\n    partition_key=\"store-42\"\n)\n```\nThis raises an error at runtime. What is the most likely cause?",
+      "explanation": "Use container.execute_item_batch with all operations targeting one logical partition key. The Python batch API accepts operations rather than requiring a TransactionalBatch import. If any operation fails, the atomic batch fails.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/transactional-batch"
+    }
+  },
+  "suralmk:practice-030": {
+    "reason": "Removed universal memory claims and included dimensionality constraints.",
+    "changes": {
+      "prompt": "Which comparison correctly describes Cosmos DB vector index trade-offs?",
+      "explanation": "Choose the index using dimensions, corpus size, recall, latency and request-charge measurements. flat supports up to 505 dimensions; quantizedFlat and diskANN support up to 4096. Do not infer universal memory rankings.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/vector-search",
+      "options": [
+        "flat performs exact search and supports up to 505 dimensions; diskANN supports higher-dimensional approximate search at scale",
+        "flat always consumes more memory than every approximate index",
+        "diskANN always returns exact nearest neighbors",
+        "All vector indexes have identical dimensionality limits"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-031": {
+    "reason": "Distinguished logical partition routing from authorization and physical partitions.",
+    "changes": {
+      "prompt": "A Cosmos DB RAG container partitions on /tenantId. How should a backend scope retrieval for an authenticated tenant?",
+      "explanation": "Partition routing can scope data access to the tenant logical partition, but trusted authorization determines which tenant may be queried. A SQL filter is useful defense in depth, not a replacement for authentication and authorization. A physical partition can contain many tenants.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview",
+      "options": [
+        "Derive the tenant from trusted authorization context, pass partition_key for that tenant, and apply any additional authorized filters",
+        "Trust an arbitrary tenant_id supplied by the caller",
+        "Enable cross-partition queries and remove all tenant checks",
+        "Rely on the embedding itself to encode tenant access rights"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-032": {
+    "reason": "Removed invalid FullTextScore example syntax.",
+    "changes": {
+      "prompt": "A Cosmos DB container should support indexed hybrid ranking using both vector distance and full-text relevance. What configuration should you plan?",
+      "explanation": "Configure the appropriate vector and full-text policies and use the documented ORDER BY RANK RRF syntax. FullTextScore takes the search expressions in the documented form, not an invented array argument. Enable required account features and verify current support.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/gen-ai/hybrid-search",
+      "options": [
+        "Matching vector embedding/index policies and full-text policy/index definitions for the queried paths",
+        "Only a scalar composite index",
+        "Only an App Configuration feature flag",
+        "Only client-side concatenation of unranked results"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-033": {
+    "reason": "A different container TTL design can also work; fixed the container default as a requirement.",
+    "changes": {
+      "prompt": "You need TTL-based automatic expiration for chat session documents 24 hours after last write, but some session documents (marked \"pinned\": true) must never expire.\nContainer-level defaultTtl is set to 86400 (24 hours).\n```json\n{\n  \"id\": \"session-123\",\n  \"pinned\": false,\n  \"ttl\": ???\n}\n```\nWhat value of the item-level ttl field for pinned sessions ensures they never expire, while unpinned sessions use the container default?\nYou must keep the container defaultTtl at 86400.",
+      "explanation": "With defaultTtl fixed at 86400, omit ttl on ordinary items and use ttl:-1 on pinned items. A container default of -1 with explicit per-item TTL is another valid design, but violates this question's fixed-default requirement.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/time-to-live"
+    }
+  },
+  "suralmk:practice-034": {
+    "reason": "Removed nonexistent Python bulk-execution mode and unbounded reliability claims.",
+    "changes": {
+      "prompt": "A Python Cosmos DB ingestion loop writes 500000 items sequentially. Which change can improve throughput while handling throttling responsibly?",
+      "explanation": "Python supports asynchronous I/O; do not copy a .NET bulk-execution switch into Python. Bound concurrency to capacity, respect 429 retry-after, and record/retry failures safely. Automatic retries are finite and do not guarantee success.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/performance-tips-python-sdk",
+      "options": [
+        "Use the async SDK with bounded concurrent writes, observe SDK retry-after behavior, and handle exhausted retries",
+        "Set a generic allow_bulk_execution flag on the Python client",
+        "Pass a list of items to create_item as one item batch",
+        "Remove concurrency limits and retry forever without delay"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-037": {
+    "reason": "Separated HNSW latency benefits from memory consumption.",
+    "changes": {
+      "prompt": "A Redis FLAT vector index searches two million chunks too slowly. More index memory is acceptable if measured recall remains adequate. Which alternative should you evaluate?",
+      "explanation": "HNSW trades graph memory and approximation for faster search at scale. It does not inherently use less memory than FLAT. Benchmark query time, recall and memory together.",
+      "source": "https://redis.io/docs/latest/develop/ai/search-and-query/vectors/",
+      "options": [
+        "HNSW approximate search",
+        "Switch FLOAT32 vectors to plain text without an index",
+        "Disable every metadata filter to guarantee tenant isolation",
+        "Use GET instead of vector search"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-038": {
+    "reason": "Required JSON paths as well as JSON index type.",
+    "changes": {
+      "prompt": "Embeddings are stored as Redis JSON arrays at $.embedding. Which index definition matches that representation?",
+      "explanation": "The index type and field paths must match JSON storage. HASH vectors use binary blobs, whereas JSON vectors are arrays. Changing only IndexType while leaving incompatible paths is insufficient.",
+      "source": "https://redis.io/docs/latest/develop/ai/search-and-query/vectors/",
+      "options": [
+        "An ON JSON index with a vector field at $.embedding, aliased as embedding",
+        "An ON HASH index over the JSON keys",
+        "A text-only index with no vector field",
+        "An ON JSON index that treats embedding as an integer counter"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-045": {
+    "reason": "Replaced an unsupported definitive diagnosis with evidence-based troubleshooting.",
+    "changes": {
+      "prompt": "A Python v2 HTTP Function returns success and sets its Storage Queue output binding. No messages appear in the queue account you inspected. Which evidence should you check first?",
+      "explanation": "A target mismatch is a diagnostic hypothesis. Check the configured connection, output parameter and runtime logs. Output bindings can create a missing queue, so absence of a precreated queue alone is not the claimed cause.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-queue-output",
+      "options": [
+        "Confirm the binding setting resolves to that account and queue, then inspect host/binding logs",
+        "Assume missing queues can never be created by output bindings",
+        "Conclude HTTP 200 proves every binding targets the inspected account",
+        "Disable authentication on all storage accounts"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-049": {
+    "reason": "Corrected the list of function-level retry-policy triggers.",
+    "changes": {
+      "prompt": "A Python HTTP Function decorates its handler with app.retry. Will that make the Functions runtime retry failed HTTP requests?",
+      "explanation": "Function-level retry policies support specific trigger types. HTTP does not use that policy. Service Bus and Storage Queue retry behavior is configured through their extensions/broker rather than that same decorator. Consult the trigger-specific retry table.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-error-pages",
+      "options": [
+        "No; implement bounded retries for the downstream call or use an asynchronous workflow",
+        "Yes; every Functions trigger uses the same function-level policy",
+        "Yes; the HTTP client is automatically reconnected after every error",
+        "Only if maxDequeueCount is set on the HTTP trigger"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-052": {
+    "reason": "Updated the version-dependent Event Hubs batching schema.",
+    "changes": {
+      "prompt": "An Event Hubs-triggered Function uses extension 5.x or later. Which host.json property sets the maximum number of events passed to one batch invocation?",
+      "explanation": "Current extensions use maxEventBatchSize. Older samples used eventProcessorOptions.maxBatchSize. Batch checkpoint frequency is a separate trade-off: fewer checkpoints can increase replay after failure. Match settings to the installed extension.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-hubs",
+      "options": [
+        "extensions.eventHubs.maxEventBatchSize",
+        "extensions.eventHubs.eventProcessorOptions.maxBatchSize",
+        "extensions.serviceBus.maxDeliveryCount",
+        "extensions.eventHubs.connectionLimit"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-054": {
+    "reason": "Replaced a nonexistent Python provider API.",
+    "changes": {
+      "prompt": "A Python app uses azure-appconfiguration-provider to load a Key Vault reference. How can it supply the identity used to resolve that reference?",
+      "explanation": "The Python provider exposes keyvault_credential and per-vault/resolver options. It does not use the displayed AzureAppConfigurationKeyVaultOptions API. The client identity needs access to both services as appropriate.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-app-configuration/reference-python-provider",
+      "options": [
+        "Pass keyvault_credential=DefaultAzureCredential() to load and authorize that identity to read the secret",
+        "Pass key_vault_options=AzureAppConfigurationKeyVaultOptions(...) from a different language SDK",
+        "Grant App Configuration itself the secret and assume the provider needs no identity",
+        "Store the actual secret in the reference URI"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-056": {
+    "reason": "Corrected the claim that ordinary await necessarily loses trace context.",
+    "changes": {
+      "prompt": "An OpenTelemetry parent span exists in one Python thread, but work submitted to a new ThreadPoolExecutor worker starts an unrelated root span. What should you investigate?",
+      "explanation": "Python contextvars normally propagate across standard asyncio task/context boundaries. New threads may require explicit context propagation or supported instrumentation. A nested synchronous example alone does not prove missing context.",
+      "source": "https://opentelemetry.io/docs/languages/python/propagation/",
+      "options": [
+        "Propagate the context into the worker thread, for example with a context copy or thread instrumentation",
+        "Assume every ordinary await automatically loses contextvars",
+        "Set a new random trace ID for every nested call",
+        "Remove all parent spans"
+      ],
+      "answer": 0
+    }
+  },
+  "suralmk:practice-060": {
+    "reason": "Removed the suggestion that a head or ingestion policy can recover discarded failed traces.",
+    "changes": {
+      "prompt": "A head sampler keeps 10% of traces. The team now wants to retain every trace that ends in an error. Which design issue must be addressed?",
+      "explanation": "Trace sampling and metric aggregation are different. Head-sampled-away spans cannot be recovered at ingestion. Tail sampling evaluates completed trace information but needs suitable buffering, export support and an unsampled input pipeline; validate the chosen backend integration.",
+      "source": "https://opentelemetry.io/docs/concepts/sampling/",
+      "options": [
+        "A head decision cannot know the final outcome; use a supported tail-sampling pipeline receiving unsampled spans if outcome-based retention is required",
+        "Set sampling_ratio=0.1 and assume errors bypass it",
+        "Apply an ingestion filter to recover spans that the SDK already discarded",
+        "Sample metrics and assume that preserves every failed trace"
+      ],
+      "answer": 0
+    }
+  },
+  "bouvet:acr-002": {
+    "reason": "Made the exact login server an explicit premise.",
+    "changes": {
+      "prompt": "The registry loginServer property is ai200acr.azurecr.io. Repository web-api contains tag v1.0. What is the fully qualified image reference?",
+      "explanation": "Combine the actual login server, repository and tag: ai200acr.azurecr.io/web-api:v1.0. Some registries have a hashed DNS label, so query loginServer instead of constructing it from the resource name.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-get-started-portal"
+    }
+  },
+  "bouvet:acr-010": {
+    "reason": "Identified the kubelet identity rather than the control-plane identity.",
+    "changes": {
+      "source": "https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration",
+      "options": [
+        "Copies all images from the registry into the AKS nodes",
+        "Grants the AKS kubelet managed identity the AcrPull role on the registry",
+        "Enables the ACR admin account for the cluster",
+        "Creates image pull secrets in every namespace"
+      ]
+    }
+  },
+  "bouvet:acr-019": {
+    "reason": "Docker can persist the temporary token in its configured credential store.",
+    "changes": {
+      "explanation": "az acr login uses your Azure sign-in to authenticate Docker. The Docker credential configuration/store can retain the registry token; no long-lived registry admin password is needed. The command does not grant roles.",
+      "source": "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-authentication",
+      "options": [
+        "Enables the admin account on the registry",
+        "Authenticates the local Docker client using an Entra-based registry token",
+        "Creates a new registry named myacr",
+        "Assigns you the AcrPull role"
+      ]
+    }
+  },
+  "bouvet:aks-007": {
+    "reason": "Scoped AcrPull/attach-acr to classic registry RBAC.",
+    "changes": {
+      "prompt": "Pods on your AKS cluster are stuck in ImagePullBackOff pulling an image from your Azure Container Registry. What is the most likely fix?\nAssume the registry uses classic RBAC Registry Permissions and the image/network settings are valid.",
+      "source": "https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration"
+    }
+  },
+  "bouvet:aks-008": {
+    "reason": "Scoped AcrPull/attach-acr to classic registry RBAC.",
+    "changes": {
+      "prompt": "Which role does `az aks update --attach-acr <acr>` grant, and to which identity?\nAssume the registry uses classic RBAC Registry Permissions and the image/network settings are valid.",
+      "source": "https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration"
+    }
+  },
+  "bouvet:container-apps-keda-011": {
+    "reason": "Scoped AcrPull/attach-acr to classic registry RBAC.",
+    "changes": {
+      "prompt": "What role must you grant to a Container App's managed identity to allow it to pull images from Azure Container Registry?\nAssume the registry uses classic RBAC Registry Permissions and the image/network settings are valid.",
+      "source": "https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration"
+    }
+  },
+  "bouvet:aks-018": {
+    "reason": "OOMKilled can result from a container limit or node-level memory exhaustion.",
+    "changes": {
+      "explanation": "Inspect memory usage, the container limit and node pressure/events. A limit breach is common, but the reason alone does not prove it was that container limit rather than node-wide exhaustion.",
+      "source": "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+      "options": [
+        "The image was not found in the registry",
+        "The kernel killed the container during an out-of-memory condition",
+        "The pod could not be scheduled",
+        "The readiness probe failed"
+      ]
+    }
+  },
+  "bouvet:aks-019": {
+    "reason": "kubectl logs is not restricted to a live follow stream.",
+    "changes": {
+      "prompt": "You need AKS container stdout/stderr retained centrally after pods disappear and queryable with KQL. Which configured monitoring feature provides that?",
+      "explanation": "Container Insights can send selected container logs to a Log Analytics workspace, subject to collection and retention configuration. kubectl logs also returns retained node-local logs and can show the previous container instance; it is not a durable central archive.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-overview"
+    }
+  },
+  "bouvet:app-service-containers-004": {
+    "reason": "Named the setting rather than repeating the question.",
+    "changes": {
+      "explanation": "In classic mode, set WEBSITES_PORT to the process listening port when needed. The process must listen on the appropriate interface. For sidecar-enabled apps, configure the main container target port instead.",
+      "source": "https://learn.microsoft.com/en-us/azure/app-service/configure-custom-container",
+      "options": [
+        "The container name",
+        "The startup command",
+        "The WEBSITES_PORT application setting in classic custom-container mode",
+        "The Dockerfile location"
+      ]
+    }
+  },
+  "bouvet:app-service-containers-016": {
+    "reason": "Scoped default-port guidance to classic containers.",
+    "changes": {
+      "prompt": "For classic App Service custom containers, which port is assumed by default when no explicit routing override is supplied?",
+      "explanation": "The documented classic default is port 80; use WEBSITES_PORT for another listening port. Sidecar-enabled apps use their main container target port configuration.",
+      "source": "https://learn.microsoft.com/en-us/azure/app-service/configure-custom-container"
+    }
+  },
+  "bouvet:container-apps-keda-002": {
+    "reason": "Corrected the expansion of KEDA.",
+    "changes": {
+      "source": "https://keda.sh/",
+      "options": [
+        "Kubernetes Event-driven Autoscaling; it scales workloads based on event sources",
+        "Key Encryption and Data Access — it manages secrets for container apps",
+        "Kubernetes Environment Deployment Agent — it deploys container images",
+        "Kernel Extension for Docker Applications — it optimizes container performance"
+      ]
+    }
+  },
+  "bouvet:container-apps-keda-018": {
+    "reason": "The retention limit concerns inactive revisions.",
+    "changes": {
+      "prompt": "How many inactive Container Apps revisions are retained by default?",
+      "source": "https://learn.microsoft.com/en-us/azure/container-apps/revisions"
+    }
+  },
+  "bouvet:azure-functions-024": {
+    "reason": "Made a single-choice item unambiguous when options are shuffled.",
+    "changes": {
+      "prompt": "Which complete list contains supported HTTP request locations that a Function can read?",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger",
+      "options": [
+        "Query parameters, request body, and HTTP headers",
+        "Only the query string",
+        "Only the request body",
+        "Only the headers"
+      ],
+      "answer": 0
+    }
+  },
+  "bouvet:cosmos-db-nosql-009": {
+    "reason": "Scoped the one-RU read to weaker consistency.",
+    "changes": {
+      "prompt": "What is the approximate RU charge for a point read of a 1 KB item by id and partition key using session consistency?",
+      "explanation": "A 1 KB point read commonly costs 1 RU with session/eventual/consistent-prefix consistency. Strong or bounded-staleness reads require more RUs, and larger items cost more.",
+      "source": "https://learn.microsoft.com/en-us/azure/cosmos-db/optimize-cost-reads-writes"
+    }
+  },
+  "bouvet:postgresql-pgvector-042": {
+    "reason": "Corrected the negative sign of the inner-product operator.",
+    "changes": {
+      "source": "https://github.com/pgvector/pgvector",
+      "options": [
+        "<-> (L2 distance)",
+        "<=> (cosine distance)",
+        "<#> (negative inner product)",
+        "<+> (L1 distance)",
+        "<==> (exact match)"
+      ]
+    }
+  },
+  "bouvet:kv-052": {
+    "reason": "Included revocation at the issuing database, not only in Key Vault.",
+    "changes": {
+      "prompt": "The database supports overlapping credentials so both old and new credentials can work during rollout. Put these rotation steps in a safe order.",
+      "explanation": "With overlap supported, create the new credential, allow it at the database, publish it in Key Vault, refresh and verify clients, then retire the old credential at the database and disable the old secret version. Without overlap, coordinate the downtime/cutover explicitly; disabling a Key Vault version does not revoke the database credential.",
+      "source": "https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation-dual",
+      "options": [
+        "Generate a new password",
+        "Update the database to accept the new password",
+        "Store the matching value as a new Key Vault secret version",
+        "Refresh and verify application consumers",
+        "Revoke the old database credential and disable its Key Vault version after the transition"
+      ],
+      "answer": [
+        "Generate a new password",
+        "Update the database to accept the new password",
+        "Store the matching value as a new Key Vault secret version",
+        "Refresh and verify application consumers",
+        "Revoke the old database credential and disable its Key Vault version after the transition"
+      ]
+    }
+  },
+  "bouvet:kql-023": {
+    "reason": "Corrected the numeric duration unit in Application Insights queries.",
+    "changes": {
+      "explanation": "The requests query column duration is measured numerically in milliseconds. Filter with duration > 1000. In workspace schema the corresponding field is AppRequests.DurationMs. A timespan literal such as 1s is a different type.",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-monitor/app/metrics-overview",
+      "options": [
+        "requests | where duration > 1000",
+        "`requests | where duration > 1`",
+        "`requests | where DurationMs > 1000`",
+        "`requests | where duration > '1s'`"
+      ]
+    }
+  }
+}

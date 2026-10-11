@@ -1,0 +1,25 @@
+{
+    "id": "ai200-s3-12-gantrell-kql-argmax",
+    "question": "You must build the Gantrell operations dashboard query: from `AppTraces`, return **one row per property** — the most recent valuation trace for that property, with **all** of its columns. The property identifier is in `Properties.propertyId`.\n\nWhich KQL query should you use?",
+    "options": [
+        {
+            "text": "AppTraces\n| extend propertyId = tostring(Properties.propertyId)\n| summarize arg_max(TimeGenerated, *) by propertyId",
+            "correct": true
+        },
+        {
+            "text": "AppTraces\n| extend propertyId = tostring(Properties.propertyId)\n| summarize max(TimeGenerated) by propertyId",
+            "correct": false
+        },
+        {
+            "text": "AppTraces\n| extend propertyId = tostring(Properties.propertyId)\n| order by TimeGenerated desc\n| take 1",
+            "correct": false
+        },
+        {
+            "text": "AppTraces\n| extend propertyId = tostring(Properties.propertyId)\n| distinct propertyId, Message",
+            "correct": false
+        }
+    ],
+    "explanation": "`arg_max(TimeGenerated, *)` is the KQL aggregation built for \"latest row per group\": within each `by propertyId` group it finds the row with the maximum `TimeGenerated` and, because of the `*`, returns **that entire row** — every column, exactly as the dashboard needs. The `extend ... tostring(Properties.propertyId)` first materializes the grouping key from the dynamic `Properties` column, since dynamic sub-properties must be converted to a scalar type to be used in `by`.\n\n**Why not the other options:**\n- **`summarize max(TimeGenerated) by propertyId`** — Returns only two columns: the property ID and a timestamp. `max()` aggregates a single value; it does not carry along the rest of the winning row, so the valuation status, message, and other columns are lost.\n- **`order by ... | take 1`** — Sorts the *whole table* and keeps a single row overall — the most recent trace in the entire system, for one property. The dashboard needs the most recent row for **each** property.\n- **`distinct propertyId, Message`** — Returns every unique combination of property and message with no notion of recency: old and new valuations for the same property all appear, and all other columns are dropped.",
+    "category": "Secure, monitor, and troubleshoot Azure solutions",
+    "caseStudy": "scenarios/case_study_gantrell_property.json"
+}
