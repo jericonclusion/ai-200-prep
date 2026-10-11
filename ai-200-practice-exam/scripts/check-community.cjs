@@ -5,13 +5,13 @@ const vm = require('node:vm');
 const crypto = require('node:crypto');
 const root = path.resolve(__dirname, '..');
 const context = {window:{}};
-for (const name of ['questions','instructor-sample','community-questions','question-sets']) vm.runInNewContext(fs.readFileSync(path.join(root, 'dist', name + '.js'), 'utf8'), context);
+for (const name of ['questions','instructor-sample','community-questions','topic-review-questions','question-sets']) vm.runInNewContext(fs.readFileSync(path.join(root, 'dist', name + '.js'), 'utf8'), context);
 const {AI200_SETS: catalog, AI200_DATA: data, AI200_COMMUNITY: community} = context.window;
 assert.equal(community.questions.length, 861);
 assert.equal(community.sets.length, 27);
-assert.equal(catalog.questions.length, 1298);
-assert.equal(catalog.sets.length, 30);
-assert.equal(new Set(catalog.questions.map(q=>q.id)).size, 1298);
+assert.equal(catalog.questions.length, 1357);
+assert.equal(catalog.sets.length, 31);
+assert.equal(new Set(catalog.questions.map(q=>q.id)).size, 1357);
 let seed = 812931;
 function shuffle(input) {
   const output = [...input];
@@ -54,7 +54,7 @@ for (const set of catalog.sets) {
   }
 }
 for (let run=0;run<100;run++) {
-  const ids = shuffle(catalog.defaults).slice(0,1+run%30);
+  const ids = shuffle(catalog.defaults).slice(0,1+run%catalog.sets.length);
   const qs = catalog.build('exam',ids,shuffle).sections.flatMap(s=>s.questions);
   assert.ok(qs.every(q=>ids.includes(q.setId)));
   assert.equal(new Set(qs.map(q=>q.id)).size,qs.length);
@@ -67,6 +67,20 @@ assert.throws(()=>catalog.build('case',['microsoft-learn'],shuffle),/no case stu
 assert.ok(catalog.build('case',['quizplay-set-3'],shuffle).sections[0].questions.every(q=>q.caseData && q.setId==='quizplay-set-3'));
 assert.equal(catalog.normalize(['instructor','instructor','missing']).join(','),'instructor');
 assert.equal(JSON.stringify(catalog.questions),original,'Selection must never mutate the catalog');
+const review = context.window.AI200_TOPIC_REVIEW;
+assert.equal(review.questions.length,59);
+assert.equal(review.questions.map(q=>q.userItem).join(','),Array.from({length:59},(_,i)=>i+1).join(','));
+assert.equal(new Set(review.questions.filter(q=>q.caseId).map(q=>q.caseId)).size,2);
+for (const q of review.questions) {
+  assert.ok(q.source.startsWith('https://') && q.reviewDate && q.origin,q.id + ': documented provenance');
+  assert.ok(q.additionalSources.every(url=>url.startsWith('https://')),q.id);
+}
+for (let run=0;run<100;run++) {
+  const exam=catalog.build('exam',['topic-review-59'],shuffle);
+  assert.equal(exam.selectionNote,'');
+  const selected=exam.sections.flatMap(s=>s.questions);
+  for (const [domain,n] of Object.entries(data.EXAM_DOMAIN_COUNTS)) assert.equal(selected.filter(q=>q.domain===domain).length,n);
+}
 const patches = JSON.parse(fs.readFileSync(path.join(root,'data/community-corrections.json')));
 for (const [id,patch] of Object.entries(patches)) {
   const q = community.questions.find(q=>q.id===id);
@@ -85,4 +99,4 @@ vm.runInNewContext(fs.readFileSync(path.join(root,'../sources/library-data.js'),
 assert.equal(context.window.AI200_LIBRARY.length,184);
 assert.equal(context.window.AI200_LIBRARY.filter(e=>e.id.startsWith('naytron:') && e.id!=='naytron:study-aid').length,23);
 for (const guide of context.window.AI200_LIBRARY) assert.ok(fs.existsSync(path.join(root,'../sources',guide.path)),guide.path);
-console.log(`PASS: 1298 questions, 30 sets, 184 guides/labs; all answer structures, shuffled answers, selection isolation, 100 mixed exams, domain quotas, ${Object.keys(patches).length} review records and ${files} source checksums.`);
+console.log(`PASS: 1357 questions, 31 sets, 184 guides/labs; all answer structures, shuffled answers, selection isolation, 100 mixed exams, domain quotas, ${Object.keys(patches).length} review records and ${files} source checksums.`);

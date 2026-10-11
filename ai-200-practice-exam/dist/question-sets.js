@@ -2,11 +2,13 @@
 (() => {
   const data = window.AI200_DATA;
   const community = window.AI200_COMMUNITY || {sets: [], questions: []};
+  const topicReview = window.AI200_TOPIC_REVIEW || {sets: [], questions: []};
   const sets = [
     {id: 'curated', name: 'Original practice questions', group: 'Existing collection'},
     {id: 'microsoft-learn', name: 'Microsoft Learn module assessments', group: 'Existing collection'},
     {id: 'instructor', name: 'Instructor sample', group: 'Existing collection'},
-    ...community.sets
+    ...community.sets,
+    ...topicReview.sets
   ];
   const groups = {'quizplay-set-3': 'QuizPlay', suralmk: 'Suralmk', bouvet: 'Bouvet'};
   sets.forEach(set => { set.group = groups[set.group] || set.group; });
@@ -18,7 +20,8 @@
     ...data.CASES.flatMap(c => c.questions.map(q => ({...tag(q), caseId: 'curated:' + c.title, caseTitle: c.title, caseData: c.tabs}))),
     ...data.LOCKED_SET.questions.map(q => ({...tag(q), scenario: data.LOCKED_SET.scenario})),
     ...(window.AI200_INSTRUCTOR_SAMPLE?.questions || []).map(q => ({...q, setId: 'instructor'})),
-    ...community.questions
+    ...community.questions,
+    ...topicReview.questions
   ];
   const byId = new Map(sets.map(set => [set.id, set]));
   sets.forEach(set => { set.count = questions.filter(q => q.setId === set.id).length; });

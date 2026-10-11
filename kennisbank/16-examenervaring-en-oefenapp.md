@@ -22,7 +22,7 @@ Map: `ai-200-practice-exam`
 
 Lokale start: open `ai-200-practice-exam/dist/index.html`.
 
-De Engelstalige applicatie bevat 1.298 vragen in 30 selecteerbare sets: 263 bestaande vragen, 174 docentvragen en 861 communityvragen. Daarvan komen 133 vragen uit de openbare moduletoetsen van alle 27 modules in de officiële AI-200-cursus. Kies de gewenste bronnen onder **Question sets**. Zie `18-community-bronnen-en-controle.md` voor de uitbreiding en controle.
+De Engelstalige applicatie bevat 1.357 vragen in 31 selecteerbare sets: 263 bestaande vragen, 174 docentvragen, 861 communityvragen en 59 nieuwe topic-reviewscenario's. Daarvan komen 133 vragen uit de openbare moduletoetsen van alle 27 modules in de officiële AI-200-cursus. Kies de gewenste bronnen onder **Question sets**. Zie `18-community-bronnen-en-controle.md` voor de uitbreiding en controle.
 
 1. **Official exam flow:** maximaal 50 vragen, twee minuten per vraag, uitsluitend uit de gekozen sets. Casussen en vastgezette vragen hangen van de selectie af.
 2. **Quick assessment:** maximaal 20 vragen, twee minuten per vraag.
@@ -40,7 +40,7 @@ Alle 174 docentvragen worden in de eigen huisstijl weergegeven en kunnen automat
 - Na het verlaten van de casus kun je niet terug.
 - Een casus gebruikt dezelfde algemene examencountdown en heeft geen eigen timer.
 
-De app bevat de bestaande casussen **Northwind Research** en **Fabrikam Claims**, de twee docentcasussen en vier QuizPlay-casussen. Gebruik `Case study drill` om direct met dit vraagtype te oefenen.
+De app bevat de bestaande casussen **Northwind Research** en **Fabrikam Claims**, de twee docentcasussen, vier QuizPlay-casussen en twee nieuwe topic-reviewcasussen. Gebruik `Case study drill` om direct met dit vraagtype te oefenen.
 
 ### Overeenkomst en beperkingen
 

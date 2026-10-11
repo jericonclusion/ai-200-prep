@@ -210,8 +210,8 @@ async function main() {
   await send('Input.dispatchKeyEvent',{type:'keyDown',key:' ',code:'Space',windowsVirtualKeyCode:32});
   await send('Input.dispatchKeyEvent',{type:'keyUp',key:' ',code:'Space',windowsVirtualKeyCode:32});
   assert.ok(await evaluate("document.querySelector('#setPicker').open"),'Keyboard opens the set picker');
-  assert.equal(await evaluate('document.querySelectorAll("[data-set]").length'),30);
-  assert.match(await evaluate('document.querySelector("#setSummary").textContent'),/1298/);
+  assert.equal(await evaluate('document.querySelectorAll("[data-set]").length'),31);
+  assert.match(await evaluate('document.querySelector("#setSummary").textContent'),/1357/);
   const homeScreenshot = await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
   fs.writeFileSync(path.join(root,'docs/screenshots/exam-home.png'),Buffer.from(homeScreenshot.data,'base64'));
   await evaluate("document.querySelector('#clearSets').click(); true");
@@ -244,8 +244,53 @@ async function main() {
   assert.equal(session.flat.length,50);
   assert.ok(session.flat.every(q=>q.setId==='instructor'),'Instructor-only exam has no injected core questions');
   await home();
+  await evaluate("document.querySelector('#clearSets').click(); document.querySelector('[data-set=\"topic-review-59\"]').click(); true");
+  session=await launch('study');
+  assert.equal(session.flat.length,59);
+  assert.ok(session.flat.every(q=>q.setId==='topic-review-59'));
+  // Exercise each native answer control with this set's new, longer scenarios.
+  for (const id of ['TOPIC001','TOPIC002','TOPIC003','TOPIC004','TOPIC013','TOPIC040','TOPIC045']) {
+    const index=session.flat.findIndex(q=>q.id===id);
+    const q=session.flat[index];
+    await evaluate(`(() => {
+      document.querySelector('[data-index="${index}"]').click();
+      const q=${JSON.stringify(q)};
+      if (['single','yesno','multi'].includes(q.type)) {
+        for (const answer of Array.isArray(q.answer)?q.answer:[q.answer]) document.querySelector('input[name="answer"][value="'+answer+'"]').click();
+      } else if (['matrix','matching'].includes(q.type)) {
+        q.answer.forEach((answer,i)=>{
+          const select=document.querySelector('['+(q.type==='matrix'?'data-matrix-index':'data-match-index')+'="'+i+'"]');
+          select.value=answer; select.dispatchEvent(new Event('change',{bubbles:true}));
+        });
+      } else if (q.type==='drag') {
+        q.answer.forEach(answer=>[...document.querySelectorAll('[data-drag-choice]')].find(el=>el.dataset.dragChoice===answer).click());
+      } else {
+        q.answer.forEach((answer,target)=>{
+          let position=[...document.querySelectorAll('[data-drag-index]')].findIndex(row=>row.children[2].textContent===answer);
+          while(position>target) {document.querySelector('[data-move="up"][data-pos="'+position+'"]').click();position--;}
+        });
+      }
+      document.querySelector('#check').click();
+      return true;
+    })()`);
+    assert.equal(await evaluate('document.querySelector(".feedback h3")?.textContent'),'Correct',id + ': native scoring');
+    for (const url of [q.source,...q.additionalSources]) assert.ok(await evaluate(`[...document.querySelectorAll('.feedback a')].some(a=>a.getAttribute('href')===${JSON.stringify(url)})`),id + ': primary reference');
+  }
+  const numericIndex=session.flat.findIndex(q=>q.id==='TOPIC025');
+  await evaluate(`document.querySelector('[data-index="${numericIndex}"]').click(); document.querySelector('.workspace').scrollIntoView(); true`);
+  const topicScreenshot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
+  fs.writeFileSync(path.join(root,'docs/screenshots/topic-review.png'),Buffer.from(topicScreenshot.data,'base64'));
+  await send('Emulation.setDeviceMetricsOverride',{width:375,height:812,deviceScaleFactor:1,mobile:false});
+  assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth'),'Topic review answer area fits a narrow screen');
+  await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+  await home();
+  session=await launch('exam');
+  assert.equal(session.flat.length,50);
+  assert.ok(session.flat.every(q=>q.setId==='topic-review-59'));
+  for (const [domain,n] of Object.entries({containers:12,data:14,services:12,operations:12})) assert.equal(session.flat.filter(q=>q.domain===domain).length,n);
+  await home();
   await send('Page.navigate',{url:`http://127.0.0.1:${sitePort}/ai-200-exam-form.html`});
-  await waitFor('document.querySelectorAll("[data-set]").length===30','Inline catalog did not load');
+  await waitFor('document.querySelectorAll("[data-set]").length===31','Inline catalog did not load');
   await evaluate("document.querySelector('#selectAllSets').click(); document.querySelector('#setPicker').open=true; true");
   await send('Emulation.setDeviceMetricsOverride',{width:375,height:812,deviceScaleFactor:1,mobile:false});
   assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth'),'Set picker fits a narrow screen');
@@ -253,11 +298,11 @@ async function main() {
   const mobileScreenshot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
   fs.writeFileSync(path.join(root,'docs/screenshots/set-picker-mobile.png'),Buffer.from(mobileScreenshot.data,'base64'));
   session = await launch('study');
-  assert.equal(session.flat.length,1298,'Entire inline study session persists within browser storage limits');
+  assert.equal(session.flat.length,1357,'Entire inline study session persists within browser storage limits');
   await send('Page.reload');
   await waitFor('!!document.querySelector("#resumeSession")','Full study session can be resumed');
   await evaluate("document.querySelector('#resumeSession').click(); true");
-  await waitFor('document.querySelector(".top-count")?.textContent.includes("of 1298")','Full study session resumes');
+  await waitFor('document.querySelector(".top-count")?.textContent.includes("of 1357")','Full study session resumes');
   const inlineCase=await evaluate("JSON.parse(localStorage.getItem('ai200-active-session-v1')).state.flat.findIndex(q=>q.contextPage)");
   await evaluate(`document.querySelector('[data-index="${inlineCase}"]').click(); document.querySelector('.scenario-launch').click(); document.querySelector('[data-scenario-view="image"]').click(); true`);
   await waitFor('document.querySelector(".scenario-image-pane img")?.naturalWidth===1920','Embedded scenario image loads');
@@ -270,7 +315,7 @@ async function main() {
   await waitFor('!!document.querySelector(".guide[data-loaded] pre")','Lab code did not render');
   assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth'),'Library fits a narrow screen');
   assert.deepEqual(runtimeErrors,[],'Browser has no uncaught errors');
-  console.log('PASS: browser walkthrough, answer review, resume, teacher scenarios, 30-set picker, keyboard access, persisted selection, small study/exam sessions, QuizPlay cases, instructor-only exam, inline app and searchable mobile library.');
+  console.log('PASS: browser walkthrough, answer review, resume, teacher scenarios, 31-set picker, keyboard access, persisted selection, small study/exam sessions, all seven topic-review controls and its 50-question exam, QuizPlay cases, instructor-only exam, inline app and searchable mobile library.');
   socket.close();
 }
 

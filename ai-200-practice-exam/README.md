@@ -4,7 +4,8 @@ English-language practice application for AI-200. Open `dist/index.html` in a br
 
 ## Included
 
-- 1,298 questions in 30 selectable sets: 263 existing questions, 174 instructor questions, and 861 imported community questions
+- 1,357 questions in 31 selectable sets: 263 existing questions, 174 instructor questions, 861 imported community questions, and 59 newly authored topic-review scenarios
+- **Topic review · 59 scenarios** covers the supplied topic outline with complete stems, code, two original case studies, corrected answers, distractor explanations and primary references
 - 36 QuizPlay, 300 Suralmk and 525 Bouvet questions, with 136 documented correction/clarification records
 - Persistent set selection for Study mode, timed exams, quick assessments, case drills and audio
 - Offline study library with 184 guides/labs, including all 23 Naytron labs; complete upstream snapshots under `../sources/`
@@ -41,6 +42,7 @@ Build and validate from this directory (Python 3 and Node.js 22 or later):
 ```sh
 python3 scripts/import-community.py
 python3 scripts/build-library.py
+node scripts/build-topic-review.cjs
 node scripts/build-inline.cjs
 node scripts/check-questions.cjs
 node scripts/check-community.cjs
@@ -48,7 +50,7 @@ node scripts/check-runtime.cjs
 node scripts/check-browser.cjs
 ```
 
-Set `AI200_BROWSER` to a Chromium-based executable for the browser check. It checks session resume, answer review, teacher scenarios, set selection and persistence, small study/exam sessions, keyboard access, inline rendering and the mobile library. Data checks validate all 1,298 answer structures, selection isolation, domain targets, source checksums and randomized answer mappings.
+Set `AI200_BROWSER` to a Chromium-based executable for the browser check. It checks session resume, answer review, teacher scenarios, set selection and persistence, small study/exam sessions, keyboard access, inline rendering and the mobile library. Data checks validate all 1,357 answer structures, selection isolation, domain targets, source checksums and randomized answer mappings.
 
 Both embedded HTML files are generated from the same `dist/` application; there is no separate inline runtime. The form includes its scripts, styles and scenario images. Its library link expects this repository's directory layout.
 
@@ -66,3 +68,5 @@ The module-question review corrected or clarified 34 items: MS001, MS014, MS028,
 - https://learn.microsoft.com/en-us/credentials/support/exam-duration-exam-experience
 - https://learn.microsoft.com/en-us/credentials/certifications/frequently-asked-questions
 - https://learn.microsoft.com/en-us/shows/exam-readiness-zone/what-to-expect-on-your-microsoft-exam
+
+The 59-scenario set is maintained in `data/topic-review.json`. Its numbered review index is `../kennisbank/19-topic-review-59-scenarios.md`. Run `build-topic-review.cjs` before rebuilding the inline app after editing that data.

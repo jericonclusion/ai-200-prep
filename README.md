@@ -10,8 +10,9 @@ Persoonlijke studieomgeving voor **Microsoft AI-200: Developing AI Cloud Solutio
 - `kennisbank/04-labtracker.md` — voortgang van de 24 verplichte labs.
 - `kennisbank/14-officiele-examengap-analyse.md` — dekking tegenover de officiële studiegids.
 - `kennisbank/17-online-oefenvraagbronnen.md` — beoordeling van openbare oefenbronnen.
+- `kennisbank/19-topic-review-59-scenarios.md` — 59 nieuwe scenario's met gecontroleerde antwoorden, afleiders en bronnen.
 - `kennisbank/18-community-bronnen-en-controle.md` — leerroute, bronoverzicht en inhoudelijke controle.
-- `ai-200-practice-exam/` — Engelstalige simulator met 1.298 vragen in 30 selecteerbare testsets.
+- `ai-200-practice-exam/` — Engelstalige simulator met 1.357 vragen in 31 selecteerbare testsets.
 - `sources/index.html` — doorzoekbare offline bibliotheek met 184 gidsen en labs, waaronder 23 Naytron-labs; volledige snapshots van alle vier communityrepositories.
 
 Open `ai-200-practice-exam/dist/index.html` lokaal in een browser. Kies onder **Question sets** welke sets meetellen voor **Study mode**, een proefexamen, een korte toets of een casusdrill. De keuze blijft bewaard. Een proefexamen bevat maximaal 50 vragen en gebruikt uitsluitend de gekozen sets; kleinere selecties krijgen een kortere sessie. Via **Open the study library** lees je de gidsen en labinstructies.

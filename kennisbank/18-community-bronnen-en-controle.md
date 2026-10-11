@@ -5,13 +5,14 @@ sets meetellen voor Study mode, een proefexamen, een korte toets of audio-oefeni
 De selectie blijft lokaal bewaard. **Select all**, **Clear selection** en
 **Original + Microsoft Learn** maken wisselen gemakkelijk.
 
-De verzameling bevat 1.298 vragen in 30 sets:
+De verzameling bevat 1.357 vragen in 31 sets:
 
 | Bron | Vragen | Selecteerbare sets |
 | --- | ---: | ---: |
 | Bestaande eigen vragen | 130 | 1 |
 | Microsoft Learn-moduletoetsen | 133 | 1 |
 | Docentenset | 174 | 1 |
+| Topic review: uitgewerkte scenario's | 59 | 1 |
 | QuizPlay set 3 | 36 | 1 |
 | Suralmk | 300 | 12 |
 | Bouvet | 525 | 14 |

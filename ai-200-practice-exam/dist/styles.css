@@ -39,3 +39,9 @@ select,textarea,summary{font-family:inherit;font-size:inherit}
 .case-content .prompt{font-size:.95rem;white-space:normal}
 .sidebar .nav-grid{max-height:55vh;overflow-y:auto}
 @media(max-width:650px){.set-picker-body{padding:1.25rem}.set-groups{grid-template-columns:1fr}.set-actions button{flex:1 1 9rem}}
+
+/* Long scenario choices remain usable on narrow screens. */
+.question-meta{flex-wrap:wrap}
+.matching-row{min-width:0}
+.matching-row select{min-width:0;max-width:100%;width:100%}
+.option>span:last-child{min-width:0;overflow-wrap:anywhere}

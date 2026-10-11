@@ -17,7 +17,7 @@ const assertScenarioBlocks = (questions, label) => {
 // Run session startup, feedback and results with a small in-memory DOM facade.
 for (const engine of ['dist', 'inline']) {
   for (const randomValue of [0.1, 0.9]) {
-    const modes = [['exam',50],['quick',20],['case',5],['study',263],['sample',174]];
+    const modes = [['exam',50],['quick',20],['case',5],['study',263],['sample',174],['topic',59]];
     for (const [mode, total] of modes) {
       const elements = new Map();
       const element = id => {
@@ -34,12 +34,12 @@ for (const engine of ['dist', 'inline']) {
         setInterval:()=>1, clearInterval:()=>{}
       };
       const scripts = engine === 'dist'
-        ? ['questions','instructor-sample','community-questions','question-sets','app'].map(name=>read('dist/' + name + '.js'))
+        ? ['questions','instructor-sample','community-questions','topic-review-questions','question-sets','app'].map(name=>read('dist/' + name + '.js'))
         : [...read('ai-200-exam-form.html').matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(match=>match[1]);
       for (let script of scripts) {
         if (script.includes('function startSession()')) {
           const original = script;
-          script = script.replace(/\n\s*welcome\(\);\s*\}\)\(\);\s*$/, '\nwindow.__review={start:(mode,ids)=>{selectedMode=mode;selectedSetIds=ids||(mode==="sample"?["instructor"]:["curated","microsoft-learn"]);startSession()},state:()=>state,feedback:feedbackMarkup,options:optionMarkup,answered:isAnswered,correct:isCorrect,finish,render:renderQuestion,next};welcome();\n})();');
+          script = script.replace(/\n\s*welcome\(\);\s*\}\)\(\);\s*$/, '\nwindow.__review={start:(mode,ids)=>{selectedMode=mode==="topic"?"study":mode;selectedSetIds=ids||(mode==="topic"?["topic-review-59"]:mode==="sample"?["instructor"]:["curated","microsoft-learn"]);startSession()},state:()=>state,feedback:feedbackMarkup,options:optionMarkup,answered:isAnswered,correct:isCorrect,finish,render:renderQuestion,next};welcome();\n})();');
           assert.notEqual(script, original);
         }
         vm.runInNewContext(script, context);
@@ -54,6 +54,24 @@ for (const engine of ['dist', 'inline']) {
       if (engine === 'dist' && mode === 'exam') {
         assert.equal(questions.filter(q=>q.id.startsWith('INS')).length, 0, 'core-only exam excludes instructor questions');
         assertScenarioBlocks(questions.filter(q=>q.id.startsWith('INS')), 'mixed official flow instructor questions');
+      }
+      if (mode === 'topic') {
+        assert.ok(questions.every(q=>q.setId==='topic-review-59'));
+        for (const q of questions) {
+          state.current=questions.indexOf(q); api.render();
+          state.answers[q.id]=q.answer;
+          assert.ok(api.answered(q) && api.correct(q),q.id + ': native correct answer');
+          const feedback=api.feedback(q);
+          for (const url of [q.source,...q.additionalSources]) assert.ok(feedback.includes(url.replace(/&/g,'&amp;')),q.id + ': reference visible');
+          if (Array.isArray(q.answer)) {
+            const wrong=[...q.answer];
+            if (q.type==='matrix') wrong[0]=q.rows[0][1].find(value=>value!==q.answer[0]);
+            else if (q.type==='matching') wrong[0]=q.options.find(value=>value!==q.answer[0]);
+            else wrong.reverse();
+            state.answers[q.id]=q.type==='multi'?[]:wrong;
+          } else state.answers[q.id]=(q.answer+1)%q.options.length;
+          assert.ok(!api.correct(q),q.id + ': incorrect answer rejected');
+        }
       }
       if (engine === 'dist' && mode === 'sample') {
         const typeCounts = questions.reduce((counts,q)=>((counts[q.type]=(counts[q.type]||0)+1),counts),{});

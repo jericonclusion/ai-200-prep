@@ -51,7 +51,7 @@ assert.equal(positions.size,4);
 assert.equal(JSON.stringify(all),original,'Session randomization must not mutate the source bank');
 const form = read('ai-200-exam-form.html');
 assert.ok(form.includes(read('dist/questions.js').trimEnd()));
-for (const script of ['community-questions.js','question-sets.js','app.js']) assert.ok(form.includes(read('dist/' + script).trim()));
+for (const script of ['community-questions.js','topic-review-questions.js','question-sets.js','app.js']) assert.ok(form.includes(read('dist/' + script).trim()));
 const preview = read('inline-preview.html');
 const escaped = form.trimEnd().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
 assert.ok(preview.includes(escaped),'Preview must embed the current form');
