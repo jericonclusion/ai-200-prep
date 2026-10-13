@@ -148,13 +148,28 @@
   function isCorrect(q){if(!isGradable(q))return false;const a=state.answers[q.id];if(q.type==="multi"){return same([...(a||[])].sort(),[...q.answer].sort())}return same(a,q.answer)}
 
   function renderQuestion(){
+    const navScroll=document.querySelector('.nav-grid')?.scrollTop||0,sideScroll=document.querySelector('.sidebar')?.scrollTop||0;
     const qn=current(),section=sectionFor(qn),answered=Object.values(state.answers).filter((_,i)=>i>=0).length;
     app.innerHTML=`<div class="shell"><header class="topbar"><div class="brand">AI-200</div><div class="exam-name">Developing AI Cloud Solutions on Azure</div><div class="top-spacer"></div>${state.seconds?`<div id="timer" class="timer">${fmt(state.seconds)}</div>`:"<div class='timer'>Study mode</div>"}<div class="top-count">Question ${state.current+1} of ${state.flat.length}</div></header>
       <div class="exam-layout"><aside class="sidebar"><div class="section-label">${esc(section.title)}</div>${qn.scenarioText?`<div class="active-case"><span>Current case study</span><strong>${esc(qn.scenarioText.title)}</strong></div>`:""}<div>${answered} answered</div><div class="progress-line"><div class="progress-fill" style="width:${Math.round((state.current+1)/state.flat.length*100)}%"></div></div><div class="nav-grid">${state.flat.map((x,i)=>navDot(x,i)).join("")}</div>
       <div class="side-tools"><button id="learn">▤ Microsoft Learn</button>${state.mode==="exam"||state.mode==="quick"?'<button id="break">Ⅱ Take a break</button>':""}<button id="overview">☰ Exam overview</button></div></aside>
       <main class="workspace">${questionMarkup(qn,section)}</main></div>
       <footer class="bottombar"><label class="flag"><input id="flag" type="checkbox" ${state.flags[qn.id]?"checked":""} ${qn.locked?"disabled":""}> Mark for review</label><button class="quiet" id="comment">Comment</button><div class="bottom-spacer"></div><button class="secondary" id="prev" ${!canGo(state.current-1)?"disabled":""}>Previous</button>${state.mode==="study"||state.mode==="sample"?'<button class="secondary" id="check">Check answer</button>':""}<button class="primary" id="next">${state.current===state.flat.length-1?"Finish":"Next"}</button></footer></div>`;
-    bindQuestion(qn);saveSession();
+    bindQuestion(qn);restoreNavigationScroll(navScroll,sideScroll);saveSession();
+  }
+
+  function restoreNavigationScroll(navScroll,sideScroll){
+    const sidebar=document.querySelector('.sidebar'),grid=sidebar?.querySelector('.nav-grid'),active=grid?.querySelector('.current');
+    if(!active)return;
+    sidebar.scrollTop=sideScroll;grid.scrollTop=navScroll;
+    // Only scroll the navigation containers; scrollIntoView would move the question page too.
+    for(const container of [grid,sidebar]){
+      if(container.scrollHeight<=container.clientHeight)continue;
+      const bounds=container.getBoundingClientRect(),rect=active.getBoundingClientRect();
+      const top=bounds.top+container.clientTop+4,bottom=bounds.top+container.clientTop+container.clientHeight-4;
+      if(rect.top<top)container.scrollTop+=rect.top-top;
+      else if(rect.bottom>bottom)container.scrollTop+=rect.bottom-bottom;
+    }
   }
 
   function navDot(qn,i){

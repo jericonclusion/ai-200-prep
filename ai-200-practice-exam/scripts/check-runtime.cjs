@@ -29,7 +29,7 @@ for (const engine of ['dist', 'inline']) {
       math.random = () => randomValue;
       const context = {
         window:{}, Math:math,
-        document:{getElementById:element, querySelectorAll:()=>[], addEventListener:()=>{}, visibilityState:'visible'},
+        document:{getElementById:element, querySelector:()=>null, querySelectorAll:()=>[], addEventListener:()=>{}, visibilityState:'visible'},
         localStorage:{getItem:key=>storage.get(key)||null, setItem:(key,value)=>storage.set(key,value), removeItem:key=>storage.delete(key)},
         setInterval:()=>1, clearInterval:()=>{}
       };

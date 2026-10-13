@@ -205,6 +205,95 @@ async function main() {
     await waitFor('!!document.querySelector(".top-count")', 'Selected session did not launch');
     return evaluate("JSON.parse(localStorage.getItem('ai200-active-session-v1')).state");
   };
+  const navigationState = () => evaluate(`(() => {
+    const grid=document.querySelector('.nav-grid'), active=grid.querySelector('.current');
+    const bounds=grid.getBoundingClientRect(), rect=active.getBoundingClientRect();
+    const top=bounds.top+grid.clientTop, left=bounds.left+grid.clientLeft;
+    return {
+      scrollTop:grid.scrollTop,
+      activeVisible:rect.top>=top+3 && rect.bottom<=top+grid.clientHeight-3,
+      columnsFit:[...grid.children].every(button=>{
+        const r=button.getBoundingClientRect();
+        return r.left>=left+3 && r.right<=left+grid.clientWidth-3 && button.scrollWidth<=button.clientWidth;
+      }),
+      noHorizontalOverflow:grid.scrollWidth<=grid.clientWidth,
+      current:Number(active.dataset.index),
+      correct:active.classList.contains('answer-correct'),
+      incorrect:active.classList.contains('answer-incorrect'),
+      pageY:window.scrollY
+    };
+  })()`);
+  const checkStudyNavigation = async session => {
+    await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+    // Reserve a classic scrollbar, as on Windows, even on overlay-scrollbar hosts.
+    await evaluate(`(() => {
+      const style=document.createElement('style');
+      style.textContent='.nav-grid::-webkit-scrollbar{width:17px}';
+      document.head.append(style);
+      document.querySelector('[data-index="99"]').click();
+      return true;
+    })()`);
+    let nav=await navigationState();
+    assert.ok(nav.noHorizontalOverflow && nav.columnsFit,'All five columns fit beside a classic scrollbar, including four-digit numbers');
+    assert.ok(nav.activeVisible && nav.scrollTop>0,'Question 100 is visible after jumping to it');
+    // Use a nearby single-choice item to exercise both feedback colors and rerenders.
+    const index=session.flat.findIndex((q,i)=>i>=99 && q.type==='single');
+    assert.ok(index>=99);
+    const q=session.flat[index];
+    await evaluate(`document.querySelector('[data-index="${index}"]').click(); true`);
+    const before=await navigationState();
+    for (const [answer,expected] of [[q.answer,'correct'],[(q.answer+1)%q.options.length,'incorrect']]) {
+      await evaluate(`document.querySelector('input[name="answer"][value="${answer}"]').click(); true`);
+      nav=await navigationState();
+      assert.equal(nav.scrollTop,before.scrollTop,'Selecting an answer preserves the navigation scroll position');
+      await evaluate("document.querySelector('#check').click(); true");
+      nav=await navigationState();
+      assert.equal(nav.scrollTop,before.scrollTop,'Checking an answer preserves the navigation scroll position');
+      assert.ok(nav.activeVisible && nav[expected],`${expected} question status stays visible`);
+    }
+    await evaluate("document.querySelector('#flag').click(); true");
+    assert.equal((await navigationState()).scrollTop,before.scrollTop,'Flagging an answer preserves the navigation scroll position');
+    const desktopNavigation=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
+    fs.writeFileSync(path.join(os.tmpdir(),'ai200-study-navigation-desktop.png'),Buffer.from(desktopNavigation.data,'base64'));
+    await evaluate("document.querySelector('#next').click(); true");
+    nav=await navigationState();
+    assert.equal(nav.current,index+1);
+    assert.ok(nav.activeVisible && nav.scrollTop>0,'Next keeps the current row visible');
+    assert.ok(await evaluate(`document.querySelector('[data-index="${index}"]').classList.contains('answer-incorrect')`));
+    await evaluate("document.querySelector('#prev').click(); true");
+    nav=await navigationState();
+    assert.equal(nav.current,index);
+    assert.ok(nav.activeVisible && nav.incorrect,'Previous keeps the graded question visible');
+    await send('Page.reload');
+    await waitFor('!!document.querySelector("#resumeSession")','Navigation session can be resumed');
+    await evaluate("document.querySelector('#resumeSession').click(); true");
+    nav=await navigationState();
+    assert.equal(nav.current,index);
+    assert.ok(nav.activeVisible && nav.incorrect && nav.scrollTop>0,'Resume reveals the current question and its feedback');
+    for (const width of [1440,375,320]) {
+      await send('Emulation.setDeviceMetricsOverride',{width,height:812,deviceScaleFactor:1,mobile:false});
+      await evaluate(`document.querySelector('[data-index="${session.flat.length-1}"]').click(); true`);
+      nav=await navigationState();
+      assert.ok(nav.activeVisible && nav.columnsFit && nav.noHorizontalOverflow,`${width}px: last question and every column fit: ${JSON.stringify(nav)}`);
+      assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`${width}px: page has no horizontal overflow`);
+      if(width===375){
+        await evaluate('window.scrollTo(0,0); true');
+        const mobileNavigation=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
+        fs.writeFileSync(path.join(os.tmpdir(),'ai200-study-navigation-mobile.png'),Buffer.from(mobileNavigation.data,'base64'));
+      }
+      await evaluate("document.querySelector('[data-index=\"0\"]').click(); true");
+      nav=await navigationState();
+      assert.ok(nav.activeVisible && nav.scrollTop===0,`${width}px: navigating back to the first question reveals it`);
+      if(width<800){
+        await evaluate("document.querySelector('.workspace').scrollIntoView(); true");
+        const pageY=await evaluate('window.scrollY');
+        assert.ok(pageY>0,'Mobile question is below the navigation');
+        await evaluate("document.querySelector('#flag').click(); true");
+        assert.equal(await evaluate('window.scrollY'),pageY,'Updating navigation does not pull the mobile page away from the question');
+      }
+    }
+    await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+  };
   await home();
   await evaluate("document.querySelector('#selectAllSets').click(); document.querySelector('#setPicker summary').focus(); true");
   await send('Input.dispatchKeyEvent',{type:'keyDown',key:' ',code:'Space',windowsVirtualKeyCode:32});
@@ -233,6 +322,10 @@ async function main() {
   assert.equal(session.flat.length,small.count);
   assert.ok(session.flat.every(q=>q.setId===small.id));
   assert.equal(session.seconds,small.count*120);
+  await home();
+  await evaluate("document.querySelector('#selectAllSets').click(); true");
+  session=await launch('study');
+  await checkStudyNavigation(session);
   await home();
   await evaluate("document.querySelector('#clearSets').click(); document.querySelector('[data-set=\"quizplay-set-3\"]').click(); true");
   session = await launch('case');
@@ -299,6 +392,8 @@ async function main() {
   fs.writeFileSync(path.join(root,'docs/screenshots/set-picker-mobile.png'),Buffer.from(mobileScreenshot.data,'base64'));
   session = await launch('study');
   assert.equal(session.flat.length,1357,'Entire inline study session persists within browser storage limits');
+  await checkStudyNavigation(session);
+  await send('Emulation.setDeviceMetricsOverride',{width:375,height:812,deviceScaleFactor:1,mobile:false});
   await send('Page.reload');
   await waitFor('!!document.querySelector("#resumeSession")','Full study session can be resumed');
   await evaluate("document.querySelector('#resumeSession').click(); true");
@@ -315,7 +410,7 @@ async function main() {
   await waitFor('!!document.querySelector(".guide[data-loaded] pre")','Lab code did not render');
   assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth'),'Library fits a narrow screen');
   assert.deepEqual(runtimeErrors,[],'Browser has no uncaught errors');
-  console.log('PASS: browser walkthrough, answer review, resume, teacher scenarios, 31-set picker, keyboard access, persisted selection, small study/exam sessions, all seven topic-review controls and its 50-question exam, QuizPlay cases, instructor-only exam, inline app and searchable mobile library.');
+  console.log('PASS: browser walkthrough, answer review, resume, teacher scenarios, 31-set picker, keyboard access, persisted selection, small study/exam sessions, study navigation around question 100 and 1357 with classic scrollbars and narrow screens in both distributions, all seven topic-review controls and its 50-question exam, QuizPlay cases, instructor-only exam, inline app and searchable mobile library.');
   socket.close();
 }
 
