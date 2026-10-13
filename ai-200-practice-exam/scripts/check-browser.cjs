@@ -205,6 +205,16 @@ async function main() {
     await waitFor('!!document.querySelector(".top-count")', 'Selected session did not launch');
     return evaluate("JSON.parse(localStorage.getItem('ai200-active-session-v1')).state");
   };
+  const pointerClick = async selector => {
+    const point=await evaluate(`(() => {
+      const element=document.querySelector(${JSON.stringify(selector)}), r=element.getBoundingClientRect();
+      const x=r.left+r.width/2,y=r.top+r.height/2,hit=document.elementFromPoint(x,y);
+      return {x,y,reachable:r.left>=0 && r.right<=innerWidth && r.top>=0 && r.bottom<=innerHeight && (hit===element || element.contains(hit))};
+    })()`);
+    assert.ok(point.reachable,`${selector} is visible and can receive a real click`);
+    await send('Input.dispatchMouseEvent',{type:'mousePressed',x:point.x,y:point.y,button:'left',clickCount:1});
+    await send('Input.dispatchMouseEvent',{type:'mouseReleased',x:point.x,y:point.y,button:'left',clickCount:1});
+  };
   const navigationState = () => evaluate(`(() => {
     const grid=document.querySelector('.nav-grid'), active=grid.querySelector('.current');
     const bounds=grid.getBoundingClientRect(), rect=active.getBoundingClientRect();
@@ -243,10 +253,10 @@ async function main() {
     await evaluate(`document.querySelector('[data-index="${index}"]').click(); true`);
     const before=await navigationState();
     for (const [answer,expected] of [[q.answer,'correct'],[(q.answer+1)%q.options.length,'incorrect']]) {
-      await evaluate(`document.querySelector('input[name="answer"][value="${answer}"]').click(); true`);
+      await pointerClick(`input[name="answer"][value="${answer}"]`);
       nav=await navigationState();
       assert.equal(nav.scrollTop,before.scrollTop,'Selecting an answer preserves the navigation scroll position');
-      await evaluate("document.querySelector('#check').click(); true");
+      await pointerClick('#check');
       nav=await navigationState();
       assert.equal(nav.scrollTop,before.scrollTop,'Checking an answer preserves the navigation scroll position');
       assert.ok(nav.activeVisible && nav[expected],`${expected} question status stays visible`);
@@ -255,12 +265,12 @@ async function main() {
     assert.equal((await navigationState()).scrollTop,before.scrollTop,'Flagging an answer preserves the navigation scroll position');
     const desktopNavigation=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
     fs.writeFileSync(path.join(os.tmpdir(),'ai200-study-navigation-desktop.png'),Buffer.from(desktopNavigation.data,'base64'));
-    await evaluate("document.querySelector('#next').click(); true");
+    await pointerClick('#next');
     nav=await navigationState();
     assert.equal(nav.current,index+1);
     assert.ok(nav.activeVisible && nav.scrollTop>0,'Next keeps the current row visible');
     assert.ok(await evaluate(`document.querySelector('[data-index="${index}"]').classList.contains('answer-incorrect')`));
-    await evaluate("document.querySelector('#prev').click(); true");
+    await pointerClick('#prev');
     nav=await navigationState();
     assert.equal(nav.current,index);
     assert.ok(nav.activeVisible && nav.incorrect,'Previous keeps the graded question visible');
@@ -270,12 +280,16 @@ async function main() {
     nav=await navigationState();
     assert.equal(nav.current,index);
     assert.ok(nav.activeVisible && nav.incorrect && nav.scrollTop>0,'Resume reveals the current question and its feedback');
-    for (const width of [1440,375,320]) {
+    for (const width of [1440,1024,820,800,375,320]) {
       await send('Emulation.setDeviceMetricsOverride',{width,height:812,deviceScaleFactor:1,mobile:false});
       await evaluate(`document.querySelector('[data-index="${session.flat.length-1}"]').click(); true`);
       nav=await navigationState();
       assert.ok(nav.activeVisible && nav.columnsFit && nav.noHorizontalOverflow,`${width}px: last question and every column fit: ${JSON.stringify(nav)}`);
       assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`${width}px: page has no horizontal overflow`);
+      assert.ok(await evaluate(`['#prev','#check','#next','.top-count'].every(selector=>{
+        const element=document.querySelector(selector),r=element.getBoundingClientRect();
+        return r.left>=0 && r.right<=innerWidth && r.top>=0 && r.bottom<=innerHeight && element.scrollWidth<=element.clientWidth;
+      })`),`${width}px: question counter and navigation buttons are fully visible`);
       if(width===375){
         await evaluate('window.scrollTo(0,0); true');
         const mobileNavigation=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
@@ -284,11 +298,15 @@ async function main() {
       await evaluate("document.querySelector('[data-index=\"0\"]').click(); true");
       nav=await navigationState();
       assert.ok(nav.activeVisible && nav.scrollTop===0,`${width}px: navigating back to the first question reveals it`);
+      await pointerClick('#next');
+      assert.equal((await navigationState()).current,1,`${width}px: Next responds to a real click`);
+      await pointerClick('#prev');
+      assert.equal((await navigationState()).current,0,`${width}px: Previous responds to a real click`);
       if(width<800){
         await evaluate("document.querySelector('.workspace').scrollIntoView(); true");
         const pageY=await evaluate('window.scrollY');
         assert.ok(pageY>0,'Mobile question is below the navigation');
-        await evaluate("document.querySelector('#flag').click(); true");
+        await pointerClick('#flag');
         assert.equal(await evaluate('window.scrollY'),pageY,'Updating navigation does not pull the mobile page away from the question');
       }
     }
@@ -410,7 +428,7 @@ async function main() {
   await waitFor('!!document.querySelector(".guide[data-loaded] pre")','Lab code did not render');
   assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth'),'Library fits a narrow screen');
   assert.deepEqual(runtimeErrors,[],'Browser has no uncaught errors');
-  console.log('PASS: browser walkthrough, answer review, resume, teacher scenarios, 31-set picker, keyboard access, persisted selection, small study/exam sessions, study navigation around question 100 and 1357 with classic scrollbars and narrow screens in both distributions, all seven topic-review controls and its 50-question exam, QuizPlay cases, instructor-only exam, inline app and searchable mobile library.');
+  console.log('PASS: browser walkthrough, answer review, resume, teacher scenarios, 31-set picker, keyboard access, persisted selection, small study/exam sessions, study navigation around question 100 and 1357 with classic scrollbars, real pointer clicks and visible controls on desktop, tablet and mobile in both distributions, all seven topic-review controls and its 50-question exam, QuizPlay cases, instructor-only exam, inline app and searchable mobile library.');
   socket.close();
 }
 

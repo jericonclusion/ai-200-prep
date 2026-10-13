@@ -19,6 +19,7 @@ English-language practice application for AI-200. Open `dist/index.html` in a br
 - Automatic local session saving with a resume-or-start-over prompt after reopening or refreshing the app
 - Persistent green/red question-number status in Study mode after an answer is checked or left with Next
 - Question navigation keeps its scroll position while answering and reveals the current question when navigating or resuming; all columns fit alongside scrollbars, including four-digit numbers
+- Mobile navigation keeps the question counter and answer buttons visible; case studies and answer controls adapt to the available column width
 - Built-in full-screen supplied-scenario viewer with a persistent case-study name, readable structured text, and a cropped original-image view
 - Source-verified case membership: only the 19 instructor questions that show the VCE Overview control are attached to Fabrikam or Proseware
 - Single choice, multiple response, ordering, and locked Yes/No problem-solution items
@@ -51,7 +52,7 @@ node scripts/check-runtime.cjs
 node scripts/check-browser.cjs
 ```
 
-Set `AI200_BROWSER` to a Chromium-based executable for the browser check. It checks session resume, answer review, teacher scenarios, set selection and persistence, small study/exam sessions, keyboard access, inline rendering and the mobile library. Navigation regressions cover question 100, correct/incorrect status, Next/Previous, resume, classic scrollbars and four-digit numbers on desktop and narrow screens in both distributions. Data checks validate all 1,357 answer structures, selection isolation, domain targets, source checksums and randomized answer mappings.
+Set `AI200_BROWSER` to a Chromium-based executable for the browser check. It checks session resume, answer review, teacher scenarios, set selection and persistence, small study/exam sessions, keyboard access, inline rendering and the mobile library. Navigation regressions cover question 100, correct/incorrect status, Next/Previous, resume, classic scrollbars and four-digit numbers in both distributions. Real pointer clicks and element bounds verify that the counter and navigation buttons remain visible and usable at viewport widths from 320 to 1440 pixels, including tablet case-study layouts. Data checks validate all 1,357 answer structures, selection isolation, domain targets, source checksums and randomized answer mappings.
 
 Both embedded HTML files are generated from the same `dist/` application; there is no separate inline runtime. The form includes its scripts, styles and scenario images. Its library link expects this repository's directory layout.
 
